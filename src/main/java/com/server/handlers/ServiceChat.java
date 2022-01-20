@@ -3,6 +3,7 @@ package main.java.com.server.handlers;
 import main.java.com.logger.Logger;
 import main.java.com.logger.LoggerFactory;
 import main.java.com.logger.level.Level;
+import main.java.com.server.models.Client;
 import main.java.com.server.models.UserModel;
 
 import java.io.IOException;
@@ -19,20 +20,37 @@ public class ServiceChat implements Runnable {
     private Socket socket;
     private Scanner in;
     private PrintWriter out;
+    private boolean isAdmin;
 
-    private static final Map<String, PrintWriter> users = new HashMap<>();
+    private static final Map<String, Client> users = new HashMap<>();
 
     /*private static final Set<UserModel> userDB = new HashSet<>() {{
         add(new UserModel("Raphael", "pass12345"));
         add(new UserModel("Thierry", "azerty12345"));
     }};*/
 
-    private static final Set<UserModel> userDB = new HashSet<>() {{
-        add(new UserModel("admin", "admin", 0));
-    }};
+    private static final Set<UserModel> userDB = new HashSet<>();
 
-    public ServiceChat(final Socket socket) {
+    public ServiceChat(final Socket socket) throws IOException {
         this.socket = socket;
+        this.in = new Scanner(this.socket.getInputStream(), StandardCharsets.UTF_8);
+        this.in.useLocale(new Locale("fr", "FR"));
+        this.out = new PrintWriter(
+                new OutputStreamWriter(this.socket.getOutputStream(), StandardCharsets.UTF_8),
+                true
+        );
+        this.isAdmin = false;
+    }
+
+    public ServiceChat() {
+        this.in = new Scanner(System.in, StandardCharsets.UTF_8);
+        this.in.useLocale(new Locale("fr", "FR"));
+        this.out = new PrintWriter(
+                new OutputStreamWriter(System.out, StandardCharsets.UTF_8),
+                true
+        );
+        this.isAdmin = true;
+        this.pseudo = "<ADMIN>";
     }
 
     private UserModel getUser(String username) {
@@ -49,61 +67,59 @@ public class ServiceChat implements Runnable {
                 return;
             }
 
-            this.in = new Scanner(this.socket.getInputStream(), StandardCharsets.UTF_8);
-            this.in.useLocale(new Locale("fr", "FR"));
-            this.out = new PrintWriter(
-                    new OutputStreamWriter(this.socket.getOutputStream(), StandardCharsets.UTF_8),
-                    true
-            );
+            if (!this.isAdmin) {
+                logger.log("A new user has initiated a connection on IP " + this.socket.getInetAddress().getHostAddress(), Level.INFO);
 
-            logger.log("A new user has initiated a connection on IP " + this.socket.getInetAddress().getHostAddress(), Level.INFO);
+                Writifier.systemWriter(this.out, "username: ");
 
-            Writifier.systemWriter(this.out, "username: ");
-            if (this.in.hasNextLine()) {
-                do {
-                    String username = null, password = null;
+                if (this.in.hasNextLine()) {
                     do {
-                        if (this.in.hasNextLine())
-                            username = this.in.nextLine().trim();
-                        if (Objects.requireNonNull(username).isEmpty())
-                            Writifier.systemWriter(this.out, "username: ");
-                    } while(Objects.requireNonNull(username).isEmpty());
+                        String username = null, password = null;
+                        do {
+                            if (this.in.hasNextLine())
+                                username = this.in.nextLine().trim();
+                            if (Objects.requireNonNull(username).isEmpty())
+                                Writifier.systemWriter(this.out, "username: ");
+                        } while(Objects.requireNonNull(username).isEmpty());
 
-                    UserModel user = getUser(username);
+                        UserModel user = getUser(username);
 
-                    do {
-                        Writifier.systemWriter(this.out, "password: ");
-                        if (this.in.hasNextLine())
-                            password = this.in.nextLine();
-                    } while(Objects.requireNonNull(password).isEmpty());
+                        do {
+                            Writifier.systemWriter(this.out, "password: ");
+                            if (this.in.hasNextLine())
+                                password = this.in.nextLine();
+                        } while(Objects.requireNonNull(password).isEmpty());
 
-                    //UserModel user = new UserModel(username, password);
-                    if (user != null) {
-                        if (user.getPassword().equals(password)) {
-                            if (users.containsKey(username)) {
-                                Writifier.systemWriter(this.out, "Error: An user with the same pseudo is already connected.");
-                                logger.log("Failing attempt for connecting to " + username + ": User already connected.", Level.WARNING);
-                                this.socket.close();
-                                return;
-                            }
-                            this.pseudo = user.getUsername();
-                        } else Writifier.systemWriter(this.out,"Wrong username or password!");
-                    } else {
-                        userDB.add(new UserModel(username, password, 1));
-                        Writifier.systemWriter(this.out,"New user created!");
-                        logger.log("A new user has been created with username " + username, Level.INFO);
-                        this.socket.close();
-                        return;
-                    }
-                } while (users.containsKey(this.pseudo) || this.pseudo == null ||this.pseudo.isEmpty());
+                        //UserModel user = new UserModel(username, password);
+                        if (user != null) {
+                            if (user.getPassword().equals(password)) {
+                                if (users.containsKey(username)) {
+                                    Writifier.systemWriter(this.out, "Error: An user with the same pseudo is already connected.");
+                                    logger.log("Failing attempt for connecting to " + username + ": User already connected.", Level.WARNING);
+                                    this.socket.close();
+                                    return;
+                                }
+                                this.pseudo = user.getUsername();
+                            } else Writifier.systemWriter(this.out,"Wrong username or password!");
+                        } else {
+                            userDB.add(new UserModel(username, password, 1));
+                            Writifier.systemWriter(this.out,"New user created!");
+                            logger.log("A new user has been created with username " + username, Level.INFO);
+                            this.socket.close();
+                            return;
+                        }
+                    } while (users.containsKey(this.pseudo) || this.pseudo == null ||this.pseudo.isEmpty());
+                }
             }
 
-            for (PrintWriter writer : users.values())
-                Writifier.systemWriter(writer,"" + this.pseudo + " has joined the chat.");
+            if (!this.isAdmin)
+                for (Client client : users.values())
+                    Writifier.systemWriter(client.getWriter(),"" + this.pseudo + " has joined the chat.");
             for (String pseudo : users.keySet())
                 Writifier.systemWriter(this.out,"" + pseudo + " has joined the chat.");
 
-            users.put(this.pseudo, this.out);
+            if (!this.isAdmin)
+                users.put(this.pseudo, new Client(this.socket));
 
             while (true) {
                 if (this.in.hasNextLine()) {
@@ -112,16 +128,37 @@ public class ServiceChat implements Runnable {
                         ServerCommand command = ServerCommand.fromString(input);
                         switch (command) {
                             case LOGOUT, EXIT -> {
-                                logout();
-                                logger.log(this.pseudo + " has disconnected [" + this.socket.getInetAddress().getHostAddress() + "]", Level.INFO);
-                                return;
+                                if (!this.isAdmin) {
+                                    logout();
+                                    logger.log(this.pseudo + " has disconnected [" + this.socket.getInetAddress().getHostAddress() + "]", Level.INFO);
+                                    return;
+                                } else Writifier.systemWriter(this.out, "You cannot disconnect from admin account !");
                             }
 
+                            case KILL -> {
+                               if (isAdmin) {
+                                   String[] splittedInput = input.split(" ");
+                                   if (splittedInput.length < 2)
+                                       Writifier.systemWriter(this.out, "Usage: /kill username");
+                                   else {
+                                       String username = splittedInput[1];
+                                       if (users.containsKey(username)) {
+                                           users.get(username).getSocket().close();
+                                           users.remove(username);
+                                           for (Client client : users.values())
+                                               Writifier.systemWriter(client.getWriter(), username + " has been killed by the administrator.");
+                                           logger.log(username + " has been killed by the administrator.", Level.INFO);
+                                       } else Writifier.systemWriter(this.out,pseudo + " is not connected");
+                                   }
+                               }
+                            }
                             case LIST -> listUsers();
-                            case PRIVATE_MESSAGE -> privateMessage(input);
-                            default -> broadcastMessage(input);
+                            case PRIVATE_MESSAGE -> privateMessage(input, this.isAdmin);
+                            default -> broadcastMessage(input, this.isAdmin);
                         }
                     }
+                    if (!this.isAdmin) logger.log("[" + this.pseudo + "] " + input, Level.INFO);
+                    else logger.log(this.pseudo + " " + input, Level.INFO);
                 }
             }
         } catch (IOException e) {
@@ -129,11 +166,11 @@ public class ServiceChat implements Runnable {
         }
     }
 
-    private void broadcastMessage(String input) {
-        for (PrintWriter writer : users.values()) Writifier.messageWriter(writer, this.pseudo, input);
+    private void broadcastMessage(String input, boolean isAdmin) {
+        for (Client client : users.values()) Writifier.messageWriter(client.getWriter(), this.pseudo, input, isAdmin);
     }
 
-    private void privateMessage(String input) {
+    private void privateMessage(String input, boolean isAdmin) {
         String[] splittedInput = input.split(" ");
         if (splittedInput.length < 3)
             Writifier.systemWriter(this.out,"Usage: /msg username message");
@@ -144,7 +181,7 @@ public class ServiceChat implements Runnable {
                     Arrays.copyOfRange(splittedInput, 2, splittedInput.length)
             );
             if(users.containsKey(pseudo))
-                Writifier.messageWriter(users.get(pseudo), this.pseudo, message);
+                Writifier.messageWriter(users.get(pseudo).getWriter(), this.pseudo, message, isAdmin);
             else
                 Writifier.systemWriter(this.out,pseudo + " is not connected");
         }
@@ -160,7 +197,7 @@ public class ServiceChat implements Runnable {
         users.remove(this.pseudo);
         this.socket.close();
 
-        for (PrintWriter writer : users.values())
-           Writifier.systemWriter(writer, this.pseudo + " has disconnected");
+        for (Client client : users.values())
+           Writifier.systemWriter(client.getWriter(), this.pseudo + " has disconnected");
     }
 }

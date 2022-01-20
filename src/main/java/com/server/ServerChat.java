@@ -6,6 +6,7 @@ import main.java.com.logger.level.Level;
 import main.java.com.server.handlers.ServiceChat;
 import sun.misc.Signal;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.PortUnreachableException;
 import java.net.ServerSocket;
@@ -71,11 +72,15 @@ public class ServerChat {
 
     public static void main(String[] args) throws Exception {
         handleSignals();
-        ServerChat server = new ServerChat("localhost", 4444);
-        try(ServerSocket listener = new ServerSocket(server.actualPort())) {
-            //noinspection InfiniteLoopStatement
-            while (true) new Thread(new ServiceChat(listener.accept())).start();
-        }
+        new Thread(() -> {
+            ServerChat server = new ServerChat("localhost", 4444);
+            try(ServerSocket listener = new ServerSocket(server.actualPort())) {
+                while (true) new Thread(new ServiceChat(listener.accept())).start();
+            } catch (IOException e) {
+                logger.log(e.getMessage(), Level.ERROR);
+            }
+        }).start();
+        new ServiceChat().run();
     }
 
     private static void handleSignals() {
