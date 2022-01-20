@@ -1,12 +1,14 @@
 package main.java.com.server;
 
+import main.java.com.logger.Logger;
+import main.java.com.logger.LoggerFactory;
+import main.java.com.logger.level.Level;
 import main.java.com.server.handlers.ServiceChat;
 import sun.misc.Signal;
 
 import java.io.PrintWriter;
 import java.net.PortUnreachableException;
 import java.net.ServerSocket;
-import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -17,21 +19,22 @@ import java.util.Set;
  * //TODO Include diagram of MultiThreadedServer
  *
  * @author Raphael Dray
- * @version 0.0.8
+ * @version 0.0.2
  * @since 0.0.1
  * @see Set
  * @see PrintWriter
  * @see ServerSocket
  */
 public class ServerChat {
+    private static final Logger logger = LoggerFactory.getLogger(ServerChat.class.getSimpleName());
+
     /**
      * The default port if not specified is 8080
      */
     private static final int DEFAULT_PORT = 8080;
+    private static final int MAX_USERS = 3;
     private int port;
     private String host;
-    /*private static Set<String> pseudos = new HashSet<>();
-    private static Set<PrintWriter> writers = new HashSet<>();*/
 
     /**
      * Constructor of the multi threaded server.
@@ -47,14 +50,14 @@ public class ServerChat {
                 throw new PortUnreachableException("Port higher than 65536");
             }
             this.port = port;
-            System.out.println("Listening on port " + this.port);
+            logger.log("Listening on port " + this.port, Level.INFO);
         } catch (PortUnreachableException e) {
-            System.err.println(e.getMessage());
+            logger.log(e.getMessage(), Level.ERROR);
         }
     }
 
     private static void handleSignal(Signal signal) {
-        System.out.println("Server exiting..");
+        logger.log("Server exiting..", Level.INFO);
         System.exit(0);
     }
 
@@ -65,24 +68,6 @@ public class ServerChat {
     public int actualPort() {
         return this.port;
     }
-
-    /**
-     * Getter of the pseudos
-     * @return Set<String> - The pseudos of the users
-     * @see Set<String>
-     */
-    /*public static Set<String> getPseudos() {
-        return pseudos;
-    }*/
-
-    /**
-     * Getter of the writers
-     * @return Set<PrintWriter> - The writers of the users
-     * @see Set<PrintWriter>
-     */
-    /*public static Set<PrintWriter> getWriters() {
-        return writers;
-    }*/
 
     public static void main(String[] args) throws Exception {
         handleSignals();
