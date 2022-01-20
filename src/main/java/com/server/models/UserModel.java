@@ -5,10 +5,12 @@ import java.util.Objects;
 public class UserModel {
     private String username;
     private String password;
+    private int group;
 
-    public UserModel(final String username, final String password) {
+    public UserModel(final String username, final String password, final int group) {
         this.username = username;
         this.password = password;
+        this.group = group;
     }
 
     public String getUsername() {

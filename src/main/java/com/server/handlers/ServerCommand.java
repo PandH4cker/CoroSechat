@@ -5,6 +5,13 @@ public enum ServerCommand {
     EXIT("/exit"),
     LIST("/list"),
     PRIVATE_MESSAGE("/msg"),
+    KILL("/kill"),
+    KILALL("/killall"),
+    HALT("/halt"),
+    DELETE_ACCOUNT("/deleteAccount"),
+    ADD_ACCOUNT("/addAccount"),
+    LOAD_BDD("/loadBDD"),
+    SAVE_BDD("/saveBDD"),
     UNKNOWN("");
 
     private String command;

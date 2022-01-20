@@ -28,7 +28,7 @@ public class ServiceChat implements Runnable {
     }};*/
 
     private static final Set<UserModel> userDB = new HashSet<>() {{
-        add(new UserModel("admin", "admin"));
+        add(new UserModel("admin", "admin", 0));
     }};
 
     public ServiceChat(final Socket socket) {
@@ -89,7 +89,7 @@ public class ServiceChat implements Runnable {
                             this.pseudo = user.getUsername();
                         } else Writifier.systemWriter(this.out,"Wrong username or password!");
                     } else {
-                        userDB.add(new UserModel(username, password));
+                        userDB.add(new UserModel(username, password, 1));
                         Writifier.systemWriter(this.out,"New user created!");
                         logger.log("A new user has been created with username " + username, Level.INFO);
                         this.socket.close();
