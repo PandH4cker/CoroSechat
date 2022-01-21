@@ -4,54 +4,58 @@ import main.java.com.logger.Logger;
 import main.java.com.logger.LoggerFactory;
 import main.java.com.logger.level.Level;
 import main.java.com.server.models.Client;
-import main.java.com.server.models.UserModel;
+import main.java.com.server.models.User;
+import main.java.com.server.models.UserGroup;
+import main.java.com.server.utils.StringUtils;
+import main.java.com.server.utils.Writifier;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.*;
+import java.util.stream.Stream;
 
 public class ServiceChat implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(ServiceChat.class.getSimpleName());
 
     private String pseudo;
     private Socket socket;
-    private Scanner in;
-    private PrintWriter out;
-    private boolean isAdmin;
+    private final Scanner in;
+    private final PrintWriter out;
+    private final boolean isAdmin;
 
     private static final Map<String, Client> users = new HashMap<>();
 
-    private static final Set<UserModel> userDB = new HashSet<>();
+    private static final Set<User> userDB = new HashSet<>();
 
     public ServiceChat(final Socket socket) throws IOException {
         this.socket = socket;
-        this.in = new Scanner(this.socket.getInputStream(), StandardCharsets.UTF_8);
-        this.in.useLocale(new Locale("fr", "FR"));
-        this.out = new PrintWriter(
-                new OutputStreamWriter(this.socket.getOutputStream(), StandardCharsets.UTF_8),
-                true
-        );
+        this.in = new Scanner(this.socket.getInputStream());
+        this.out = new PrintWriter(this.socket.getOutputStream(), true);
         this.isAdmin = false;
     }
 
     public ServiceChat() {
-        this.in = new Scanner(System.in, StandardCharsets.UTF_8);
-        this.in.useLocale(new Locale("fr", "FR"));
-        this.out = new PrintWriter(
-                new OutputStreamWriter(System.out, StandardCharsets.UTF_8),
-                true
-        );
+        this.in = new Scanner(System.in);
+        this.out = new PrintWriter(System.out, true);
         this.isAdmin = true;
         this.pseudo = "<ADMIN>";
     }
 
-    private UserModel getUser(String username) {
-        for (UserModel user : userDB)
+    private User getUser(String username) {
+        for (User user : userDB)
             if (user.getUsername().equals(username)) return user;
         return null;
+    }
+
+    private void deleteUser(String username) {
+        userDB.removeIf(user -> user.getUsername().equals(username));
     }
 
     @Override
@@ -72,12 +76,12 @@ public class ServiceChat implements Runnable {
                         String username = null, password = null;
                         do {
                             if (this.in.hasNextLine())
-                                username = this.in.nextLine().trim();
+                                username = StringUtils.removeNonPrintable(this.in.nextLine().trim());
                             if (Objects.requireNonNull(username).isEmpty())
                                 Writifier.systemWriter(this.out, "username: ");
-                        } while(Objects.requireNonNull(username).isEmpty());
+                        } while(username.trim().isEmpty());
 
-                        UserModel user = getUser(username);
+                        User user = getUser(username);
 
                         do {
                             Writifier.systemWriter(this.out, "password: ");
@@ -85,7 +89,6 @@ public class ServiceChat implements Runnable {
                                 password = this.in.nextLine();
                         } while(Objects.requireNonNull(password).isEmpty());
 
-                        //UserModel user = new UserModel(username, password);
                         if (user != null) {
                             if (user.getPassword().equals(password)) {
                                 if (users.containsKey(username)) {
@@ -97,7 +100,7 @@ public class ServiceChat implements Runnable {
                                 this.pseudo = user.getUsername();
                             } else Writifier.systemWriter(this.out,"Wrong username or password!");
                         } else {
-                            userDB.add(new UserModel(username, password, 1));
+                            userDB.add(new User(username, password, UserGroup.REGULAR_USER));
                             Writifier.systemWriter(this.out,"New user created!");
                             logger.log("A new user has been created with username " + username, Level.INFO);
                             this.socket.close();
@@ -118,9 +121,9 @@ public class ServiceChat implements Runnable {
 
             while (true) {
                 if (this.in.hasNextLine()) {
-                    String input = this.in.nextLine();
+                    String input = StringUtils.removeNonPrintable(this.in.nextLine());
                     if (!input.trim().isEmpty()) {
-                        ServerCommand command = ServerCommand.fromString(input);
+                        ServerCommand command = ServerCommand.fromString(input.split(" ")[0]);
                         switch (command) {
                             case LOGOUT, EXIT -> {
                                 if (!this.isAdmin) {
@@ -139,7 +142,41 @@ public class ServiceChat implements Runnable {
                             }
 
                             case KILLALL -> {
-                                for (String username : users.keySet()) killUser(username);
+                                if (isAdmin) killall();
+                            }
+
+                            case HALT -> {
+                                if (isAdmin) System.exit(0);
+                            }
+
+                            case DELETE_ACCOUNT -> {
+                                if (isAdmin) {
+                                    String[] splittedInput = input.split(" ");
+                                    if (splittedInput.length < 2) Writifier.systemWriter(this.out, "Usage: /deleteAccount username");
+                                    else deleteAccount(splittedInput[1]);
+                                }
+                            }
+
+                            case ADD_ACCOUNT -> {
+                                if (isAdmin) {
+                                    String[] splittedInput = input.split(" ");
+                                    if (splittedInput.length < 3) Writifier.systemWriter(this.out, "Usage: /addAccount username password");
+                                    else addAccount(splittedInput[1]);
+                                }
+                            }
+
+                            case LOAD_DATABASE -> {
+                                if (isAdmin) {
+                                    logger.log("Loading database..", Level.INFO);
+                                    loadDatabase();
+                                }
+                            }
+
+                            case SAVE_DATABASE -> {
+                                if (isAdmin) {
+                                    logger.log("Saving database..", Level.INFO);
+                                    saveDatabase();
+                                }
                             }
                             case LIST -> listUsers();
                             case PRIVATE_MESSAGE -> privateMessage(input, this.isAdmin);
@@ -150,23 +187,73 @@ public class ServiceChat implements Runnable {
                     }
                 }
             }
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             logger.log(e.getMessage(), Level.ERROR);
         }
     }
 
-    private void killUser(String username) throws IOException {
+    private void saveDatabase() throws IOException {
+        Path p = Paths.get("files/user_bdd.txt");
+        Files.createDirectories(p);
+        if (Files.exists(p))
+            Files.delete(p);
+
+        for (User u : userDB)
+            Files.write(p, (u.getUsername() + ":" + u.getPassword() + ":" + u.getGroup() + "\n").getBytes(), StandardOpenOption.APPEND, StandardOpenOption.CREATE);
+    }
+
+    private void loadDatabase() throws IOException {
+        Path p = Paths.get("files/user_bdd.txt");
+        if (Files.exists(p)) {
+            try (Stream<String> stream = Files.lines(p)) {
+                stream.forEach(line -> {
+                    String[] splittedLine = line.split(":");
+                    userDB.add(new User(splittedLine[0], splittedLine[1], UserGroup.REGULAR_USER));
+                    logger.log(splittedLine[0] + " account has been added from database.", Level.INFO);
+                });
+            }
+        }
+    }
+
+    private void addAccount(String username) {
+        if (userDB.add(new User(username, username, UserGroup.REGULAR_USER)))
+            logger.log(username + " account has been added by the administrator.", Level.INFO);
+        else Writifier.systemWriter(this.out, username + " already exists.");
+    }
+
+    private void deleteAccount(String username) throws IOException {
+        killUser(username);
+        deleteUser(username);
+        logger.log(username + " account has been deleted by the administrator.", Level.INFO);
+    }
+
+    private synchronized void killall() throws IOException {
+        Iterator<String> iter = users.keySet().iterator();
+        while (iter.hasNext()) {
+            String username = iter.next();
+            users.get(username).getSocket().close();
+            iter.remove();
+
+            for (Client client : users.values())
+                Writifier.systemWriter(client.getWriter(), username + " has been killed by the administrator.");
+            logger.log(username + " has been killed by the administrator.", Level.INFO);
+        }
+    }
+
+    private synchronized void killUser(String username) throws IOException {
         if (users.containsKey(username)) {
             users.get(username).getSocket().close();
             users.remove(username);
+
             for (Client client : users.values())
                 Writifier.systemWriter(client.getWriter(), username + " has been killed by the administrator.");
             logger.log(username + " has been killed by the administrator.", Level.INFO);
         } else Writifier.systemWriter(this.out,username + " is not connected");
     }
 
-    private void broadcastMessage(String input, boolean isAdmin) {
+    private synchronized void broadcastMessage(String input, boolean isAdmin) throws InterruptedException {
         for (Client client : users.values()) Writifier.messageWriter(client.getWriter(), this.pseudo, input, isAdmin);
+        if (!isAdmin) Thread.sleep(500);
     }
 
     private void privateMessage(String input, boolean isAdmin) {
@@ -179,24 +266,30 @@ public class ServiceChat implements Runnable {
                     " ",
                     Arrays.copyOfRange(splittedInput, 2, splittedInput.length)
             );
-            if(users.containsKey(pseudo))
-                Writifier.messageWriter(users.get(pseudo).getWriter(), this.pseudo, message, isAdmin);
-            else
-                Writifier.systemWriter(this.out,pseudo + " is not connected");
+            synchronized (users) {
+                if(users.containsKey(pseudo))
+                    Writifier.messageWriter(users.get(pseudo).getWriter(), this.pseudo, message, isAdmin);
+                else
+                    Writifier.systemWriter(this.out,pseudo + " is not connected");
+            }
         }
     }
 
     private void listUsers() {
         Writifier.systemWriter(this.out,"List of connected users: ");
-        for (String pseudo : users.keySet())
-            Writifier.systemWriter(this.out, pseudo);
+        synchronized (users) {
+            for (String pseudo : users.keySet())
+                Writifier.systemWriter(this.out, pseudo);
+        }
     }
 
     private void logout() throws IOException {
         users.remove(this.pseudo);
         this.socket.close();
 
-        for (Client client : users.values())
-           Writifier.systemWriter(client.getWriter(), this.pseudo + " has disconnected");
+        synchronized (users) {
+            for (Client client : users.values())
+                Writifier.systemWriter(client.getWriter(), this.pseudo + " has disconnected");
+        }
     }
 }

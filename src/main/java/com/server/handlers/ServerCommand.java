@@ -10,8 +10,8 @@ public enum ServerCommand {
     HALT("/halt"),
     DELETE_ACCOUNT("/deleteAccount"),
     ADD_ACCOUNT("/addAccount"),
-    LOAD_BDD("/loadBDD"),
-    SAVE_BDD("/saveBDD"),
+    LOAD_DATABASE("/loadBDD"),
+    SAVE_DATABASE("/saveBDD"),
     UNKNOWN("");
 
     private String command;
@@ -27,7 +27,7 @@ public enum ServerCommand {
 
     public static ServerCommand fromString(final String s) {
         for (ServerCommand cmd : ServerCommand.values()) {
-            if (s.startsWith(cmd.toString())) return cmd;
+            if (s.equalsIgnoreCase(cmd.toString())) return cmd;
         } return UNKNOWN;
     }
 }
