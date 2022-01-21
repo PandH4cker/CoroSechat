@@ -1,4 +1,4 @@
-package main.java.com.server.utils;
+package com.github.MrrRaph.corosechat.server.utils;
 
 import java.io.PrintWriter;
 

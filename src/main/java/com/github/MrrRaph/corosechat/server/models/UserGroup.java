@@ -1,6 +1,6 @@
-package main.java.com.server.models;
+package com.github.MrrRaph.corosechat.server.models;
 
-import main.java.com.server.models.exceptions.UnknownGroupException;
+import com.github.MrrRaph.corosechat.server.models.exceptions.UnknownGroupException;
 
 public enum UserGroup {
     ADMIN(0),

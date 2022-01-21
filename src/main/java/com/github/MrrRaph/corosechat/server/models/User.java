@@ -1,4 +1,6 @@
-package main.java.com.server.models;
+package com.github.MrrRaph.corosechat.server.models;
+
+import org.javalite.activejdbc.Model;
 
 import java.util.Objects;
 
@@ -11,6 +13,9 @@ public class User {
         this.username = username;
         this.password = password;
         this.group = group;
+    }
+
+    public User() {
     }
 
     public String getUsername() {

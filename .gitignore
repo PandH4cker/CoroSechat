@@ -2,3 +2,5 @@
 out
 *.iml
 files
+database.properties
+target
