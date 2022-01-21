@@ -24,11 +24,6 @@ public class ServiceChat implements Runnable {
 
     private static final Map<String, Client> users = new HashMap<>();
 
-    /*private static final Set<UserModel> userDB = new HashSet<>() {{
-        add(new UserModel("Raphael", "pass12345"));
-        add(new UserModel("Thierry", "azerty12345"));
-    }};*/
-
     private static final Set<UserModel> userDB = new HashSet<>();
 
     public ServiceChat(final Socket socket) throws IOException {
@@ -138,32 +133,36 @@ public class ServiceChat implements Runnable {
                             case KILL -> {
                                if (isAdmin) {
                                    String[] splittedInput = input.split(" ");
-                                   if (splittedInput.length < 2)
-                                       Writifier.systemWriter(this.out, "Usage: /kill username");
-                                   else {
-                                       String username = splittedInput[1];
-                                       if (users.containsKey(username)) {
-                                           users.get(username).getSocket().close();
-                                           users.remove(username);
-                                           for (Client client : users.values())
-                                               Writifier.systemWriter(client.getWriter(), username + " has been killed by the administrator.");
-                                           logger.log(username + " has been killed by the administrator.", Level.INFO);
-                                       } else Writifier.systemWriter(this.out,pseudo + " is not connected");
-                                   }
+                                   if (splittedInput.length < 2) Writifier.systemWriter(this.out, "Usage: /kill username");
+                                   else killUser(splittedInput[1]);
                                }
+                            }
+
+                            case KILLALL -> {
+                                for (String username : users.keySet()) killUser(username);
                             }
                             case LIST -> listUsers();
                             case PRIVATE_MESSAGE -> privateMessage(input, this.isAdmin);
                             default -> broadcastMessage(input, this.isAdmin);
                         }
+                        if (!this.isAdmin) logger.log("[" + this.pseudo + "] " + input, Level.INFO);
+                        else logger.log(this.pseudo + " " + input, Level.INFO);
                     }
-                    if (!this.isAdmin) logger.log("[" + this.pseudo + "] " + input, Level.INFO);
-                    else logger.log(this.pseudo + " " + input, Level.INFO);
                 }
             }
         } catch (IOException e) {
             logger.log(e.getMessage(), Level.ERROR);
         }
+    }
+
+    private void killUser(String username) throws IOException {
+        if (users.containsKey(username)) {
+            users.get(username).getSocket().close();
+            users.remove(username);
+            for (Client client : users.values())
+                Writifier.systemWriter(client.getWriter(), username + " has been killed by the administrator.");
+            logger.log(username + " has been killed by the administrator.", Level.INFO);
+        } else Writifier.systemWriter(this.out,username + " is not connected");
     }
 
     private void broadcastMessage(String input, boolean isAdmin) {

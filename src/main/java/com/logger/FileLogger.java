@@ -19,7 +19,7 @@ import static java.nio.file.StandardOpenOption.CREATE;
  * //TODO Include diagram of FileLogger
  *
  * @author Raphael Dray
- * @version 0.0.1
+ * @version 0.0.2
  * @since 0.0.2
  * @see Logger
  * @see Path
@@ -52,6 +52,7 @@ public class FileLogger implements Logger {
     @Override
     public void log(String message, Level level) {
         try {
+            Files.createDirectories(this.path.getParent());
             Files.write(this.path, (level.toString() + ": " + message + "\n").getBytes(), APPEND, CREATE);
         } catch (IOException e) {
             throw new RuntimeException("Cannot write log message to file [" + this.path + "]", e);

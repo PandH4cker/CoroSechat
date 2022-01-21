@@ -6,7 +6,7 @@ public enum ServerCommand {
     LIST("/list"),
     PRIVATE_MESSAGE("/msg"),
     KILL("/kill"),
-    KILALL("/killall"),
+    KILLALL("/killall"),
     HALT("/halt"),
     DELETE_ACCOUNT("/deleteAccount"),
     ADD_ACCOUNT("/addAccount"),
