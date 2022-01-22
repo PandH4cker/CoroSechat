@@ -6,7 +6,7 @@
 
     <groupId>com.github.MrrRaph</groupId>
     <artifactId>CoroSechat</artifactId>
-    <version>0.7.3</version>
+    <version>0.8.3</version>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
