@@ -11,17 +11,17 @@ It is written in **Java 17** including libraries like so:
 Here is described some implemented features:
 * Multi-Threaded Server (Threads for Accepting Connection and the Main thread used to handle Administration Management)
 * Server Administration Management
-  * _/kill username_<p style="padding:0 0 0 20px;">-- **Kill a connected user**</p>
-  * _/killall_<p style="padding:0 0 0 20px;">-- **Kill all connected users**</p>
-  * _/halt_<p style="padding:0 0 0 20px;">-- **Stop the server**</p>
-  * _/deleteAccount username_<p style="padding:0 0 0 20px;">-- **Delete an existing account**</p>
-  * _/addAccount username password_<p style="padding:0 0 0 20px;">-- **Add an account**</p>
-  * _/loadBDD_<p style="padding:0 0 0 20px;">-- **Load the Database**</p>
-  * _/saveBDD_<p style="padding:0 0 0 20px;">-- **Save the Database**<p>
+  * _/kill username_<p style="padding:0 0 0 60px;">-- **Kill a connected user**</p>
+  * _/killall_<p style="padding:0 0 0 60px;">-- **Kill all connected users**</p>
+  * _/halt_<p style="padding:0 0 0 60px;">-- **Stop the server**</p>
+  * _/deleteAccount username_<p style="padding:0 0 0 60px;">-- **Delete an existing account**</p>
+  * _/addAccount username password_<p style="padding:0 0 0 60px;">-- **Add an account**</p>
+  * _/loadBDD_<p style="padding:0 0 0 60px;">-- **Load the Database**</p>
+  * _/saveBDD_<p style="padding:0 0 0 60px;">-- **Save the Database**<p>
 * Regular User Server Commands:
-  * _/logout | /exit_<p style="padding:0 0 0 20px;">-- **Disconnect / Quit**</p>
-  * _/list_<p style="padding:0 0 0 20px;">-- **List current connected users**</p>
-  * _/msg username message_<p style="padding:0 0 0 20px;">-- **Send a Private Message to _username_**</p>
+  * _/logout | /exit_<p style="padding:0 0 0 60px;">-- **Disconnect / Quit**</p>
+  * _/list_<p style="padding:0 0 0 60px;">-- **List current connected users**</p>
+  * _/msg username message_<p style="padding:0 0 0 60px;">-- **Send a Private Message to _username_**</p>
 * Hand-Crafted Logger
 * PostgreSQL Database Persistence in conjunction with ActiveJDBC ORM
 
