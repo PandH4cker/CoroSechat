@@ -4,8 +4,8 @@ import com.github.MrrRaph.corosechat.logger.Logger;
 import com.github.MrrRaph.corosechat.logger.LoggerFactory;
 import com.github.MrrRaph.corosechat.logger.level.Level;
 import com.github.MrrRaph.corosechat.server.handlers.ServiceChat;
+import io.github.cdimascio.dotenv.Dotenv;
 import org.javalite.activejdbc.Base;
-import org.javalite.activejdbc.connection_config.DBConfiguration;
 import sun.misc.Signal;
 
 import java.io.IOException;
@@ -73,10 +73,19 @@ public class ServerChat {
     }
 
     public static void main(String[] args) {
-        handleSignals();
+        Dotenv dotenv = Dotenv.configure()
+                              .ignoreIfMalformed()
+                              .ignoreIfMissing()
+                              .load();
 
-        /*DBConfiguration.loadConfiguration("database.properties");
-        Base.open();*/
+        Base.open(
+                dotenv.get("ACTIVEJDBC.DRIVER"),
+                dotenv.get("ACTIVEJDBC.URL"),
+                dotenv.get("ACTIVEJDBC.USER"),
+                dotenv.get("ACTIVEJDBC.PASSWORD")
+        );
+
+        handleSignals();
 
         new Thread(() -> {
             ServerChat server = new ServerChat("localhost", 4444);
