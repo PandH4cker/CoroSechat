@@ -11,17 +11,17 @@ It is written in **Java 17** including libraries like so:
 Here is described some implemented features:
 * Multi-Threaded Server (Threads for Accepting Connection and the Main thread used to handle Administration Management)
 * Server Administration Management
-  * _/kill username_<p style="padding:0 0 0 60px;">-- **Kill a connected user**</p>
-  * _/killall_<p style="padding:0 0 0 60px;">-- **Kill all connected users**</p>
-  * _/halt_<p style="padding:0 0 0 60px;">-- **Stop the server**</p>
-  * _/deleteAccount username_<p style="padding:0 0 0 60px;">-- **Delete an existing account**</p>
-  * _/addAccount username password_<p style="padding:0 0 0 60px;">-- **Add an account**</p>
-  * _/loadBDD_<p style="padding:0 0 0 60px;">-- **Load the Database**</p>
-  * _/saveBDD_<p style="padding:0 0 0 60px;">-- **Save the Database**<p>
+  * _/kill username_&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;-- **Kill a connected user**
+  * _/killall_&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp;&nbsp;-- **Kill all connected users**
+  * _/halt_&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&nbsp;-- **Stop the server**
+  * _/deleteAccount username_&emsp;&emsp;&emsp;&ensp;&nbsp;-- **Delete an existing account**
+  * _/addAccount username password_ -- **Add an account**
+  * _/loadBDD_&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp;&nbsp;-- **Load the Database**
+  * _/saveBDD_&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp;-- **Save the Database**
 * Regular User Server Commands:
-  * _/logout | /exit_<p style="padding:0 0 0 60px;">-- **Disconnect / Quit**</p>
-  * _/list_<p style="padding:0 0 0 60px;">-- **List current connected users**</p>
-  * _/msg username message_<p style="padding:0 0 0 60px;">-- **Send a Private Message to _username_**</p>
+  * _/logout | /exit_&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&nbsp;-- **Disconnect / Quit**
+  * _/list_&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp;-- **List current connected users**
+  * _/msg username message_&emsp;&emsp;&emsp;&ensp;&nbsp;-- **Send a Private Message to _username_**
 * Hand-Crafted Logger
 * PostgreSQL Database Persistence in conjunction with ActiveJDBC ORM
 
