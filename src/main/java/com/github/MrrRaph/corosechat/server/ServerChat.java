@@ -78,12 +78,12 @@ public class ServerChat {
                               .ignoreIfMissing()
                               .load();
 
-        Base.open(
+        /*Base.open(
                 dotenv.get("ACTIVEJDBC.DRIVER"),
                 dotenv.get("ACTIVEJDBC.URL"),
                 dotenv.get("ACTIVEJDBC.USER"),
                 dotenv.get("ACTIVEJDBC.PASSWORD")
-        );
+        );*/
 
         handleSignals();
 
