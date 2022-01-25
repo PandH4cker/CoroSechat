@@ -148,6 +148,23 @@ public class ServiceChat implements Runnable {
                                 if (isAdmin) System.exit(0);
                             }
 
+                            case SEND_FILE -> {
+                                String[] splittedInput = input.split(" ");
+                                if (splittedInput.length < 3) Writifier.systemWriter(this.out, "Usage: /sendFile username filename");
+                                else {
+                                    if (users.containsKey(splittedInput[1])) {
+                                        Writifier.systemWriter(this.out, "Sending File: " + splittedInput[2]);
+                                        while (true) {
+                                            if (this.in.hasNextByte())
+                                                users.get(splittedInput[1])
+                                                        .getWriter()
+                                                        .write(this.in.nextByte());
+                                            else break;
+                                        }
+                                    } else Writifier.systemWriter(this.out, "User " + splittedInput[2] + " is not connected.");
+                                }
+                            }
+
                             case DELETE_ACCOUNT -> {
                                 if (isAdmin) {
                                     String[] splittedInput = input.split(" ");

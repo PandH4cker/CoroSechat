@@ -12,6 +12,7 @@ public enum ServerCommand {
     ADD_ACCOUNT("/addAccount"),
     LOAD_DATABASE("/loadBDD"),
     SAVE_DATABASE("/saveBDD"),
+    SEND_FILE("/sendFile"),
     UNKNOWN("");
 
     private String command;
