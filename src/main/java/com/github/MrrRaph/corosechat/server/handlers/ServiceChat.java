@@ -10,9 +10,9 @@ import com.github.MrrRaph.corosechat.server.models.UserGroup;
 import com.github.MrrRaph.corosechat.server.utils.StringUtils;
 import com.github.MrrRaph.corosechat.server.utils.Writifier;
 
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -154,13 +154,19 @@ public class ServiceChat implements Runnable {
                                 else {
                                     if (users.containsKey(splittedInput[1])) {
                                         Writifier.systemWriter(this.out, "Sending File: " + splittedInput[2]);
-                                        while (true) {
-                                            if (this.in.hasNextByte())
-                                                users.get(splittedInput[1])
-                                                        .getWriter()
-                                                        .write(this.in.nextByte());
-                                            else break;
+
+                                        Writifier.systemWriter(users.get(splittedInput[1]).getWriter(), "/enable ftm");
+                                        this.out.println(splittedInput[2]);
+
+                                        BufferedInputStream bufferedInputStream = new BufferedInputStream(this.socket.getInputStream());
+                                        for (long i = 0; i < Long.parseLong(splittedInput[3]); ++i) {
+                                            int b = bufferedInputStream.read();
+                                            System.out.print((char) b);
+                                            users.get(splittedInput[1])
+                                                    .getWriter()
+                                                    .println(b);
                                         }
+                                        users.get(splittedInput[1]).getWriter().println(0xFF);
                                     } else Writifier.systemWriter(this.out, "User " + splittedInput[2] + " is not connected.");
                                 }
                             }
