@@ -123,7 +123,6 @@ public class ClientChat extends Thread {
                                     e.printStackTrace();
                                 }
                             }
-                            //else System.out.print((char) input);
                         }
                         System.out.println("[-] File Transfer disabled.");
                     }
