@@ -28,10 +28,10 @@ public class TheApplet extends Applet {
 	private short cipherRSAKeyLength;
 
 	private final static byte[] DES_SECRET = new byte[] {
-		(byte) 0x13,  (byte) 0x37, 
-		(byte) 0xBA,  (byte) 0xBE, 
-		(byte) 0xCA,  (byte) 0xFE, 
-		(byte) 0xDE,  (byte) 0xAD
+			(byte) 0x13,  (byte) 0x37,
+			(byte) 0xBA,  (byte) 0xBE,
+			(byte) 0xCA,  (byte) 0xFE,
+			(byte) 0xDE,  (byte) 0xAD
 	};
 
 	private Cipher desECBNoPadEncrypt, desECBNoPadDecrypt;
@@ -49,11 +49,11 @@ public class TheApplet extends Applet {
 		cRSA_NO_PAD = Cipher.getInstance((byte)0x0C, false);
 
 		try {
-		    secretDESKey = KeyBuilder.buildKey(KeyBuilder.TYPE_DES, KeyBuilder.LENGTH_DES, false);
-		    ((DESKey) secretDESKey).setKey(DES_SECRET, (short) 0);
-	    } catch(Exception ignored) {}
+			secretDESKey = KeyBuilder.buildKey(KeyBuilder.TYPE_DES, KeyBuilder.LENGTH_DES, false);
+			((DESKey) secretDESKey).setKey(DES_SECRET, (short) 0);
+		} catch(Exception ignored) {}
 
-		if(secretDESKey != null) 
+		if(secretDESKey != null)
 			try {
 				desECBNoPadEncrypt = Cipher.getInstance(Cipher.ALG_DES_ECB_NOPAD, false);
 				desECBNoPadEncrypt.init(secretDESKey, Cipher.MODE_ENCRYPT);
@@ -86,6 +86,8 @@ public class TheApplet extends Applet {
 			case INS_RSA_DECRYPT: RSADecrypt(apdu); break;
 			case INS_GET_PUBLIC_RSA_KEY: getPublicRSAKey(apdu); break;
 			case INS_PUT_PUBLIC_RSA_KEY: putPublicRSAKey(apdu); break;
+			case INS_DES_ENCRYPT: DESEncrypt(apdu); break;
+			case INS_DES_DECRYPT: DESDecrypt(apdu); break;
 			default: ISOException.throwIt(ISO7816.SW_FUNC_NOT_SUPPORTED);
 		}
 	}
@@ -171,20 +173,20 @@ public class TheApplet extends Applet {
 	void DESDecrypt(APDU apdu) {
 		apdu.setIncomingAndReceive();
 
-        byte[] buffer = apdu.getBuffer();
-        short length = (short) (buffer[4] & 0xFF);
+		byte[] buffer = apdu.getBuffer();
+		short length = (short) (buffer[4] & 0xFF);
 
-        desECBNoPadDecrypt.doFinal(buffer, (short) 5, (short) length, buffer, (short) 0);
-        apdu.setOutgoingAndSend((short) 0, length);
+		desECBNoPadDecrypt.doFinal(buffer, (short) 5, (short) length, buffer, (short) 0);
+		apdu.setOutgoingAndSend((short) 0, length);
 	}
 
 	void DESEncrypt(APDU apdu) {
 		apdu.setIncomingAndReceive();
 
-        byte[] buffer = apdu.getBuffer();
-        short length = (short) (buffer[4] & 0xFF);
+		byte[] buffer = apdu.getBuffer();
+		short length = (short) (buffer[4] & 0xFF);
 
-        desECBNoPadEncrypt.doFinal(buffer, (short) 5, (short) length, buffer, (short) 0);
-        apdu.setOutgoingAndSend((short) 0, length);
+		desECBNoPadEncrypt.doFinal(buffer, (short) 5, (short) length, buffer, (short) 0);
+		apdu.setOutgoingAndSend((short) 0, length);
 	}
 }

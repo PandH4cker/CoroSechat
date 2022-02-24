@@ -3,6 +3,7 @@ package com.github.MrrRaph.corosechat.client;
 import com.github.MrrRaph.corosechat.client.exceptions.NoKeysGeneratedException;
 import com.github.MrrRaph.corosechat.client.utils.card.ResponseAPDUtils;
 import com.github.MrrRaph.corosechat.client.card.codes.ResponseCode;
+import com.github.MrrRaph.corosechat.client.utils.padding.PKCS5;
 import opencard.core.service.CardRequest;
 import opencard.core.service.SmartCard;
 import opencard.core.terminal.CardTerminalException;
@@ -11,8 +12,7 @@ import opencard.core.terminal.ResponseAPDU;
 import opencard.opt.util.PassThruCardService;
 import org.apache.commons.codec.binary.Base64;
 
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -32,6 +32,7 @@ public class ClientChat extends Thread {
     private PassThruCardService cardService;
 
     private static boolean LOOP = true;
+    private boolean isConnected = false;
 
     private byte[] modulus;
     private byte[] publicExponent;
@@ -179,7 +180,36 @@ public class ClientChat extends Thread {
 
                     LOOP = false;
                 } else {
-                    this.out.println(input);
+                    if (isConnected) {
+                        try {
+                            byte[] paddedText = PKCS5.addPKCS5Padding(input.getBytes(), (short) 0xF0);
+                            DataInputStream dataInputStream = new DataInputStream(new ByteArrayInputStream(paddedText));
+                            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                            while (dataInputStream.available() > 0) {
+                                byte[] buffer = new byte[0xF0];
+                                dataInputStream.readFully(buffer, 0, buffer.length);
+                                int apduLength = 6 + buffer.length;
+                                byte[] apdu = new byte[apduLength];
+                                apdu[0] = CLA;
+                                apdu[1] = DES_ENCRYPT.getCode();
+                                apdu[2] = 0;
+                                apdu[3] = 0;
+                                apdu[4] = (byte) buffer.length;
+
+                                System.arraycopy(buffer, 0, apdu, 5, buffer.length);
+
+                                CommandAPDU cmd = new CommandAPDU(apdu);
+                                ResponseAPDU resp = sendAPDU(cmd, this.cardService);
+                                ResponseCode responseCode = ResponseAPDUtils.byteArrayToResponseCode(resp.getBytes());
+                                if (responseCode == ResponseCode.OK)
+                                    outputStream.write(resp.data());
+                                else ResponseAPDUtils.printError(responseCode);
+                            }
+                            this.out.println(new String(Base64.encodeBase64(outputStream.toByteArray())));
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    } else this.out.println(input);
                 }
             } else LOOP = false;
         }
@@ -204,8 +234,8 @@ public class ClientChat extends Thread {
         while (LOOP) {
             if (this.in.hasNextLine()) {
                 String serverOutput = this.in.nextLine();
-                System.out.println(serverOutput);
                 if (serverOutput.startsWith("<SYSTEM>")) {
+                    System.out.println(serverOutput);
                     if (serverOutput.endsWith("created!") || serverOutput.endsWith("Socket closed.")) {
                         try {
                             this.socket.close();
@@ -276,6 +306,41 @@ public class ClientChat extends Thread {
                                         " " +
                                         new String(Base64.encodeBase64(this.publicExponent))
                         );
+                    } else if (serverOutput.startsWith("<SYSTEM> Welcome ! You are now authenticated."))
+                        this.isConnected = true;
+                } else if (serverOutput.startsWith("[")) {
+                    String[] splittedMessage = serverOutput.split(" ");
+                    DataInputStream dataInputStream = new DataInputStream(new ByteArrayInputStream(Base64.decodeBase64(splittedMessage[1].getBytes())));
+                    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                    try {
+                        while (dataInputStream.available() > 0) {
+                            byte[] buffer = new byte[0xF0];
+                            dataInputStream.readFully(buffer, 0, buffer.length);
+
+                            int apduLength = 6 + buffer.length;
+                            byte[] apdu = new byte[apduLength];
+                            apdu[0] = CLA;
+                            apdu[1] = DES_DECRYPT.getCode();
+                            apdu[2] = 0;
+                            apdu[3] = 0;
+                            apdu[4] = (byte) buffer.length;
+
+                            System.arraycopy(buffer, 0, apdu, 5, buffer.length);
+
+                            CommandAPDU cmd = new CommandAPDU(apdu);
+                            ResponseAPDU resp = sendAPDU(cmd, this.cardService);
+                            ResponseCode responseCode = ResponseAPDUtils.byteArrayToResponseCode(resp.getBytes());
+                            if (responseCode == ResponseCode.OK) {
+                                byte[] data = resp.data();
+                                if (!(dataInputStream.available() > 0))
+                                    data = PKCS5.trimPKCS5Padding(data);
+                                outputStream.write(data);
+                            } else ResponseAPDUtils.printError(responseCode);
+                        }
+                        splittedMessage[1] = outputStream.toString();
+                        System.out.println(String.join(" ", splittedMessage));
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
                 }
             }
