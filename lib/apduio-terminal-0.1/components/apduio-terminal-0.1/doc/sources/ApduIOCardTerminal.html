@@ -1,0 +1,441 @@
+<HTML> <body bgcolor = "FFFFFF"> <PRE>
+<FONT COLOR="FF0000">/*
+  * Copyright © 2000 Gemplus
+  * Av. du Pic de Bertagne - Parc d'Activités de Gémenos
+  * BP 100 - 13881 Gémenos CEDEX
+  *
+  * &quot;Code derived from the original OpenCard Framework&quot;.
+  *
+  * Everyone is allowed to redistribute and use this source  (source
+  * code)  and binary (object code),  with or  without modification,
+  * under some conditions:
+  *
+  *  - Everyone  must  retain  and/or  reproduce the above copyright
+  *    notice,  and the below  disclaimer of warranty and limitation
+  *    of liability  for redistribution and use of these source code
+  *    and object code.
+  *
+  *  - Everyone  must  ask a  specific prior written permission from
+  *    Gemplus to use the name of Gemplus.
+  *
+  * DISCLAIMER OF WARRANTY
+  *
+  * THIS CODE IS PROVIDED &quot;AS IS&quot;,  WITHOUT ANY WARRANTY OF ANY KIND
+  * (INCLUDING,  BUT  NOT  LIMITED  TO,  THE IMPLIED  WARRANTIES  OF
+  * MERCHANTABILITY  AND FITNESS FOR  A  PARTICULAR PURPOSE)  EITHER
+  * EXPRESS OR IMPLIED.  GEMPLUS DOES NOT WARRANT THAT THE FUNCTIONS
+  * CONTAINED  IN THIS SOFTWARE WILL MEET THE USER'S REQUIREMENTS OR
+  * THAT THE OPERATION OF IT WILL BE UNINTERRUPTED OR ERROR-FREE. NO
+  * USE  OF  ANY  CODE  IS  AUTHORIZED  HEREUNDER EXCEPT UNDER  THIS
+  * DISCLAIMER.
+  *
+  * LIMITATION OF LIABILITY
+  *
+  * GEMPLUS SHALL NOT BE LIABLE FOR INFRINGEMENTS OF  THIRD  PARTIES
+  * RIGHTS. IN NO EVENTS, UNLESS REQUIRED BY APPLICABLE  LAW,  SHALL
+  * GEMPLUS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+  * EXEMPLARY, OR CONSEQUENTIAL DAMAGES OF ANY CHARACTER  INCLUDING,
+  * WITHOUT LIMITATION, DAMAGES FOR LOSS OF GOODWILL, WORK STOPPAGE,
+  * COMPUTER FAILURE OR MALFUNCTION, OR ANY AND ALL OTHER DAMAGES OR
+  * LOSSES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. ALSO,
+  * GEMPLUS IS  UNDER NO  OBLIGATION TO MAINTAIN,  CORRECT,  UPDATE,
+  * CHANGE, MODIFY, OR OTHERWISE SUPPORT THIS SOFTWARE.
+  */</FONT>
+ 
+ <FONT COLOR="FF0000">//-----------------------------------------------------------------------------</FONT>
+ <FONT COLOR="FF0000">// PACKAGE DEFINITION</FONT>
+ <FONT COLOR="FF0000">//-----------------------------------------------------------------------------</FONT>
+ <FONT COLOR="008000">package</FONT> com.gemplus.opencard.terminal.apduio;
+ 
+ <FONT COLOR="FF0000">//-----------------------------------------------------------------------------</FONT>
+ <FONT COLOR="FF0000">// IMPORTS</FONT>
+ <FONT COLOR="FF0000">//-----------------------------------------------------------------------------</FONT>
+ <FONT COLOR="008000">import</FONT> opencard.core.terminal.CardTerminal;
+ <FONT COLOR="008000">import</FONT> opencard.core.terminal.CardTerminalRegistry;
+ <FONT COLOR="008000">import</FONT> opencard.core.terminal.CardID;
+ <FONT COLOR="008000">import</FONT> opencard.core.terminal.CommandAPDU;
+ <FONT COLOR="008000">import</FONT> opencard.core.terminal.ResponseAPDU;
+ <FONT COLOR="008000">import</FONT> opencard.core.terminal.Pollable;
+ <FONT COLOR="008000">import</FONT> opencard.core.terminal.CardTerminalException;
+ <FONT COLOR="008000">import</FONT> opencard.core.util.Tracer;
+ <FONT COLOR="008000">import</FONT> opencard.core.util.HexString;
+ 
+ <FONT COLOR="008000">import</FONT> com.sun.javacard.apduio.CadClient;
+ <FONT COLOR="008000">import</FONT> com.sun.javacard.apduio.TLP224Exception;
+ <FONT COLOR="008000">import</FONT> com.sun.javacard.apduio.Apdu;
+ 
+ <FONT COLOR="008000">import</FONT> java.io.IOException;
+ <FONT COLOR="008000">import</FONT> java.net.Socket;
+ <FONT COLOR="008000">import</FONT> java.io.InputStream;
+ <FONT COLOR="008000">import</FONT> java.io.OutputStream;
+ 
+ <FONT COLOR="FF0000">/**
+  * Pure Java CardTerminal dedicated to send APDUs to the JavaCard Simulator
+  * coming with the JavaCard Development Kit.
+  * This CardTerminal is built on top of the Sun ApduIO classes
+  *
+  * @author Laurent Lagosanto (lago@research.gemplus.com)
+  * @version $Id: ApduIOCardTerminal.java,v 0.1 2001/07/05 08:35:01 root Exp root $
+  **/</FONT>
+ <FONT COLOR="008000">public</FONT> <FONT COLOR="008000">class</FONT> <FONT COLOR = "800080"><A NAME = "ApduIOCardTerminal::">ApduIOCardTerminal</A></FONT> <FONT COLOR="008000">extends</FONT> CardTerminal
+     <FONT COLOR="008000">implements</FONT> Pollable
+ {
+   <FONT COLOR="FF0000">/**
+    * debug utility
+    */</FONT>
+   <FONT COLOR="008000">static</FONT> Tracer <FONT COLOR = "800080"><A NAME = "ApduIOCardTerminal::ctracer">ctracer</A></FONT> = <FONT COLOR="008000">new</FONT> <CONSTRUCTORCALL>Tracer</CONSTRUCTORCALL>(ApduIOCardTerminal.<FONT COLOR="008000">class</FONT>);
+ 
+   <FONT COLOR="FF0000">/**
+    * used to send APDUs to the simulation VM.
+    */</FONT>
+   <FONT COLOR="008000">protected</FONT> CadClient <FONT COLOR = "800080"><A NAME = "ApduIOCardTerminal::cad">cad</A></FONT>;
+ 
+   <FONT COLOR="FF0000">/**
+    * cached CardID containing the answer to reset
+    */</FONT>
+   <FONT COLOR="008000">protected</FONT> CardID <FONT COLOR = "800080"><A NAME = "ApduIOCardTerminal::cardID">cardID</A></FONT>;
+ 
+   <FONT COLOR="FF0000">/**
+    * true when the terminal is connected
+    */</FONT>
+   <FONT COLOR="008000">protected</FONT> <FONT COLOR="008000">boolean</FONT> <FONT COLOR = "800080"><A NAME = "ApduIOCardTerminal::connected">connected</A></FONT> = <FONT COLOR="008000">false</FONT>;
+ 
+   <FONT COLOR="FF0000">/**
+    * true when the terminal is opened
+    */</FONT>
+   <FONT COLOR="008000">protected</FONT> <FONT COLOR="008000">boolean</FONT> <FONT COLOR = "800080"><A NAME = "ApduIOCardTerminal::opened">opened</A></FONT> = <FONT COLOR="008000">false</FONT>;
+ 
+   <FONT COLOR="FF0000">/**
+    * name or adress of the machine running the simulator. (default = localhost)
+    */</FONT>
+   <FONT COLOR="008000">protected</FONT> String <FONT COLOR = "800080"><A NAME = "ApduIOCardTerminal::host">host</A></FONT> = &quot;localhost&quot;;
+ 
+   <FONT COLOR="FF0000">/**
+    * Listening port of the simulator.
+    */</FONT>
+   <FONT COLOR="008000">protected</FONT> <FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "ApduIOCardTerminal::port">port</A></FONT> = 9025;
+ 
+     <FONT COLOR="FF0000">/**
+      * socket used to communicate with the simulator.
+      */</FONT>
+     <FONT COLOR="008000">protected</FONT> Socket <FONT COLOR = "800080"><A NAME = "ApduIOCardTerminal::sock">sock</A></FONT>;
+ 
+   <FONT COLOR="FF0000">/**
+    * Instantiates a &lt;tt&gt;ApduIOCardTerminal&lt;/tt&gt; object.
+    * @param     name The friendly name of the terminal.
+    * @param     type The terminal type
+    * @param     address of the simulator host: &quot;hostname:port&quot;
+    * @exception CardTerminalException when the instantiation fails for any reason.
+    */</FONT>
+   <FONT COLOR="008000">protected</FONT> <FONT COLOR = "800080"><A NAME = "ApduIOCardTerminal:ApduIOCardTerminal:">ApduIOCardTerminal</A></FONT>(String <FONT COLOR = "800080"><A NAME = "ApduIOCardTerminal:ApduIOCardTerminal:name">name</A></FONT>, String <FONT COLOR = "800080"><A NAME = "ApduIOCardTerminal:ApduIOCardTerminal:type">type</A></FONT>, String <FONT COLOR = "800080"><A NAME = "ApduIOCardTerminal:ApduIOCardTerminal:address">address</A></FONT>)
+     throws CardTerminalException
+   {
+     <FONT COLOR="008000">super</FONT>(<A HREF = "#ApduIOCardTerminal:ApduIOCardTerminal:name">name</A>, <A HREF = "#ApduIOCardTerminal:ApduIOCardTerminal:type">type</A>, <A HREF = "#ApduIOCardTerminal:ApduIOCardTerminal:address">address</A>);
+     <A HREF = "#ApduIOCardTerminal::ctracer">ctracer</A>.<METHODCALL><UNKNOWNCALL>info</UNKNOWNCALL></METHODCALL>(&quot;&lt;init&gt;&quot;, &quot;<A HREF = "#ApduIOCardTerminal:ApduIOCardTerminal:name">name</A>|string|<A HREF = "#ApduIOCardTerminal:ApduIOCardTerminal:address">address</A> = &quot; + <A HREF = "#ApduIOCardTerminal:ApduIOCardTerminal:name">name</A> + &quot;|&quot; + <A HREF = "#ApduIOCardTerminal:ApduIOCardTerminal:type">type</A> + &quot;|&quot; + <A HREF = "#ApduIOCardTerminal:ApduIOCardTerminal:address">address</A>);
+ 
+     <FONT COLOR="008000">try</FONT>
+     {
+       <FONT COLOR="FF0000">// decodes the adress:  &lt;host&gt;[:port]</FONT>
+       <FONT COLOR="008000">if</FONT> (<A HREF = "#ApduIOCardTerminal:ApduIOCardTerminal:address">address</A> != <FONT COLOR="008000">null</FONT> &amp;&amp; <A HREF = "#ApduIOCardTerminal:ApduIOCardTerminal:address">address</A>.<METHODCALL><UNKNOWNCALL>equals</UNKNOWNCALL></METHODCALL>(&quot;&quot;) == <FONT COLOR="008000">false</FONT>)
+       {
+         <FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "ApduIOCardTerminal:ApduIOCardTerminal:pos">pos</A></FONT> = <A HREF = "#ApduIOCardTerminal:ApduIOCardTerminal:address">address</A>.<METHODCALL><UNKNOWNCALL>indexOf</UNKNOWNCALL></METHODCALL>(&quot;:&quot;);
+         <FONT COLOR="008000">if</FONT> (<A HREF = "#ApduIOCardTerminal:ApduIOCardTerminal:pos">pos</A> &gt; 0)
+         {
+           <A HREF = "#ApduIOCardTerminal::host">host</A> = <A HREF = "#ApduIOCardTerminal:ApduIOCardTerminal:address">address</A>.<METHODCALL><UNKNOWNCALL>substring</UNKNOWNCALL></METHODCALL>(0, <A HREF = "#ApduIOCardTerminal:ApduIOCardTerminal:pos">pos</A>);
+           <A HREF = "#ApduIOCardTerminal::port">port</A> = Integer.parseInt(<A HREF = "#ApduIOCardTerminal:ApduIOCardTerminal:address">address</A>.<METHODCALL><UNKNOWNCALL>substring</UNKNOWNCALL></METHODCALL>(<A HREF = "#ApduIOCardTerminal:ApduIOCardTerminal:pos">pos</A> + 1));
+         }
+         <FONT COLOR="008000">else</FONT>
+         {
+           <FONT COLOR="FF0000">// uses the default port</FONT>
+           <A HREF = "#ApduIOCardTerminal::host">host</A> = <FONT COLOR="008000">new</FONT> String(<A HREF = "#ApduIOCardTerminal:ApduIOCardTerminal:address">address</A>);
+         }
+       }
+       <A HREF = "#ApduIOCardTerminal::ctracer">ctracer</A>.<METHODCALL><UNKNOWNCALL>debug</UNKNOWNCALL></METHODCALL>(&quot;&lt;init&gt;&quot;, &quot;created on &quot; + <A HREF = "#ApduIOCardTerminal::host">host</A> + &quot;:&quot; + <A HREF = "#ApduIOCardTerminal::port">port</A>);
+     }
+     <FONT COLOR="008000">catch</FONT>(Exception <FONT COLOR = "800080"><A NAME = "ApduIOCardTerminal:ApduIOCardTerminal:ex">ex</A></FONT>)
+     {
+       <FONT COLOR="008000">throw</FONT> <FONT COLOR="008000">new</FONT> CardTerminalException(&quot;Unable to instantiate ApduIOCardTerminal:\nName = &quot;
+                                        + <A HREF = "#ApduIOCardTerminal:ApduIOCardTerminal:name">name</A> + &quot;\nType = &quot; + <A HREF = "#ApduIOCardTerminal:ApduIOCardTerminal:type">type</A>
+                                        + &quot;\naddress = &quot; + <A HREF = "#ApduIOCardTerminal:ApduIOCardTerminal:address">address</A>
+                                        + &quot;\nException: &quot; + <A HREF = "#ApduIOCardTerminal:ApduIOCardTerminal:ex">ex</A>
+                                        + &quot;\nwith message: &quot; + <A HREF = "#ApduIOCardTerminal:ApduIOCardTerminal:ex">ex</A>.<METHODCALL><UNKNOWNCALL>getMessage</UNKNOWNCALL></METHODCALL>());
+     }
+     <FONT COLOR="FF0000">// only one slot in this terminal</FONT>
+     addSlots(1);
+   }
+ 
+   <FONT COLOR="FF0000">/**
+    * open the terminal.
+    * Does nothing except registering this terminal to the polling-list
+    * @exception CardTerminalException never.
+    */</FONT>
+   <FONT COLOR="008000">public</FONT> <FONT COLOR="008000">synchronized</FONT> <FONT COLOR="008000">void</FONT> <FONT COLOR = "800080"><A NAME = "ApduIOCardTerminal:open:">open</A></FONT>()
+   {
+     <A HREF = "#ApduIOCardTerminal::ctracer">ctracer</A>.<METHODCALL><UNKNOWNCALL>info</UNKNOWNCALL></METHODCALL>(&quot;open&quot;, &quot;open terminal: &quot; + getName());
+     <A HREF = "#ApduIOCardTerminal::ctracer">ctracer</A>.<METHODCALL><UNKNOWNCALL>debug</UNKNOWNCALL></METHODCALL>(&quot;open&quot;, &quot;add terminal to polling-list&quot;);
+ 
+     <FONT COLOR="FF0000">// add this terminal to polling-list</FONT>
+     CardTerminalRegistry.getRegistry().addPollable((Pollable)<FONT COLOR="008000">this</FONT>);
+     <A HREF = "#ApduIOCardTerminal::opened">opened</A> = <FONT COLOR="008000">true</FONT>;
+   }
+ 
+   <FONT COLOR="FF0000">/**
+    * disable the terminal
+    * @exception CardTerminalException Thrown in case of errors during close process
+    */</FONT>
+   <FONT COLOR="008000">public</FONT> <FONT COLOR="008000">synchronized</FONT> <FONT COLOR="008000">void</FONT> <FONT COLOR = "800080"><A NAME = "ApduIOCardTerminal:close:">close</A></FONT>() throws CardTerminalException
+   {
+     <A HREF = "#ApduIOCardTerminal::ctracer">ctracer</A>.<METHODCALL><UNKNOWNCALL>info</UNKNOWNCALL></METHODCALL>( &quot;close&quot;, &quot;close terminal: &quot; + getName() );
+     <A HREF = "#ApduIOCardTerminal::ctracer">ctracer</A>.<METHODCALL><UNKNOWNCALL>debug</UNKNOWNCALL></METHODCALL>(&quot;close&quot;, &quot;remove terminal from polling-list&quot;);
+     <FONT COLOR="FF0000">// remove this terminal to polling-list</FONT>
+     CardTerminalRegistry.getRegistry().removePollable((Pollable)<FONT COLOR="008000">this</FONT>);
+ 
+         <FONT COLOR="FF0000">// power down the card, if inserted</FONT>
+     <A HREF = "#ApduIOCardTerminal::cardID">cardID</A> = <FONT COLOR="008000">null</FONT>;
+     <FONT COLOR="008000">try</FONT>
+     {
+       <FONT COLOR="008000">if</FONT>(<A HREF = "#ApduIOCardTerminal::cad">cad</A> != <FONT COLOR="008000">null</FONT>) <FONT COLOR="FF0000">// if inserted</FONT>
+       {
+         <A HREF = "#ApduIOCardTerminal::cad">cad</A>.<METHODCALL><UNKNOWNCALL>powerDown</UNKNOWNCALL></METHODCALL>();
+         <A HREF = "#ApduIOCardTerminal::sock">sock</A>.<METHODCALL><UNKNOWNCALL>close</UNKNOWNCALL></METHODCALL>();
+         <A HREF = "#ApduIOCardTerminal::opened">opened</A> = <FONT COLOR="008000">false</FONT>;
+         <A HREF = "#ApduIOCardTerminal::ctracer">ctracer</A>.<METHODCALL><UNKNOWNCALL>debug</UNKNOWNCALL></METHODCALL>(&quot;close&quot;, &quot;close <A HREF = "#ApduIOCardTerminal::cad">cad</A>&quot;);
+       }
+     }
+     <FONT COLOR="008000">catch</FONT>(IOException <FONT COLOR = "800080"><A NAME = "ApduIOCardTerminal:close:ioex">ioex</A></FONT>)
+     {
+       <A HREF = "#ApduIOCardTerminal::ctracer">ctracer</A>.<METHODCALL><UNKNOWNCALL>debug</UNKNOWNCALL></METHODCALL>(&quot;close&quot;, &quot;IOException in close:\nMessage: &quot; + <A HREF = "#ApduIOCardTerminal:close:ioex">ioex</A>.<METHODCALL><UNKNOWNCALL>getMessage</UNKNOWNCALL></METHODCALL>());
+     }
+     <FONT COLOR="008000">catch</FONT>(TLP224Exception <FONT COLOR = "800080"><A NAME = "ApduIOCardTerminal:close:tex">tex</A></FONT>)
+     {
+     <FONT COLOR="008000">throw</FONT> <FONT COLOR="008000">new</FONT> CardTerminalException(&quot;TLP224Exception in close:\nMessage: &quot; + <A HREF = "#ApduIOCardTerminal:close:tex">tex</A>.<METHODCALL><UNKNOWNCALL>getMessage</UNKNOWNCALL></METHODCALL>());
+     }
+   }
+ 
+   <FONT COLOR="FF0000">/**
+    * Check whether a smart card is present in a particular slot.
+    * @param     slotID slot to check for a card.
+    * @return    true if connected to a simulator
+    * @exception IndexOutOfBoundsException when the slotID is different from 0
+    */</FONT>
+   <FONT COLOR="008000">public</FONT> <FONT COLOR="008000">synchronized</FONT> <FONT COLOR="008000">boolean</FONT> <FONT COLOR = "800080"><A NAME = "ApduIOCardTerminal:isCardPresent:">isCardPresent</A></FONT>(<FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "ApduIOCardTerminal:isCardPresent:slotID">slotID</A></FONT>) throws CardTerminalException
+   {
+       <A HREF = "#ApduIOCardTerminal::ctracer">ctracer</A>.<METHODCALL><UNKNOWNCALL>info</UNKNOWNCALL></METHODCALL>(&quot;isCardPresent&quot;, &quot;<A HREF = "ApduIOCardTerminal.html#ApduIOCardTerminal:isCardPresent:">isCardPresent</A>(&quot; + <A HREF = "#ApduIOCardTerminal:isCardPresent:slotID">slotID</A> + &quot; on &quot; + getName() + &quot;...&quot;);
+       <FONT COLOR="008000">if</FONT> (<A HREF = "#ApduIOCardTerminal:isCardPresent:slotID">slotID</A> == 0)
+     {
+         <FONT COLOR="008000">return</FONT> <A HREF = "#ApduIOCardTerminal::connected">connected</A>;
+     }
+     <FONT COLOR="008000">else</FONT>
+     {
+         <FONT COLOR="008000">throw</FONT> <FONT COLOR="008000">new</FONT> IndexOutOfBoundsException(&quot;Wrong <A HREF = "#ApduIOCardTerminal:isCardPresent:slotID">slotID</A>: only 0 is allowed.&quot;);
+     }
+   }
+ 
+   <FONT COLOR="FF0000">/**
+    * Return the ATR of the card inserted in the specified slot.
+    * @param     slotID slot id.
+    * @return    The CardID containing the ATR.
+    * @exception CardTerminalException in case of communication problems.
+    * @exception IndexOutOfBoundsException when the slotID is different from 0
+    */</FONT>
+   <FONT COLOR="008000">public</FONT> <FONT COLOR="008000">synchronized</FONT> CardID <FONT COLOR = "800080"><A NAME = "ApduIOCardTerminal:getCardID:">getCardID</A></FONT>(<FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "ApduIOCardTerminal:getCardID:slotID">slotID</A></FONT>) throws CardTerminalException
+   {
+     <A HREF = "#ApduIOCardTerminal::ctracer">ctracer</A>.<METHODCALL><UNKNOWNCALL>info</UNKNOWNCALL></METHODCALL>(&quot;getCardID&quot;, &quot;<A HREF = "ApduIOCardTerminal.html#ApduIOCardTerminal:getCardID:">getCardID</A>(&quot; + <A HREF = "#ApduIOCardTerminal:getCardID:slotID">slotID</A> + &quot; on &quot; + getName() + &quot;...&quot;);
+     <FONT COLOR="008000">if</FONT> (<A HREF = "ApduIOCardTerminal.html#ApduIOCardTerminal:isCardPresent:">isCardPresent</A>(<A HREF = "#ApduIOCardTerminal:getCardID:slotID">slotID</A>))
+     {
+       <FONT COLOR="008000">try</FONT>
+       {
+           <FONT COLOR="FF0000">// powerUp the card</FONT>
+         <FONT COLOR="008000">byte</FONT>[] atr = <A HREF = "#ApduIOCardTerminal::cad">cad</A>.<METHODCALL><UNKNOWNCALL>powerUp</UNKNOWNCALL></METHODCALL>();
+         <A HREF = "#ApduIOCardTerminal::ctracer">ctracer</A>.<METHODCALL><UNKNOWNCALL>debug</UNKNOWNCALL></METHODCALL>(&quot;getCardID&quot;, &quot;powered Up&quot;);
+         <FONT COLOR="FF0000">// get the ATR</FONT>
+         <A HREF = "#ApduIOCardTerminal::cardID">cardID</A> = <FONT COLOR="008000">new</FONT> CardID(<FONT COLOR="008000">this</FONT>,<A HREF = "#ApduIOCardTerminal:getCardID:slotID">slotID</A>,atr);
+       }
+       <FONT COLOR="008000">catch</FONT> (TLP224Exception <FONT COLOR = "800080"><A NAME = "ApduIOCardTerminal:getCardID:tex">tex</A></FONT>)
+       {
+           <FONT COLOR="008000">throw</FONT> <FONT COLOR="008000">new</FONT> CardTerminalException(&quot;TLP224Exception in getCardID: \n&quot;
+                                         + &quot;Message: &quot; + <A HREF = "#ApduIOCardTerminal:getCardID:tex">tex</A>.<METHODCALL><UNKNOWNCALL>getMessage</UNKNOWNCALL></METHODCALL>());
+       }
+       <FONT COLOR="008000">catch</FONT> (IOException <FONT COLOR = "800080"><A NAME = "ApduIOCardTerminal:getCardID:ioex">ioex</A></FONT>)
+       {
+                 <FONT COLOR="008000">throw</FONT> <FONT COLOR="008000">new</FONT> CardTerminalException(&quot;IOException in getCardID: &quot; +
+                                                &quot;Message: &quot; + <A HREF = "#ApduIOCardTerminal:getCardID:ioex">ioex</A>.<METHODCALL><UNKNOWNCALL>getMessage</UNKNOWNCALL></METHODCALL>());
+       }
+     }
+     <FONT COLOR="008000">return</FONT> <A HREF = "#ApduIOCardTerminal::cardID">cardID</A>;
+   }
+ 
+ 
+   <FONT COLOR="FF0000">/**
+    * Updates the card inserted/removed state.
+    */</FONT>
+   <FONT COLOR="008000">public</FONT> <FONT COLOR="008000">synchronized</FONT> <FONT COLOR="008000">void</FONT> <FONT COLOR = "800080"><A NAME = "ApduIOCardTerminal:poll:">poll</A></FONT>()
+   {
+     <A HREF = "#ApduIOCardTerminal::ctracer">ctracer</A>.<METHODCALL><UNKNOWNCALL>info</UNKNOWNCALL></METHODCALL>(&quot;poll&quot;, &quot;polling &quot; + getName() + &quot;...&quot;);
+     <FONT COLOR="008000">if</FONT> (<A HREF = "#ApduIOCardTerminal::opened">opened</A> == <FONT COLOR="008000">true</FONT> &amp;&amp; <A HREF = "#ApduIOCardTerminal::connected">connected</A> == <FONT COLOR="008000">false</FONT>)
+     {
+       <FONT COLOR="008000">try</FONT>
+       {
+         <FONT COLOR="FF0000">// debug information</FONT>
+         <A HREF = "#ApduIOCardTerminal::ctracer">ctracer</A>.<METHODCALL><UNKNOWNCALL>debug</UNKNOWNCALL></METHODCALL>(&quot;poll&quot;, &quot;simulator socket connection&quot;);
+         <FONT COLOR="FF0000">// try to open the socket</FONT>
+         <A HREF = "#ApduIOCardTerminal::sock">sock</A> = <FONT COLOR="008000">new</FONT> Socket(<A HREF = "#ApduIOCardTerminal::host">host</A>, <A HREF = "#ApduIOCardTerminal::port">port</A>);
+         InputStream <FONT COLOR = "800080"><A NAME = "ApduIOCardTerminal:poll:in">in</A></FONT> = <A HREF = "#ApduIOCardTerminal::sock">sock</A>.<METHODCALL><UNKNOWNCALL>getInputStream</UNKNOWNCALL></METHODCALL>();
+         OutputStream <FONT COLOR = "800080"><A NAME = "ApduIOCardTerminal:poll:out">out</A></FONT> = <A HREF = "#ApduIOCardTerminal::sock">sock</A>.<METHODCALL><UNKNOWNCALL>getOutputStream</UNKNOWNCALL></METHODCALL>();
+         <A HREF = "#ApduIOCardTerminal::cad">cad</A> = <FONT COLOR="008000">new</FONT> CadClient(<A HREF = "#ApduIOCardTerminal:poll:in">in</A>, <A HREF = "#ApduIOCardTerminal:poll:out">out</A>);
+         <A HREF = "#ApduIOCardTerminal::ctracer">ctracer</A>.<METHODCALL><UNKNOWNCALL>debug</UNKNOWNCALL></METHODCALL>(&quot;poll&quot;, &quot;CadClient created&quot;);
+         <A HREF = "#ApduIOCardTerminal::connected">connected</A> = <FONT COLOR="008000">true</FONT>;
+         <FONT COLOR="FF0000">// connection succeded: notify listeners</FONT>
+         cardInserted(0);
+       }
+       <FONT COLOR="008000">catch</FONT>(IOException <FONT COLOR = "800080"><A NAME = "ApduIOCardTerminal:poll:e">e</A></FONT>)
+       {
+         <FONT COLOR="FF0000">// debug information</FONT>
+         <A HREF = "#ApduIOCardTerminal::ctracer">ctracer</A>.<METHODCALL><UNKNOWNCALL>debug</UNKNOWNCALL></METHODCALL>(&quot;poll&quot;, &quot;socket connection failed&quot;);
+         <A HREF = "#ApduIOCardTerminal::sock">sock</A> = <FONT COLOR="008000">null</FONT>;
+         <A HREF = "#ApduIOCardTerminal::connected">connected</A> = <FONT COLOR="008000">false</FONT>;
+       }
+     }
+     <FONT COLOR="008000">else</FONT>
+     {
+       <FONT COLOR="FF0000">// already connected</FONT>
+       <FONT COLOR="008000">try</FONT>
+       {
+         <FONT COLOR="FF0000">// verify connection using powerUp</FONT>
+         <FONT COLOR="FF0000">// works only because cad.powerUp doesn't do a reset</FONT>
+         <FONT COLOR="008000">this</FONT>.<A HREF = "#ApduIOCardTerminal::cardID">cardID</A> = <FONT COLOR="008000">new</FONT> CardID(<A HREF = "#ApduIOCardTerminal::cad">cad</A>.<METHODCALL><UNKNOWNCALL>powerUp</UNKNOWNCALL></METHODCALL>());
+       }
+       <FONT COLOR="008000">catch</FONT>(TLP224Exception <FONT COLOR = "800080"><A NAME = "ApduIOCardTerminal:poll:tex">tex</A></FONT>)
+       {
+         <FONT COLOR="FF0000">// debug information</FONT>
+         <A HREF = "#ApduIOCardTerminal::ctracer">ctracer</A>.<METHODCALL><UNKNOWNCALL>debug</UNKNOWNCALL></METHODCALL>(&quot;poll&quot;, &quot;TLP224Exception &quot; + <A HREF = "#ApduIOCardTerminal:poll:tex">tex</A>.<METHODCALL><UNKNOWNCALL>getMessage</UNKNOWNCALL></METHODCALL>());
+         <A HREF = "#ApduIOCardTerminal::connected">connected</A> = <FONT COLOR="008000">false</FONT>;
+         cardRemoved(0);
+       }
+       <FONT COLOR="008000">catch</FONT>(IOException <FONT COLOR = "800080"><A NAME = "ApduIOCardTerminal:poll:e">e</A></FONT>)
+       {
+         <FONT COLOR="FF0000">// debug information</FONT>
+         <A HREF = "#ApduIOCardTerminal::ctracer">ctracer</A>.<METHODCALL><UNKNOWNCALL>debug</UNKNOWNCALL></METHODCALL>(&quot;poll&quot;, &quot;socket connection failed&quot;);
+         <A HREF = "#ApduIOCardTerminal::sock">sock</A> = <FONT COLOR="008000">null</FONT>;
+         <A HREF = "#ApduIOCardTerminal::connected">connected</A> = <FONT COLOR="008000">false</FONT>;
+         cardRemoved(0);
+       }
+     }
+   }
+ 
+   <FONT COLOR="FF0000">/**
+    * re-powers up the card, and retreives the ATR.
+    *
+    * @param     slotID  the slot number of the slot used.
+    * @param     ms A timeout in milliseconds. (ignored)
+    * @return    The CardID containing the ATR.
+    * @exception CardTerminalException if there is a problem during reset.
+    */</FONT>
+   <FONT COLOR="008000">protected</FONT> <FONT COLOR="008000">synchronized</FONT> CardID <FONT COLOR = "800080"><A NAME = "ApduIOCardTerminal:internalReset:">internalReset</A></FONT>(<FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "ApduIOCardTerminal:internalReset:slotID">slotID</A></FONT>, <FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "ApduIOCardTerminal:internalReset:ms">ms</A></FONT>) throws CardTerminalException
+   {
+       <A HREF = "#ApduIOCardTerminal::ctracer">ctracer</A>.<METHODCALL><UNKNOWNCALL>info</UNKNOWNCALL></METHODCALL>(&quot;internalReset&quot;, &quot;<A HREF = "ApduIOCardTerminal.html#ApduIOCardTerminal:internalReset:">internalReset</A>(&quot; + <A HREF = "#ApduIOCardTerminal:internalReset:slotID">slotID</A> + &quot;) on &quot; + getName());
+       <FONT COLOR="008000">if</FONT> (<A HREF = "ApduIOCardTerminal.html#ApduIOCardTerminal:isCardPresent:">isCardPresent</A>(<A HREF = "#ApduIOCardTerminal:internalReset:slotID">slotID</A>) == <FONT COLOR="008000">false</FONT>)
+       {
+         <FONT COLOR="FF0000">// to force the power up</FONT>
+         <FONT COLOR="008000">this</FONT>.<A HREF = "#ApduIOCardTerminal::cardID">cardID</A> = <FONT COLOR="008000">null</FONT>;
+         <FONT COLOR="008000">return</FONT> <FONT COLOR="008000">this</FONT>.<A HREF = "ApduIOCardTerminal.html#ApduIOCardTerminal:getCardID:">getCardID</A>(<A HREF = "#ApduIOCardTerminal:internalReset:slotID">slotID</A>);
+       }
+     <FONT COLOR="008000">else</FONT>
+     {
+         <FONT COLOR="008000">throw</FONT> <FONT COLOR="008000">new</FONT> CardTerminalException(&quot;no card inserted&quot;);
+     }
+   }
+ 
+   <FONT COLOR="FF0000">/**
+    * sends APDU commands
+    * @param     slotID The slot number of the slot used.
+    * @param     capdu The &lt;tt&gt;CommandAPDU&lt;/tt&gt; to send.
+    * @param     ms A timeout in milliseconds. (ignored)
+    * @return    the response to this APDU
+    * @exception CardTerminalException if there is an error in apdu exchange
+    */</FONT>
+   <FONT COLOR="008000">protected</FONT> <FONT COLOR="008000">synchronized</FONT> ResponseAPDU <FONT COLOR = "800080"><A NAME = "ApduIOCardTerminal:internalSendAPDU:">internalSendAPDU</A></FONT>(<FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "ApduIOCardTerminal:internalSendAPDU:slotID">slotID</A></FONT>, CommandAPDU <FONT COLOR = "800080"><A NAME = "ApduIOCardTerminal:internalSendAPDU:capdu">capdu</A></FONT>, <FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "ApduIOCardTerminal:internalSendAPDU:ms">ms</A></FONT>)
+     throws CardTerminalException
+   {
+     <A HREF = "#ApduIOCardTerminal::ctracer">ctracer</A>.<METHODCALL><UNKNOWNCALL>info</UNKNOWNCALL></METHODCALL>(&quot;internalReset&quot;, &quot;<A HREF = "ApduIOCardTerminal.html#ApduIOCardTerminal:internalReset:">internalReset</A>(&quot; + <A HREF = "#ApduIOCardTerminal:internalSendAPDU:slotID">slotID</A> + &quot;) on &quot; + getName());
+ 
+         <FONT COLOR="008000">if</FONT> (<FONT COLOR="008000">this</FONT>.<A HREF = "ApduIOCardTerminal.html#ApduIOCardTerminal:isCardPresent:">isCardPresent</A>(<A HREF = "#ApduIOCardTerminal:internalSendAPDU:slotID">slotID</A>))
+     {
+         <FONT COLOR="FF0000">// map CommandAPDU into Apdu object</FONT>
+         Apdu <FONT COLOR = "800080"><A NAME = "ApduIOCardTerminal:internalSendAPDU:apdu">apdu</A></FONT> = <FONT COLOR="008000">new</FONT> <CONSTRUCTORCALL>Apdu</CONSTRUCTORCALL>();
+         <A HREF = "#ApduIOCardTerminal::ctracer">ctracer</A>.<METHODCALL><UNKNOWNCALL>debug</UNKNOWNCALL></METHODCALL>(&quot;internalSendAPDU&quot;, &quot;<A HREF = "#ApduIOCardTerminal:internalSendAPDU:capdu">capdu</A>: &quot;+ HexString.hexify(<A HREF = "#ApduIOCardTerminal:internalSendAPDU:capdu">capdu</A>.<METHODCALL><UNKNOWNCALL>getBytes</UNKNOWNCALL></METHODCALL>()));
+ 
+         <FONT COLOR="FF0000">// build the header</FONT>
+         <FONT COLOR="008000">byte</FONT>[] cmd = <A HREF = "#ApduIOCardTerminal:internalSendAPDU:apdu">apdu</A>.<METHODCALL><UNKNOWNCALL>getCommand</UNKNOWNCALL></METHODCALL>();
+         <A HREF = "#ApduIOCardTerminal::cmd">cmd</A>[Apdu.CLA] = (<FONT COLOR="008000">byte</FONT>) <A HREF = "#ApduIOCardTerminal:internalSendAPDU:capdu">capdu</A>.<METHODCALL><UNKNOWNCALL>getByte</UNKNOWNCALL></METHODCALL>(0);
+         <A HREF = "#ApduIOCardTerminal::cmd">cmd</A>[Apdu.INS] = (<FONT COLOR="008000">byte</FONT>) <A HREF = "#ApduIOCardTerminal:internalSendAPDU:capdu">capdu</A>.<METHODCALL><UNKNOWNCALL>getByte</UNKNOWNCALL></METHODCALL>(1);
+         <A HREF = "#ApduIOCardTerminal::cmd">cmd</A>[Apdu.P1]  = (<FONT COLOR="008000">byte</FONT>) <A HREF = "#ApduIOCardTerminal:internalSendAPDU:capdu">capdu</A>.<METHODCALL><UNKNOWNCALL>getByte</UNKNOWNCALL></METHODCALL>(2);
+         <A HREF = "#ApduIOCardTerminal::cmd">cmd</A>[Apdu.P2]  = (<FONT COLOR="008000">byte</FONT>) <A HREF = "#ApduIOCardTerminal:internalSendAPDU:capdu">capdu</A>.<METHODCALL><UNKNOWNCALL>getByte</UNKNOWNCALL></METHODCALL>(3);
+ 
+         <FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "ApduIOCardTerminal:internalSendAPDU:Lc">Lc</A></FONT> = 0;
+         <FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "ApduIOCardTerminal:internalSendAPDU:Le">Le</A></FONT> = 0;
+ 
+         <FONT COLOR="008000">if</FONT> (<A HREF = "#ApduIOCardTerminal:internalSendAPDU:capdu">capdu</A>.<UNKNOWNCALL>getLength</UNKNOWNCALL>() == 4)
+         {
+           <FONT COLOR="FF0000">// no Lc, no Le</FONT>
+         }
+         <FONT COLOR="008000">else</FONT> <FONT COLOR="008000">if</FONT> (<A HREF = "#ApduIOCardTerminal:internalSendAPDU:capdu">capdu</A>.<UNKNOWNCALL>getLength</UNKNOWNCALL>() == 5)
+         {
+           <FONT COLOR="FF0000">// Le, no Lc</FONT>
+           <A HREF = "#ApduIOCardTerminal:internalSendAPDU:Le">Le</A> = <A HREF = "#ApduIOCardTerminal:internalSendAPDU:capdu">capdu</A>.<METHODCALL><UNKNOWNCALL>getByte</UNKNOWNCALL></METHODCALL>(4);
+         }
+         <FONT COLOR="008000">else</FONT>
+         {
+           <A HREF = "#ApduIOCardTerminal:internalSendAPDU:Lc">Lc</A> = <A HREF = "#ApduIOCardTerminal:internalSendAPDU:capdu">capdu</A>.<METHODCALL><UNKNOWNCALL>getByte</UNKNOWNCALL></METHODCALL>(4);
+           <FONT COLOR="008000">if</FONT> (<A HREF = "#ApduIOCardTerminal:internalSendAPDU:capdu">capdu</A>.<UNKNOWNCALL>getLength</UNKNOWNCALL>() == 5 + <A HREF = "#ApduIOCardTerminal:internalSendAPDU:Lc">Lc</A>)
+           {
+             <FONT COLOR="FF0000">// Lc, no Le</FONT>
+           }
+           <FONT COLOR="008000">else</FONT>
+           {
+             <FONT COLOR="FF0000">// Lc, Le</FONT>
+             <A HREF = "#ApduIOCardTerminal:internalSendAPDU:Le">Le</A> = <A HREF = "#ApduIOCardTerminal:internalSendAPDU:capdu">capdu</A>.<METHODCALL><UNKNOWNCALL>getByte</UNKNOWNCALL></METHODCALL>(<A HREF = "#ApduIOCardTerminal:internalSendAPDU:capdu">capdu</A>.<UNKNOWNCALL>getLength</UNKNOWNCALL>()-1);
+           }
+         }
+         <A HREF = "#ApduIOCardTerminal:internalSendAPDU:apdu">apdu</A>.<A HREF = "#ApduIOCardTerminal:internalSendAPDU:Le">Le</A> = <A HREF = "#ApduIOCardTerminal:internalSendAPDU:Le">Le</A>;
+         <A HREF = "#ApduIOCardTerminal::ctracer">ctracer</A>.<METHODCALL><UNKNOWNCALL>debug</UNKNOWNCALL></METHODCALL>(&quot;internalSendAPDU&quot;, &quot;cmd : &quot;+ HexString.hexify(cmd));
+ 
+         <FONT COLOR="FF0000">// data buffer</FONT>
+       <FONT COLOR="008000">if</FONT> (<A HREF = "#ApduIOCardTerminal:internalSendAPDU:Lc">Lc</A> &gt; 0)
+       {
+             <FONT COLOR="008000">byte</FONT>[] dataIn = <FONT COLOR="008000">new</FONT> <FONT COLOR="008000">byte</FONT>[<A HREF = "#ApduIOCardTerminal:internalSendAPDU:Lc">Lc</A>];
+             System.arraycopy(<A HREF = "#ApduIOCardTerminal:internalSendAPDU:capdu">capdu</A>.<METHODCALL><UNKNOWNCALL>getBuffer</UNKNOWNCALL></METHODCALL>(), 5, dataIn, 0, dataIn.length);
+             <A HREF = "#ApduIOCardTerminal:internalSendAPDU:apdu">apdu</A>.<METHODCALL><UNKNOWNCALL>setDataIn</UNKNOWNCALL></METHODCALL>(dataIn);
+           <A HREF = "#ApduIOCardTerminal::ctracer">ctracer</A>.<METHODCALL><UNKNOWNCALL>debug</UNKNOWNCALL></METHODCALL>(&quot;internalSendAPDU&quot;, &quot;data: &quot;+ HexString.hexify(dataIn));
+       }
+ 
+             <FONT COLOR="FF0000">// apdu exchange</FONT>
+         <FONT COLOR="008000">try</FONT>
+         {
+           <FONT COLOR="008000">this</FONT>.<A HREF = "#ApduIOCardTerminal::cad">cad</A>.<METHODCALL><UNKNOWNCALL>exchangeApdu</UNKNOWNCALL></METHODCALL>(<A HREF = "#ApduIOCardTerminal:internalSendAPDU:apdu">apdu</A>);
+         }
+       <FONT COLOR="008000">catch</FONT>(IOException <FONT COLOR = "800080"><A NAME = "ApduIOCardTerminal:internalSendAPDU:ioex">ioex</A></FONT>)
+         {
+           <FONT COLOR="008000">throw</FONT> <FONT COLOR="008000">new</FONT> CardTerminalException(&quot;IOException in internalSendAPDU:\nMessage: &quot; + <A HREF = "#ApduIOCardTerminal:internalSendAPDU:ioex">ioex</A>.<METHODCALL><UNKNOWNCALL>getMessage</UNKNOWNCALL></METHODCALL>());
+         }
+       <FONT COLOR="008000">catch</FONT>(TLP224Exception <FONT COLOR = "800080"><A NAME = "ApduIOCardTerminal:internalSendAPDU:tex">tex</A></FONT>)
+         {
+           <FONT COLOR="008000">throw</FONT> <FONT COLOR="008000">new</FONT> CardTerminalException(&quot;TLP224Exception in internalSendAPDU:\nMessage: &quot; + <A HREF = "#ApduIOCardTerminal:internalSendAPDU:tex">tex</A>.<METHODCALL><UNKNOWNCALL>getMessage</UNKNOWNCALL></METHODCALL>());
+         }
+         <FONT COLOR="FF0000">// ResponseAPDU creation and setting</FONT>
+         <FONT COLOR="008000">byte</FONT>[] resp = <FONT COLOR="008000">new</FONT> <FONT COLOR="008000">byte</FONT>[<A HREF = "#ApduIOCardTerminal:internalSendAPDU:apdu">apdu</A>.<METHODCALL><UNKNOWNCALL>getLe</UNKNOWNCALL></METHODCALL>()+ 2];
+         System.arraycopy(<A HREF = "#ApduIOCardTerminal:internalSendAPDU:apdu">apdu</A>.<METHODCALL><UNKNOWNCALL>getDataOut</UNKNOWNCALL></METHODCALL>(),0,resp,0,<A HREF = "#ApduIOCardTerminal:internalSendAPDU:apdu">apdu</A>.<METHODCALL><UNKNOWNCALL>getLe</UNKNOWNCALL></METHODCALL>());
+         System.arraycopy(<A HREF = "#ApduIOCardTerminal:internalSendAPDU:apdu">apdu</A>.<METHODCALL><UNKNOWNCALL>getSw1Sw2</UNKNOWNCALL></METHODCALL>(),0,resp,<A HREF = "#ApduIOCardTerminal:internalSendAPDU:apdu">apdu</A>.<METHODCALL><UNKNOWNCALL>getLe</UNKNOWNCALL></METHODCALL>(),2);
+        <FONT COLOR="FF0000">// debug information</FONT>
+         <A HREF = "#ApduIOCardTerminal::ctracer">ctracer</A>.<METHODCALL><UNKNOWNCALL>debug</UNKNOWNCALL></METHODCALL>(&quot;internalSendAPDU&quot;, &quot;response: &quot;+ HexString.hexify(resp));
+         <FONT COLOR="FF0000">// debug information</FONT>
+         <A HREF = "#ApduIOCardTerminal::ctracer">ctracer</A>.<METHODCALL><UNKNOWNCALL>debug</UNKNOWNCALL></METHODCALL>(&quot;internalSendAPDU&quot;, &quot;got response: &quot; + resp);
+         <FONT COLOR="008000">return</FONT> <FONT COLOR="008000">new</FONT> ResponseAPDU(resp);
+     }
+       <FONT COLOR="008000">else</FONT>
+       {
+         <FONT COLOR="008000">throw</FONT> <FONT COLOR="008000">new</FONT> CardTerminalException(&quot;no card inserted&quot;);
+       }
+   }
+ }
+</PRE></BODY></HTML> 

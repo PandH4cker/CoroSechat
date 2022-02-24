@@ -1,0 +1,816 @@
+/******************************************************************************/
+/*                                                                            */
+/*  SIGCARD.CLT - File layout for 'Signature Card' to be used for PKCS#11     */
+/*                Cryptoki interface from Chrysalis-ITS, Ottawa / Canada      */
+/*                Mike Hamann (emh), Thomas Schaeck (ts), Michael Deindl (md) */
+/*                IBM Smart Card Solutions, Boeblingen, Germany  1997         */
+/*                                                                            */
+/*  DESCRIPTION:                                                              */
+/*                                                                            */
+/*    This is the layout for the IBM MFC smart cards used for IBM Signature   */
+/*    Cards with PKCS#11 interface DLL by Chrysalis-ITS.                      */
+/*    It assumes a MFC 4.0 card with 4k EEPROM and special operating system   */
+/*    extensions for the PKCS#11 interface (EEPROM version 01)                */
+/*    The files are accessed by applications using the Smart Card System API  */
+/*    Key(1) is used for special maintenance operations to change the layout  */
+/*    after personalization if required.                                      */
+/*                                                                            */
+/*  SOFTWARE/HARDWARE PREREQUISITES:                                          */
+/*                                                                            */
+/*    as for IBM Smart Card ToolKit Layout Compiler                           */
+/*                                                                            */
+/*  ADDITIONAL INFORMATION:                                                   */
+/*                                                                            */
+/*  - Chip initialization is done using the output of the compiler.           */
+/*  - The personalization is performed by running the SCINIT tool from the    */
+/*    Smart Card ToolKit.                                                     */
+/*  - as long as the statement 'environment ( initial_only )' is used, the    */
+/*    cards may be re-initialized with the SCINIT tool.                       */
+/*                                                                            */
+/*  CHANGE HISTORY:                                                           */
+/*                                                                            */
+/*    01/22/97 first definition of file structure - see pkcs11.pre -      emh */
+/*    02/15/97 addition of M4TFixDC.inc with special ATR                  emh */
+/*                                                                            */
+/******************************************************************************/
+/*----------------- Declarations and environment specifications --------------*/
+/******************************************************************************/
+#include  sigcfxdc.inc   /* Include file for MFC fixed area decl. with sp. ATR*/
+Declarations
+(
+   ICCDataT54
+   (
+      "T54",                                /* Manufacturer SGS-Thomson       */
+      0,                                    /* Start T=1 no toggle            */
+      "DEIBM",                              /* Embedder file identifier       */
+      0x12345678,                           /* IC serial number               */
+      0x99,                                 /* Non-ISO card protected file    */
+      0x00,                                 /* No sleep mode                  */
+      0x00                                  /* Reserved                       */
+   )
+)
+/******************************************************************************/
+/*----------------- Fixed data area and command table ------------------------*/
+/******************************************************************************/
+
+environment ( initial_only )                /* able to overwrite EEPROM later */
+
+fixed_data_area ( fixed_data )
+
+/******************************************************************************/
+/*----------------- Directory and file definitions ---------------------------*/
+/******************************************************************************/
+Directory                                   /* Master file                    */
+(
+   MF                                       /* Symbolic name                  */
+   Id ( 0x3F00 )                            /* File identifier                */
+   Access                                   /* Access conditions directory    */
+   (
+      Update(Never)
+      Read_seek(Never)
+      Create_delete(Protected(1))
+      Write(Never)
+      Invalidate(Never)
+      Rehabilitate(Never)
+   )
+   Asc_access ( No )                        /* ASC access within directory    */
+   Agent_data ( MF Select )
+
+   /***************************************************************************/
+   /* EF_CHV1 in MF : File containing user CHV (password, PIN)                */
+   /***************************************************************************/
+   File
+   (
+      EF_CHV1                               /* Symbolic name                  */
+      Id (0x0000)                           /* File identifier                */
+      Access                                /* Access conditions              */
+      (
+         Update(CHV2)
+         Read_seek(Never)
+         Write(Never)
+         Invalidate(Never)
+         Rehabilitate(Never)
+      )
+      Access_status
+      (
+        //   CHV1_change_not_allowed        /* disable change CHV1            */
+      )
+      Initial_data
+      (
+         0x01,                              /* Activation                     */
+         0x00,                              /* Way to present                 */
+         0x00                               /* Key number in relevant EF_key  */
+      )
+      /* Personal_data(8, Pers_id, MAC_ENC) or */
+      Initial_data
+      (
+         "password"                         /* CHV1= 'password' ASCII format  */
+      )
+      Initial_data
+      (
+         0x03,                              /* initial attempt counter        */
+         0x03                               /* remaining attempts             */
+      )
+      /* Personal_data(8, Pers_id, MAC_ENC) */
+      Initial_data
+      (
+         "unblckpw"                         /* unblock password               */
+      )
+      Initial_data
+      (
+         0x01,
+         0x01
+      )
+      Agent_data ( CHV01 length (23) )
+   )
+
+   /***************************************************************************/
+   /* EF_CHV2 in MF : File containing SO CHV (password, PIN)                  */
+   /***************************************************************************/
+   File
+   (
+      EF_CHV2                               // Symbolic name
+      Id (0x0100)                           // File identifier
+      Access                                // Access conditions
+      (
+         Update(Enciphered(1))
+         Read_seek(Never)
+         Write(Never)
+         Invalidate(Never)
+         Rehabilitate(Never)
+      )
+      Access_status
+      (
+        //   CHV2_change_not_allowed           disable change CHV1
+      )
+      Initial_data
+      (
+         0x01,                              // Activation
+         0x00,                              // Way to present
+         0x00                               // Key number in relevant EF_key
+      )
+      // Personal_data(8, Pers_id, MAC_ENC) or
+      Initial_data
+      (
+         "password"                 // CHV2= 1234 BCD format
+      )
+      Initial_data
+      (
+         0x03,                              // initial attempt counter
+         0x03                               // remaining attempts
+      )
+      // Personal_data(8, Pers_id, MAC_ENC)
+      Initial_data
+      (
+         "unblckpw"                         // unblock password
+      )
+      Initial_data
+      (
+         0x01,
+         0x01
+      )
+      Agent_data ( CHV02 length (23) )
+   )
+
+   /***************************************************************************/
+   /* EF_Key in MF : Key file  (NOT USED, except for special AC's)            */
+   /***************************************************************************/
+   File
+   (
+      EF_KEY                                /* Symbolic name                  */
+      Id ( 0x0001 )                         /* File identifier                */
+      Access                                /* Access conditions              */
+      (
+         Update(Enciphered(1))
+         Read_seek(Never)
+         Write(Never)
+         Invalidate(Never)
+         Rehabilitate(Never)
+      )
+      Initial_data
+      (
+         13,                                /* Length of first key info       */
+         0x00,                              /* Key number                     */
+         0x06,                              /* Algorithm ID (DES)             */
+         0x03,                              /* Attempt Counter                */
+         0x00                               /* Key version                    */
+      )
+      /* Personal_data(8, Pers_id, MAC_ENC)    Key with each byte odd parity  */
+      Initial_data
+      (
+         0x1031323437383B3E                 /* Key with each byte odd parity  */
+      )
+      Initial_data
+      (
+         0x00                               /* no more keys                   */
+      )
+      Agent_data ( EF_KEY Select )
+   )
+
+      File
+      (
+         cardholder_data                    // Symbolic name
+         Id (0xC009)                        // File identifier
+         (64)
+         Access                             // Access conditions
+         (
+            Update(CHV1 /*ENC(0)*/)
+            Read_seek(CHV1 /*ENC(0)*/)
+            Write(Never)
+            Invalidate(Never)
+            Rehabilitate(Never)
+         )
+         Initial_data                       // Initial data for file
+         (
+            "Thomas Schaeck", 13, 10,
+            "schaeck@de.ibm.com", 13, 10
+         )
+         Agent_data
+         (
+            CardHolderData length(64)
+         )
+      )
+
+   /***************************************************************************/
+   /* EF_Aut in MF : Key file  (NOT USED, except for special AC's)            */
+   /***************************************************************************/
+   File
+   (
+      EF_AUT                                /* Symbolic name                  */
+      Id ( 0x9F03 )                         /* File identifier                */
+      Access                                /* Access conditions              */
+      (
+         Update(Enciphered(1))
+         Read_seek(Never)
+         Write(Never)
+         Invalidate(Never)
+         Rehabilitate(Never)
+      )
+      Initial_data
+      (
+         12,                                /* Length of first key info       */
+         0x00,                              /* Key number                     */
+         0x06,                              /* Algorithm ID (DES)             */
+         0x00                               /* Key version                    */
+      )
+      /* Personal_data(8, Pers_id, MAC_ENC)    Key with each byte odd parity  */
+      Initial_data
+      (
+         0x0123456789ABCDEF                 /* Key with each byte odd parity  */
+      )
+      Initial_data
+      (
+         0x00                               /* no more keys                   */
+      )
+      Agent_data ( EF_AUT Select )
+   )
+
+   /***************************************************************************/
+   /* EF_DIR : File containing directory information                          */
+   /* Content as defined in EMV 96                                            */
+   /* Application ID's have to be registered at IBM SCS Boeblingen (SMART at  */
+   /* BOEVM4) the IBM SCS RID is: xD276000022 and Application identifier: PIX */
+   /* will start with x00000060 ( as assigned by SCS)                         */
+   /* first 2 entries are already allocated with default files                */
+   /* more entries may be added later                                         */
+   /***************************************************************************/
+   File
+   (
+      EF_DIR                    // Symbolic name
+      Id (0x2F00)               // File identifier (ETSI 2F00)
+      Linear_fixed (40)         // File Organization: records with fixed size
+      (2 * 40)                  // 1 record with 40 bytes
+      Access                    // Access conditions
+      (
+         Update(Protected(1))
+         Read_seek(Always)
+         Write(Never)
+         Invalidate(Never)
+         Rehabilitate(Never)
+      )
+      Initial_data                   // Initial data for file
+      (
+         // Entry 00 --------------------------------------------------------
+         0x61,                       // Application Template
+         38,                         // Length of contained data         (38)
+         0x4F,                       // Application identifier tag
+         9,                          // Application ident. length         (9)
+         0xD2,0x76,0x00,0x00,0x22,   // Appl. id.:       IBM SCS ass. RID
+         0x00,0x00,0x00,0x60,        // Application identifier: PIX PKCS11
+         0x50,                       // Application label tag
+         16,                         // Application label length         (16)
+         "PKCS#11 token   ",         // Application label, max. 16 characters
+                                     // No Application Preferred Name
+                                     // No Application Priority Ind.
+         0x52,                       // Command to Perform
+         7,                          // Command to Perform Length         (7)
+         0xA4, 0xA4,                 // MFC Select
+         0x00, 0x00, 0x02,           // P1, P2, P3
+         0xC110,                     // File id of Application DF
+
+         0x61,                       // Application Template
+         33,                         // Length of contained data
+         0x4F,                       // Application identifier tag
+         9,                          // Application identifier length
+         0xD276000022,               // Application identifier: RID
+         0x00000001,                 // Application identifier: PIX
+         0x50,                       // Application label tag
+         11,                         // Application label length
+         "SCT LOYALTY",              // Application label
+                                     // No Application Preferred Name
+                                     // No Application Priority Ind.
+         0x52,                       // Command to Perform
+         7,                          // Command to Perform length
+         0xA4, 0xA4,                 // MFC Select
+         0x00, 0x00, 0x02,           // P1, P2, P3
+         0x1000,                     // File id of Application DF
+                                     // No Directory Discretionary
+                                     // Template
+         0x0000000000                // Padding to multiple of 40
+      )
+      Agent_data ( EF_DIR_FIRST      First    )
+      Agent_data ( EF_DIR_NEXT       Next     )
+      Agent_data ( EF_DIR_LAST       Last     )
+      Agent_data ( EF_DIR_PREVIOUS   Previous )
+      Agent_data ( EF_DIR_1          Record_number(1) )
+   )
+
+
+   Directory
+   (
+      DF_LOYALTY                            /* Symbolic name                  */
+      Id ( 0x1000 )                         /* File identifier                */
+      Access                                /* Access conditions directory    */
+      (
+         Read_seek(Never)
+         Update(Never)
+         Create_delete(Protected)
+      )
+      Asc_access ( No )                     /* No ASC execution allowed here  */
+      Agent_data ( DF_BONUS )
+
+      File
+      (
+         ADDRESS                            /* Symbolic name                  */
+         Id ( 0x1002 )                      /* File identifier                */
+         ( 66 )                             /* File size                      */
+         Access                             /* Access conditions              */
+         (
+            Read_seek(CHV2)
+            Update(Protected(0))
+         )
+         Agent_data ( ADDRESS  length( 66 ) )
+         Initial_data ( "Old Orchard Road",13,10,"Armonk, New York",0 )
+      )
+
+      File
+      (
+         BONUS                              /* Symbolic name                  */
+         Id ( 0x1003 )                      /* File identifier                */
+         ( 4 )                              /* File size                      */
+         Access                             /* Access conditions              */
+         (
+            Read_seek(CHV1)
+            Update(CHV1)
+         )
+         Agent_data ( BONUS  length( 4 ) )
+         Initial_data ( 0 )
+      )
+
+      File
+      (
+         NUMBER                             /* Symbolic name                  */
+         Id ( 0x1004 )                      /* File identifier                */
+         ( 8 )                              /* File size                      */
+         Access                             /* Access conditions              */
+         (
+            Read_seek(Always)
+            Update(Never)
+         )
+         Agent_data ( NUMBER  length( 4 ) )
+         Initial_data ( 0x40E20100 )
+      )
+   )
+
+   /**************************************************************************/
+   /* DF_PKCS11 : PKCS specific files                                        */
+   /**************************************************************************/
+   Directory
+   (
+      DF_PKCS11                             // Symbolic name Application 0
+      Id ( 0xC110 )                         // File identifier
+      Access                                // Access conditions directory
+      (
+         Update(Never)
+         Read_seek(Never)
+         Create_delete(CHV1)                // Create
+         Write(CHV1)                        // Delete
+         Invalidate(Never)
+         Rehabilitate(Never)
+      )
+      Asc_access ( Yes )
+      Agent_data ( DF_APL0 Select)
+
+
+
+      /************************************************************************/
+      /* EF_SER - serial number                                               */
+      /************************************************************************/
+      File
+      (
+         serial_number                      // Symbolic name
+         Id (0xC001)                        // File identifier
+         ( 16 )                             // File size
+         Access                             // Access conditions
+         (
+            Update(Never)
+            Read_seek(Always)
+            Write(Never)
+            Invalidate(Never)
+            Rehabilitate(Never)
+         )
+         // Personal_data(16, Pers_id, MAC_ENC) Card individual SerialNumber
+         Initial_data                       // Initial data for file
+         (
+            "0123456789ABCDEF"
+         )
+         Agent_data
+         (
+            SerialNumber length(16)
+         )
+      )
+
+      File
+      (
+         order_log                          // Symbolic name
+         Id (0xC002)                        // File identifier
+         Linear_fixed (20)                  // File Organization: records with fixed size
+         (5 * 20)                           // 1 record with 40 bytes
+         Access                             // Access conditions
+         (
+            Update(CHV1)
+            Read_seek(CHV1)
+            Write(Never)
+            Invalidate(Never)
+            Rehabilitate(Never)
+         )
+         // Personal_data(16, Pers_id, MAC_ENC) Card individual SerialNumber
+         Initial_data                       // Initial data for file
+         (
+           "11111111111111111111",
+           "22222222222222222222",
+           "33333333333333333333",
+           "44444444444444444444",
+           "55555555555555555555"
+         )
+         Agent_data ( EF_LOG_FIRST      First    )
+         Agent_data ( EF_LOG_NEXT       Next     )
+         Agent_data ( EF_LOG_LAST       Last     )
+         Agent_data ( EF_LOG_PREVIOUS   Previous )
+         Agent_data ( EF_LOG_1          Record_number(1) )
+         Agent_data ( EF_LOG_2          Record_number(2) )
+         Agent_data ( EF_LOG_3          Record_number(3) )
+         Agent_data ( EF_LOG_4          Record_number(4) )
+         Agent_data ( EF_LOG_5          Record_number(5) )
+      )
+
+
+     /***************************************************************************/
+     /* KEY 0  -  512 Bit SecretKey ohne HASH                                   */
+     /***************************************************************************/
+     File
+     (
+       EF_KEY_S0                               /* Symbolic name                  */
+       Id ( 0xFE00 )                           /* File-ID: secret-key 0       RM2*/
+       Transparent
+       //(0xAB)                                  /* NO header data !!           RM */
+       Access                                  /* Access conditions file         */
+       (
+         Read_seek(Always)                     /* READ/SEEK/LKF               RM */
+         Update(Always)
+         Write(Always)                         /* DELETE/IMPORT_KEY           RM */
+         Create_delete(CHV1)                   /* CREATE/USE_KEY              RM */
+         Rehabilitate(Always)
+         Invalidate(Always)
+       )
+       Header_data                           /* Initial data for file           */
+       (
+         0x01,                               /* Secret-Key-Algorithm ID     RM2 */
+         0x04,                               /* Hash-Algorithm ID (SHA-1)       */
+         0x00,                               /* Padding Algorithm ID            */
+         0x23,                               /* Key usage 0 (Sig,Aut,Cert)      */
+         0x00,                               /* Key usage byte 1                */
+         0x81                                /* Key status                      */
+       )
+       Initial_data                          /* Initial data for file           */
+       (
+          0x0200,                           /* Nominal key-length in Bits (512)*/
+          0x40,                             /* Plain-length                    */
+          0x40,                             /* Cryptogram-length               */
+          0x00,                             /* Key-info length     (0 Bytes)   */
+          0x00A0,                           /* Key-data length                 */
+          0x35be652489bb60ba4cca186839ca6022,            /* - Prime p          */
+          0xc0c2516b582bb0418f9215fe15b602df,
+          0x31c9d1678c6fccbef2e2879a381ee9f2,            /* - Prime q          */
+          0x07c546054a8374acb41835540db6eedc,
+          0xb856c9b78c19f8717df69ae0af5873b5,            /* - q-1 mod p        */
+          0x092d7a40c963e5257ca9beb9c4794c74,
+          0x9955431ebdd397726eb15f6b5bfcda7f,            /* - d mod (p-1)      */
+          0x68e86d7dd91221738dc375e3997e4859,
+          0x8132311d59439cb6b51431b466e4ee24,            /* - d mod (q-1)      */
+          0x07776ced187757b04d773764de50b561
+        )
+        Agent_data
+        (
+          EF_KEY_S0
+        )
+      )
+                                                   /* EFSecretNullMF */
+   /***************************************************************************/
+   /* KEY 0  -  512 Bit PublicKey ohne HASH                                   */
+   /***************************************************************************/
+   File
+   (
+     EF_KEY_P0                              /* Symbolic name                  */
+     Id ( 0xFE80 )                          /* File-ID: public-key 0       RM2*/
+     Transparent
+     /* (0x50) */                           /* NO header data !!           RM */
+     Access                                 /* Access conditions file         */
+     (
+       Read_seek(Always)                    /* READ/SEEK/LKF               RM */
+       Update(Always)
+       Write(Always)                        /* DELETE/GEN.SIGNATURE        RM */
+       Create_delete(Always)                /* CREATE/IMPORT-/VERIFY-KEY   RM */
+       Rehabilitate(Always)
+       Invalidate(Always)
+     )
+     Header_data                            /* Initial data for file          */
+     (
+
+       0x01,                                /* Public-Key-Algorithm ID     RM2*/
+       0x04,                                /* Hash-Algorithm ID              */
+       0x00,                                /* Padding Algorithm ID           */
+       0x23,                                /* Key usage 0 (Sig,Aut,Cert)     */
+       0x00,                                /* Key usage byte 1               */
+       0x81                                 /* Key status                     */
+     )
+     Initial_data                           /* Initial data for file          */
+     (
+       0x0200,                             /* Nominal key-length in Bits (512)*/
+       0x40,                               /* Input-Block length              */
+       0x40,                               /* Output-Block length (64 Bytes)  */
+       0x01,                               /* Key-info length                 */
+       0xFF,                               /* Key-info provided by customer   */
+       0x0044,                             /* Key-data length                 */
+       0x03,                               /* Length of public exponent       */
+       0x010001,                           /* Public exponent                 */
+       0x1bb10ea5b8be30c4a373456fdfdcf385,                 /* Modulus         */
+       0x7f89f05ea40a007211afb16c3f95ef48,
+       0xdd538a8bc7a8fc82e2082592e1220975,
+       0xf6dcd473dfa23bbb04894002b3e1cca7
+     )
+     Agent_data
+     (
+       EF_KEY_P0
+     )
+   )
+
+
+      /************************************************************************/
+      /* EF: ctrl_pub: File contains public information about PKCS#11 token   */
+      /************************************************************************/
+      File
+      (
+         ctrl_pub                           // Symbolic name
+         Id (0xC100)                        // File identifier
+         ( 200 )                            // File size
+         Access                             // Access conditions
+         (
+            Update(Always)
+            Read_seek(Always)
+            Write(Never)
+            Invalidate(Never)
+            Rehabilitate(Never)
+         )
+         Initial_data                       // Initial data for file
+         (
+            0x01,                           // Structure version
+            0x970222                        // Date of last update YYMMDD
+         )
+         Agent_data
+         (
+           ctrl_pub length(200)
+         )
+      )
+
+      /************************************************************************/
+      /* EF crtl_pri: File contains privat information about PKCS#11 token    */
+      /************************************************************************/
+      File
+      (
+         ctrl_pri                           // Symbolic name
+         Id (0xC200)                        // File identifier
+         ( 200 )                            // File size
+         Access                             // Access conditions
+         (
+            Update(CHV1)
+            Read_seek(CHV1)
+            Write(Never)
+            Invalidate(Never)
+            Rehabilitate(Never)
+         )
+         Initial_data                       // Initial data for file
+         (
+            0x02,                           // Structure version
+            0x970222                        // Date of last update YYMMDD
+         )
+         Agent_data
+         (
+           ctrl_pri      length(200)
+         )
+      )
+
+      /************************************************************************/
+      /* EF: Kt_DES: File containing the temporary DES key object             */
+      /* All access conditions are set to never, because the session keys     */
+      /* to be stored here are generated and used by the card.                */
+      /************************************************************************/
+      File
+      (
+         Kt_DES                                // Symbolic name
+         Id (0xFEFF)                           // File identifier
+         ( 60 )                                // File size
+         Access                                // Access conditions
+         (
+            Update(CHV1)
+            Read_seek(Never)
+            Write(Never)
+            Invalidate(Never)
+            Rehabilitate(Never)
+         )
+         Agent_data
+         (
+           Kt_DES        length(60)
+         )
+      )
+
+      /************************************************************************/
+      /* EF: Kpri_1:File containing a PKA private key object (up to 1024 bit) */
+      /************************************************************************/
+      File
+      (
+         Kpri_1                                // Symbolic name
+         Id (0xFEFF)                           // File identifier
+         ( 200 )                               // File size
+         Access                                // Access conditions
+         (
+            Update(CHV1)
+            Read_seek(Never)
+            Write(CHV1)
+            Invalidate(Never)
+            Rehabilitate(Never)
+         )
+         Agent_data
+         (
+           Kpri_1         length(200)
+         )
+      )
+
+      File
+      (
+         ADMIN_CHV                             // Symbolic name
+         Id (0x2222)                           // File identifier
+         ( 200 )                               // File size
+         Access                                // Access conditions
+         (
+            Update(CHV1)
+            Read_seek(CHV1)
+            Write(CHV1)
+            Invalidate(Never)
+            Rehabilitate(Never)
+         )
+         Agent_data
+         (
+           ADMIN_CHV      length(200)
+         )
+      )
+
+      File
+      (
+         ADMIN_ALW                             // Symbolic name
+         Id (0x3333)                           // File identifier
+         ( 200 )                               // File size
+         Access                                // Access conditions
+         (
+            Update(Always)
+            Read_seek(Always)
+            Write(CHV1)
+            Invalidate(Never)
+            Rehabilitate(Never)
+         )
+         Agent_data
+         (
+           ADMIN_ALW      length(300)
+         )
+      )
+
+      /************************************************************************/
+      /* EF: Kpri_2: File containing a PKA private key object (up to 1024 bit)*/
+      /************************************************************************/
+      /*
+      File
+      (
+         Kpri_2                                // Symbolic name
+         Id (0xFEFF)                           // File identifier
+         ( 360 )                               // File size
+         Access                                // Access conditions
+         (
+            Update(CHV1)
+            Read_seek(Never)
+            Write(CHV1)
+            Invalidate(Never)
+            Rehabilitate(Never)
+         )
+         Agent_data
+         (
+           Kpri_2        length(360)
+         )
+      )
+      */
+
+      /************************************************************************/
+      /* EF: Kpri_3: File containing a PKA private key object (up to 1024 bit)*/
+      /************************************************************************/
+      /*
+      File
+      (
+         Kpri_3                                // Symbolic name
+         Id (0xFEFF)                           // File identifier
+         ( 360 )                               // File size
+         Access                                // Access conditions
+         (
+            Update(CHV1)
+            Read_seek(Never)
+            Write(CHV1)
+            Invalidate(Never)
+            Rehabilitate(Never)
+         )
+         Agent_data
+         (
+           Kpri_3       length(360)
+         )
+      )
+      */
+
+      /************************************************************************/
+      /* EF: Kpri_4: File containing a PKA private key object (up to 1024 bit)*/
+      /************************************************************************/
+      /*
+      File
+      (
+         Kpri_4                                // Symbolic name
+         Id (0xFEFF)                           // File identifier
+         ( 360 )                               // File size
+         Access                                // Access conditions
+         (
+            Update(CHV1)
+            Read_seek(Never)
+            Write(CHV1)
+            Invalidate(Never)
+            Rehabilitate(Never)
+         )
+         Agent_data
+         (
+           Kpri_4       length(360)
+         )
+      )
+      */
+
+      /************************************************************************/
+      /* EF: Kpri_5: File containing a PKA private key object (up to 1024 bit)*/
+      /************************************************************************/
+      /*
+      File
+      (
+         Kpri_5                                // Symbolic name
+         Id (0xFEFF)                           // File identifier
+         ( 360 )                               // File size
+         Access                                // Access conditions
+         (
+            Update(CHV1)
+            Read_seek(Never)
+            Write(CHV1)
+            Invalidate(Never)
+            Rehabilitate(Never)
+         )
+         Agent_data
+         (
+           Kpri_5       length(360)
+         )
+      )
+      */
+   )                                           /* end of DF directory        */
+)
+                                              /* end of MF directory         */
+Statistics(3*16)
+/*== End of File ============================================================*/

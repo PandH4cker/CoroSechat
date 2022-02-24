@@ -1,0 +1,11 @@
+mode_211
+enable_trace
+establish_context
+// edit the following line to match your PCSC reader
+card_connect -readerNumber 3
+select -AID A000000003000000
+open_sc -security 3 -mac_key 404142434445464748494A4B4C4D4E4F -enc_key 404142434445464748494A4B4C4D4E4F -kek_key 404142434445464748494A4B4C4D4E4F
+delete -AID A00000024710
+install -file epassport.cap -priv 2
+card_disconnect
+release_context

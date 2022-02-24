@@ -1,0 +1,7 @@
+Name: com/ibm/opencard/terminal/pcsc10
+Specification-Title: "OCF1.2 PC/SC Wrapper CardTerminal" 
+Specification-Version: "1.0"
+Specification-Vendor: "IBM".
+Implementation-Title: "com.ibm.opencard.terminal.pcsc10" 
+Implementation-Version: "2.0"
+Implementation-Vendor: "IBM"

@@ -1,0 +1,1111 @@
+<HTML> <body bgcolor = "FFFFFF"> <PRE>
+<FONT COLOR="FF0000">/*
+  * Copyright © 1997 - 1999 IBM Corporation.
+  * 
+  * Redistribution and use in source (source code) and binary (object code)
+  * forms, with or without modification, are permitted provided that the
+  * following conditions are met:
+  * 1. Redistributed source code must retain the above copyright notice, this
+  * list of conditions and the disclaimer below.
+  * 2. Redistributed object code must reproduce the above copyright notice,
+  * this list of conditions and the disclaimer below in the documentation
+  * and/or other materials provided with the distribution.
+  * 3. The name of IBM may not be used to endorse or promote products derived
+  * from this software or in any other form without specific prior written
+  * permission from IBM.
+  * 4. Redistribution of any modified code must be labeled &quot;Code derived from
+  * the original OpenCard Framework&quot;.
+  * 
+  * THIS SOFTWARE IS PROVIDED BY IBM &quot;AS IS&quot; FREE OF CHARGE. IBM SHALL NOT BE
+  * LIABLE FOR INFRINGEMENTS OF THIRD PARTIES RIGHTS BASED ON THIS SOFTWARE.  ANY
+  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+  * DISCLAIMED.  IBM DOES NOT WARRANT THAT THE FUNCTIONS CONTAINED IN THIS
+  * SOFTWARE WILL MEET THE USER'S REQUIREMENTS OR THAT THE OPERATION OF IT WILL
+  * BE UNINTERRUPTED OR ERROR-FREE.  IN NO EVENT, UNLESS REQUIRED BY APPLICABLE
+  * LAW, SHALL IBM BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+  * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+  * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+  * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+  * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.  ALSO, IBM IS UNDER NO OBLIGATION
+  * TO MAINTAIN, CORRECT, UPDATE, CHANGE, MODIFY, OR OTHERWISE SUPPORT THIS
+  * SOFTWARE.
+  */</FONT>
+ 
+ <FONT COLOR="008000">package</FONT> com.ibm.opencard.terminal.pcsc10;
+ 
+ <FONT COLOR="008000">import</FONT> java.lang.*;
+ <FONT COLOR="008000">import</FONT> java.io.*;
+ <FONT COLOR="008000">import</FONT> java.util.*;
+ 
+ <FONT COLOR="008000">import</FONT> opencard.core.terminal.CardID;
+ <FONT COLOR="008000">import</FONT> opencard.core.terminal.CardTerminal;
+ <FONT COLOR="008000">import</FONT> opencard.core.terminal.CardTerminalException;
+ <FONT COLOR="008000">import</FONT> opencard.core.terminal.CardTerminalRegistry;
+ <FONT COLOR="008000">import</FONT> opencard.core.terminal.Pollable;
+ <FONT COLOR="008000">import</FONT> opencard.core.terminal.SlotChannel;
+ <FONT COLOR="008000">import</FONT> opencard.core.terminal.ResponseAPDU;
+ <FONT COLOR="008000">import</FONT> opencard.core.terminal.CommandAPDU;
+ 
+ <FONT COLOR="FF0000">//import opencard.core.util.Tracer;</FONT>
+ <FONT COLOR="FF0000">//import opencard.core.util.HexString;</FONT>
+ <FONT COLOR="008000">import</FONT> opencard.core.util.*;
+ 
+ <FONT COLOR="008000">import</FONT> opencard.opt.terminal.TerminalCommand;
+ <FONT COLOR="008000">import</FONT> opencard.opt.terminal.PowerManagementInterface;
+ 
+ <FONT COLOR="FF0000">/** Implementation of an OpenCard &lt;tt&gt;CardTerminal&lt;/tt&gt; for PCSC.
+  *
+  * @author Stephan Breideneich (sbreiden@de.ibm.com)
+  * @version $Id: Pcsc10CardTerminal.java,v 2.0 2001/06/14 13:32:36 root Exp root $
+  *
+  * @see opencard.core.terminal.CardTerminal
+  */</FONT>
+ <FONT COLOR="008000">public</FONT> <FONT COLOR="008000">class</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal::">Pcsc10CardTerminal</A></FONT> 
+   <FONT COLOR="008000">extends</FONT> CardTerminal
+ 
+   <FONT COLOR="008000">implements</FONT> TerminalCommand,
+              Pollable,
+          PowerManagementInterface {
+ 
+   <FONT COLOR="008000">private</FONT> Tracer <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal::itracer">itracer</A></FONT> = <FONT COLOR="008000">new</FONT> <CONSTRUCTORCALL>Tracer</CONSTRUCTORCALL>(<FONT COLOR="008000">this</FONT>, Pcsc10CardTerminal.<FONT COLOR="008000">class</FONT>);
+ 
+   <FONT COLOR="FF0000">/** The reference to the PCSC ResourceManager <FONT COLOR="008000">for</FONT> <FONT COLOR="008000">this</FONT> card terminal. */</FONT>
+   <FONT COLOR="008000">private</FONT> <A HREF = "OCFPCSC1.html#OCFPCSC1::">OCFPCSC1</A> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal::pcsc">pcsc</A></FONT>;
+ 
+   <FONT COLOR="FF0000">/** The reference to the Pcsc10CardTerminalFactory */</FONT>
+   <FONT COLOR="008000">private</FONT> <A HREF = "Pcsc10CardTerminalFactory.html#Pcsc10CardTerminalFactory::">Pcsc10CardTerminalFactory</A>    <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal::PCSCfactory">PCSCfactory</A></FONT> = <FONT COLOR="008000">null</FONT>;
+ 
+   <FONT COLOR="FF0000">/** The context to the PCSC ResourceManager */</FONT>
+   <FONT COLOR="008000">private</FONT> <FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal::context">context</A></FONT> = 0;
+ 
+   <FONT COLOR="FF0000">/** The state of <FONT COLOR="008000">this</FONT> card terminal. */</FONT>
+   <FONT COLOR="008000">private</FONT> <FONT COLOR="008000">boolean</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal::closed">closed</A></FONT>;
+ 
+   <FONT COLOR="FF0000">/** Is a card inserted currently? */</FONT>
+   <FONT COLOR="008000">private</FONT> <FONT COLOR="008000">boolean</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal::cardInserted">cardInserted</A></FONT> = <FONT COLOR="008000">false</FONT>;
+ 
+   <FONT COLOR="FF0000">/** The record of the card status */</FONT>
+   <FONT COLOR="008000">private</FONT> <FONT COLOR="008000">boolean</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal::CachedCardStatus">CachedCardStatus</A></FONT> = <FONT COLOR="008000">false</FONT>;
+ 
+   <FONT COLOR="FF0000">/** Date of release */</FONT>
+   <FONT COLOR="008000">private</FONT> <FONT COLOR="008000">static</FONT> <FONT COLOR="008000">final</FONT> String <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal::DATE">DATE</A></FONT> = &quot;October 31, 2000&quot;;
+ 
+   <FONT COLOR="FF0000">/** Release version */</FONT>
+   <FONT COLOR="008000">private</FONT> <FONT COLOR="008000">static</FONT> <FONT COLOR="008000">final</FONT> String <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal::VERSION">VERSION</A></FONT> = &quot;Release v2.0&quot;;
+ 
+   <FONT COLOR="FF0000">/** The cardHandle */</FONT>
+   <FONT COLOR="008000">private</FONT> <FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal::cardHandle">cardHandle</A></FONT> = 0;
+ 
+   <FONT COLOR="FF0000">/* states returned by SCardGetStatusChange */</FONT>
+   <FONT COLOR="008000">private</FONT> <FONT COLOR="008000">static</FONT> <FONT COLOR="008000">final</FONT> <FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal::SCARD_STATE_MUTE">SCARD_STATE_MUTE</A></FONT>=0x200;
+   <FONT COLOR="008000">private</FONT> <FONT COLOR="008000">static</FONT> <FONT COLOR="008000">final</FONT> <FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal::SCARD_STATE_PRESENT">SCARD_STATE_PRESENT</A></FONT>=0x020;
+ 
+   <FONT COLOR="FF0000">/** The &lt;tt&gt;CardID&lt;/tt&gt; of the presently inserted card. */</FONT>
+   <FONT COLOR="008000">private</FONT> CardID <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal::cid">cid</A></FONT> = <FONT COLOR="008000">null</FONT>;
+ 
+   <FONT COLOR="FF0000">/** The &lt;tt&gt;ATR&lt;/tt&gt; of the presently inserted card. */</FONT>
+   <FONT COLOR="008000">private</FONT> byte[] cachedATR;
+ 
+   <FONT COLOR="FF0000">/** Specify the number of expected returned data in the ISO command. */</FONT>
+   <FONT COLOR="008000">private</FONT> <FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal::le">le</A></FONT> = 0;
+ 
+   <FONT COLOR="FF0000">/** Specify the number of data in the ISO command. */</FONT>
+   <FONT COLOR="008000">private</FONT> <FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal::lc">lc</A></FONT> = 0;
+ 
+   <FONT COLOR="FF0000">/** Get the length of the Command APDU buffer. */</FONT>
+   <FONT COLOR="008000">private</FONT> <FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal::lenbuf">lenbuf</A></FONT> = 0;
+ 
+   <FONT COLOR="FF0000">/** ISO <FONT COLOR="008000">case</FONT> choice requested. */</FONT>
+   <FONT COLOR="008000">private</FONT> <FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal::caseAPDU">caseAPDU</A></FONT> = 0;
+ 
+   <FONT COLOR="FF0000">/** Transport layer uses the full ISO standard in mode <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal::T">T</A></FONT>=0. */</FONT>
+   <FONT COLOR="008000">private</FONT> <FONT COLOR="008000">boolean</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal::TPDU_Uses_ISO">TPDU_Uses_ISO</A></FONT> = <FONT COLOR="008000">true</FONT>;
+ 
+   <FONT COLOR="FF0000">/** ISO command used protocol */</FONT>
+   <FONT COLOR="008000">private</FONT> <FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal::protocolUsed">protocolUsed</A></FONT> = 0;
+ 
+   <FONT COLOR="FF0000">/** Communication port status <FONT COLOR="008000">for</FONT> the reader */</FONT>
+   <FONT COLOR="008000">private</FONT> <FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal::portMode">portMode</A></FONT> = 0;
+ 
+   <FONT COLOR="FF0000">/** Communication port <FONT COLOR="008000">for</FONT> the reader */</FONT>
+   <FONT COLOR="008000">private</FONT> <FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal::port">port</A></FONT> = 0;
+ 
+   <FONT COLOR="FF0000">/** Instantiate an &lt;tt&gt;Pcsc10Terminal&lt;/tt&gt;.
+    *
+    * @param     name
+    *            The user friendly name.
+    * @param     type
+    *            The terminal type (here &quot;PCSC&quot;)
+    * @param     address
+    *            The communication port
+    * @param     factory
+    *            The card terminal reference
+    * @param     port
+    *            The communication port ID
+    * @exception CardTerminalException
+    *            Thrown when a problem occured.
+    */</FONT>
+   <FONT COLOR="008000">protected</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:Pcsc10CardTerminal:">Pcsc10CardTerminal</A></FONT>(String <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:Pcsc10CardTerminal:name">name</A></FONT>, String <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:Pcsc10CardTerminal:type">type</A></FONT>, String <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:Pcsc10CardTerminal:address">address</A></FONT>,
+                    <A HREF = "Pcsc10CardTerminalFactory.html#Pcsc10CardTerminalFactory::">Pcsc10CardTerminalFactory</A> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:Pcsc10CardTerminal:factory">factory</A></FONT>,
+                    <FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:Pcsc10CardTerminal:port">port</A></FONT>)
+     throws CardTerminalException {
+ 
+       <FONT COLOR="008000">super</FONT>(<A HREF = "#Pcsc10CardTerminal:Pcsc10CardTerminal:name">name</A>, <A HREF = "#Pcsc10CardTerminal:Pcsc10CardTerminal:type">type</A>, <A HREF = "#Pcsc10CardTerminal:Pcsc10CardTerminal:address">address</A>);
+ 
+       <FONT COLOR="008000">if</FONT> (<A HREF = "#Pcsc10CardTerminal:Pcsc10CardTerminal:address">address</A>.<METHODCALL><UNKNOWNCALL>equals</UNKNOWNCALL></METHODCALL>(&quot;SHARED&quot;)) {
+          <A HREF = "#Pcsc10CardTerminal::portMode">portMode</A> = Pcsc10Constants.SCARD_SHARE_SHARED;
+       } <FONT COLOR="008000">else</FONT> {
+          <A HREF = "#Pcsc10CardTerminal::portMode">portMode</A> = Pcsc10Constants.SCARD_SHARE_EXCLUSIVE;
+       }
+ 
+       <FONT COLOR="008000">try</FONT> {
+         <A HREF = "#Pcsc10CardTerminal::itracer">itracer</A>.<METHODCALL><UNKNOWNCALL>debug</UNKNOWNCALL></METHODCALL>(&quot;Pcsc10CardTerminal&quot;, &quot;connect to PCSC 1.0 resource manager&quot;);
+   
+         <FONT COLOR="FF0000">// load native library</FONT>
+         OCFPCSC1.loadLib();
+         <A HREF = "#Pcsc10CardTerminal::pcsc">pcsc</A> = <FONT COLOR="008000">new</FONT> OCFPCSC1();
+ 
+       } <FONT COLOR="008000">catch</FONT> (<A HREF = "PcscException.html#PcscException::">PcscException</A> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:Pcsc10CardTerminal:e">e</A></FONT>) {
+         <FONT COLOR="008000">throw</FONT> <A HREF = "Pcsc10CardTerminal.html#Pcsc10CardTerminal:translatePcscException:">translatePcscException</A>(<A HREF = "#Pcsc10CardTerminal:Pcsc10CardTerminal:e">e</A>);
+       }
+ 
+       <A HREF = "#Pcsc10CardTerminal::PCSCfactory">PCSCfactory</A> = <A HREF = "#Pcsc10CardTerminal:Pcsc10CardTerminal:factory">factory</A>;    <FONT COLOR="FF0000">// to refer card terminal factory</FONT>
+       <FONT COLOR="008000">this</FONT>.<A HREF = "#Pcsc10CardTerminal::port">port</A> = <A HREF = "#Pcsc10CardTerminal:Pcsc10CardTerminal:port">port</A>;         <FONT COLOR="FF0000">// to trace the communication port</FONT>
+ 
+       <FONT COLOR="FF0000">// add one slot</FONT>
+       addSlots(1);
+    }
+ 
+    <FONT COLOR="FF0000">/*
+     * Open the card terminal: We register with the
+     * &lt;tt&gt;CardTerminalRegistry&lt;/tt&gt; as a &lt;tt&gt;Pollable&lt;/tt&gt;
+     * card terminal. Connect to the PCSC resource manager
+     *
+     * @throws CardTerminalException
+     */</FONT>
+    <FONT COLOR="008000">public</FONT> <FONT COLOR="008000">void</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:open:">open</A></FONT>() throws CardTerminalException {
+ 
+       <FONT COLOR="008000">try</FONT> {
+          <A HREF = "#Pcsc10CardTerminal::itracer">itracer</A>.<METHODCALL><UNKNOWNCALL>debug</UNKNOWNCALL></METHODCALL>(&quot;Pcsc10CardTerminal&quot;, 
+                        &quot;connect to PCSC 1.0 resource manager&quot;);
+ 
+          <FONT COLOR="FF0000">// connect to the PCSC resource manager</FONT>
+          <A HREF = "#Pcsc10CardTerminal::context">context</A> = 
+             <A HREF = "#Pcsc10CardTerminal::pcsc">pcsc</A>.<METHODCALL><A HREF = "OCFPCSC1.html#OCFPCSC1:SCardEstablishContext:">SCardEstablishContext</A></METHODCALL>(Pcsc10Constants.SCARD_SCOPE_USER);
+ 
+          <A HREF = "#Pcsc10CardTerminal::itracer">itracer</A>.<METHODCALL><UNKNOWNCALL>debug</UNKNOWNCALL></METHODCALL>(&quot;Pcsc10CardTerminal&quot;, &quot;Driver initialized&quot;);
+ 
+       } <FONT COLOR="008000">catch</FONT> (<A HREF = "PcscException.html#PcscException::">PcscException</A> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:open:e">e</A></FONT>) {
+          <FONT COLOR="008000">throw</FONT> <A HREF = "Pcsc10CardTerminal.html#Pcsc10CardTerminal:translatePcscException:">translatePcscException</A>(<A HREF = "#Pcsc10CardTerminal:open:e">e</A>);
+       }
+ 
+       <FONT COLOR="FF0000">// Get the TPDU ISO normatives from the opencard.properties file.</FONT>
+       <FONT COLOR="008000">try</FONT> {
+ 
+          <FONT COLOR="FF0000">// Suppose that the file contains all the information needed.</FONT>
+          String <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:open:ISOKeyValue">ISOKeyValue</A></FONT> =
+             SystemAccess.getSystemAccess().getProperty(&quot;Uses_Standard_ISO_TPDU&quot;);
+ 
+          <FONT COLOR="008000">if</FONT> (<A HREF = "#Pcsc10CardTerminal:open:ISOKeyValue">ISOKeyValue</A>.<METHODCALL><UNKNOWNCALL>equals</UNKNOWNCALL></METHODCALL>(&quot;<FONT COLOR="008000">false</FONT>&quot;)) {
+             <A HREF = "Pcsc10CardTerminal.html#Pcsc10CardTerminal:setISOTPDUMode:">setISOTPDUMode</A>(<FONT COLOR="008000">false</FONT>);
+          } <FONT COLOR="008000">else</FONT> {
+             <A HREF = "Pcsc10CardTerminal.html#Pcsc10CardTerminal:setISOTPDUMode:">setISOTPDUMode</A>(<FONT COLOR="008000">true</FONT>);
+          }
+ 
+          <FONT COLOR="008000">if</FONT> (!<A HREF = "#Pcsc10CardTerminal::TPDU_Uses_ISO">TPDU_Uses_ISO</A>) {
+             System.out.println(&quot;TPDU Not Used\n&quot;);
+          } <FONT COLOR="008000">else</FONT> {
+             System.out.println(&quot;Uses ISO TPDU\n&quot;);
+          }
+       } <FONT COLOR="008000">catch</FONT> (Exception <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:open:e">e</A></FONT>) {
+          <A HREF = "Pcsc10CardTerminal.html#Pcsc10CardTerminal:setISOTPDUMode:">setISOTPDUMode</A>(<FONT COLOR="008000">true</FONT>);
+          System.out.println(&quot;Uses ISOTPDU\n&quot;);
+       }
+ 
+       <A HREF = "#Pcsc10CardTerminal::closed">closed</A> = <FONT COLOR="008000">false</FONT>;
+ 
+       <FONT COLOR="FF0000">// register to cardterminal registry</FONT>
+       CardTerminalRegistry.getRegistry().addPollable((Pollable) <FONT COLOR="008000">this</FONT>);
+    }
+ 
+ 
+   <FONT COLOR="FF0000">/** Close the connection to the card terminal by powerDown the Card.
+    *  Could be used by unregister to free up the resources used by the
+    *  terminal.
+    *
+    * @exception opencard.core.terminal.CardTerminalException
+    *            Thrown if there are problems with closing the
+    *            connection
+    */</FONT>
+   <FONT COLOR="008000">public</FONT> <FONT COLOR="008000">void</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:close:">close</A></FONT>() 
+     throws CardTerminalException {
+ 
+     <FONT COLOR="FF0000">// to close the specific card terminal port</FONT>
+     <A HREF = "#Pcsc10CardTerminal::PCSCfactory">PCSCfactory</A>.<METHODCALL><A HREF = "Pcsc10CardTerminalFactory.html#Pcsc10CardTerminalFactory:close:">close</A></METHODCALL>(<FONT COLOR="008000">this</FONT>.<A HREF = "#Pcsc10CardTerminal::port">port</A>);
+ 
+     <FONT COLOR="008000">if</FONT> (!<A HREF = "#Pcsc10CardTerminal::closed">closed</A>) {
+       <A HREF = "#Pcsc10CardTerminal::itracer">itracer</A>.<METHODCALL><UNKNOWNCALL>debug</UNKNOWNCALL></METHODCALL>(&quot;close&quot;, &quot;disable polling&quot;);
+       
+       CardTerminalRegistry.getRegistry().removePollable((Pollable)<FONT COLOR="008000">this</FONT>);
+ 
+       <A HREF = "#Pcsc10CardTerminal::closed">closed</A> = <FONT COLOR="008000">true</FONT>;
+ 
+       <FONT COLOR="FF0000">// is card inserted and powered?</FONT>
+       <FONT COLOR="008000">if</FONT> (<A HREF = "#Pcsc10CardTerminal::cardInserted">cardInserted</A> &amp;&amp; <A HREF = "#Pcsc10CardTerminal::cid">cid</A> != <FONT COLOR="008000">null</FONT>) {
+         <A HREF = "#Pcsc10CardTerminal::itracer">itracer</A>.<METHODCALL><UNKNOWNCALL>debug</UNKNOWNCALL></METHODCALL>(&quot;close&quot;, &quot;card inserted - <FONT COLOR="008000">try</FONT> to power down card&quot;);
+   
+         <A HREF = "#Pcsc10CardTerminal::cid">cid</A> = <FONT COLOR="008000">null</FONT>;    <FONT COLOR="FF0000">// invalidate cardID</FONT>
+ 
+         <FONT COLOR="FF0000">//cardDisconnect(Pcsc10Constants.SCARD_EJECT_CARD);</FONT>
+         <A HREF = "Pcsc10CardTerminal.html#Pcsc10CardTerminal:powerDownCard:">powerDownCard</A>(0, -1);
+ 
+       } <FONT COLOR="008000">else</FONT>
+         <A HREF = "#Pcsc10CardTerminal::itracer">itracer</A>.<METHODCALL><UNKNOWNCALL>debug</UNKNOWNCALL></METHODCALL>(&quot;close&quot;, &quot;no card inserted&quot;);
+ 
+       <FONT COLOR="008000">try</FONT> {
+         <A HREF = "#Pcsc10CardTerminal::itracer">itracer</A>.<METHODCALL><UNKNOWNCALL>debug</UNKNOWNCALL></METHODCALL>(&quot;close&quot;, &quot;release <A HREF = "#Pcsc10CardTerminal::context">context</A>&quot;);
+         <A HREF = "#Pcsc10CardTerminal::pcsc">pcsc</A>.<METHODCALL><A HREF = "OCFPCSC1.html#OCFPCSC1:SCardReleaseContext:">SCardReleaseContext</A></METHODCALL>(<A HREF = "#Pcsc10CardTerminal::context">context</A>);
+ 
+       } <FONT COLOR="008000">catch</FONT> (<A HREF = "PcscException.html#PcscException::">PcscException</A> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:close:e">e</A></FONT>) {
+         <FONT COLOR="008000">throw</FONT> <A HREF = "Pcsc10CardTerminal.html#Pcsc10CardTerminal:translatePcscException:">translatePcscException</A>(<A HREF = "#Pcsc10CardTerminal:close:e">e</A>);
+       }
+     } <FONT COLOR="008000">else</FONT> {
+       <A HREF = "#Pcsc10CardTerminal::itracer">itracer</A>.<METHODCALL><UNKNOWNCALL>debug</UNKNOWNCALL></METHODCALL>(&quot;close&quot;, &quot;Terminal already <A HREF = "#Pcsc10CardTerminal::closed">closed</A>!&quot;);
+       <FONT COLOR="008000">throw</FONT> <FONT COLOR="008000">new</FONT> CardTerminalException(&quot;Pcsc10CardTerminal: already <A HREF = "#Pcsc10CardTerminal::closed">closed</A>&quot;);
+     }
+   }
+ 
+ 
+   <FONT COLOR="FF0000">/** Implementation of &lt;tt&gt;CardTerminal.<FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:internalReset:">internalReset</A></FONT>()&lt;/tt&gt;. */</FONT>
+   <FONT COLOR="008000">protected</FONT> CardID <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:internalReset:">internalReset</A></FONT>(<FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:internalReset:slot">slot</A></FONT>, <FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:internalReset:ms">ms</A></FONT>) 
+     throws CardTerminalException {
+ 
+     <FONT COLOR="FF0000">// check if cardHandle exists</FONT>
+     <FONT COLOR="008000">if</FONT> (<A HREF = "#Pcsc10CardTerminal::CachedCardStatus">CachedCardStatus</A>) {
+       <A HREF = "#Pcsc10CardTerminal::itracer">itracer</A>.<METHODCALL><UNKNOWNCALL>debug</UNKNOWNCALL></METHODCALL>(&quot;internalReset&quot;, &quot;<A HREF = "#Pcsc10CardTerminal::cardHandle">cardHandle</A> exists - <FONT COLOR="008000">try</FONT> reconnect&quot;);
+       <A HREF = "#Pcsc10CardTerminal::cid">cid</A> = <FONT COLOR="008000">null</FONT>;    <FONT COLOR="FF0000">// invalidate CardID</FONT>
+     
+       Integer <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:internalReset:returnedProtocol">returnedProtocol</A></FONT> = <FONT COLOR="008000">new</FONT> <CONSTRUCTORCALL>Integer</CONSTRUCTORCALL>(0);
+ 
+       <FONT COLOR="008000">try</FONT> {
+       <FONT COLOR="008000">if</FONT> (<A HREF = "#Pcsc10CardTerminal::cardHandle">cardHandle</A> != 0) {
+ 
+           <FONT COLOR="FF0000">// If the card handle is available, retrieve the second ATR</FONT>
+           <A HREF = "#Pcsc10CardTerminal::pcsc">pcsc</A>.<METHODCALL><A HREF = "OCFPCSC1.html#OCFPCSC1:SCardReconnect:">SCardReconnect</A></METHODCALL>(<A HREF = "#Pcsc10CardTerminal::cardHandle">cardHandle</A>, <A HREF = "#Pcsc10CardTerminal::portMode">portMode</A>, 
+                   Pcsc10Constants.SCARD_PROTOCOL_T0 
+                   | Pcsc10Constants.SCARD_PROTOCOL_T1, 
+                   Pcsc10Constants.SCARD_RESET_CARD, 
+                   <A HREF = "#Pcsc10CardTerminal:internalReset:returnedProtocol">returnedProtocol</A>);
+       } <FONT COLOR="008000">else</FONT> {
+ 
+           <FONT COLOR="FF0000">// If the card handle is not available, retrieve the first ATR</FONT>
+           <A HREF = "#Pcsc10CardTerminal::cardHandle">cardHandle</A> = 
+                   <A HREF = "#Pcsc10CardTerminal::pcsc">pcsc</A>.<METHODCALL><A HREF = "OCFPCSC1.html#OCFPCSC1:SCardConnect:">SCardConnect</A></METHODCALL>(<A HREF = "#Pcsc10CardTerminal::context">context</A>, getName(), <A HREF = "#Pcsc10CardTerminal::portMode">portMode</A>, 
+                                     Pcsc10Constants.SCARD_PROTOCOL_T0 
+                                     | Pcsc10Constants.SCARD_PROTOCOL_T1,
+                     <A HREF = "#Pcsc10CardTerminal:internalReset:returnedProtocol">returnedProtocol</A>);
+       }
+ 
+       <A HREF = "Pcsc10CardTerminal.html#Pcsc10CardTerminal:UpdateCardStatus:">UpdateCardStatus</A>(0);
+ 
+       <FONT COLOR="008000">if</FONT> (cachedATR == <FONT COLOR="008000">null</FONT>) {
+           <FONT COLOR="008000">throw</FONT> <FONT COLOR="008000">new</FONT> CardTerminalException(&quot;No ATR present. Card badly inserted? &quot;, 
+                           <FONT COLOR="008000">this</FONT>);
+       }
+ 
+       <A HREF = "#Pcsc10CardTerminal::cid">cid</A> = <FONT COLOR="008000">new</FONT> CardID(<FONT COLOR="008000">this</FONT>, 0, cachedATR);
+ 
+       } <FONT COLOR="008000">catch</FONT> (<A HREF = "PcscException.html#PcscException::">PcscException</A> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:internalReset:e">e</A></FONT>) {
+       <FONT COLOR="008000">throw</FONT> <A HREF = "Pcsc10CardTerminal.html#Pcsc10CardTerminal:translatePcscException:">translatePcscException</A>(<A HREF = "#Pcsc10CardTerminal:internalReset:e">e</A>);
+       }
+ 
+       <FONT COLOR="008000">return</FONT> <A HREF = "Pcsc10CardTerminal.html#Pcsc10CardTerminal:getCardID:">getCardID</A>(<A HREF = "#Pcsc10CardTerminal:internalReset:slot">slot</A>, <A HREF = "#Pcsc10CardTerminal:internalReset:ms">ms</A>);
+       
+     } <FONT COLOR="008000">else</FONT> {
+     <A HREF = "#Pcsc10CardTerminal::itracer">itracer</A>.<METHODCALL><UNKNOWNCALL>debug</UNKNOWNCALL></METHODCALL>(&quot;internalReset&quot;, 
+               &quot;card reset failed - no card inserted&quot;);
+ 
+     <FONT COLOR="008000">return</FONT> <FONT COLOR="008000">null</FONT>;
+     }
+   }
+ 
+ 
+   <FONT COLOR="FF0000">/** Query the card terminal about its features.&lt;p&gt;
+    *
+    *  @return features
+    *
+    */</FONT>
+   <FONT COLOR="008000">protected</FONT> Properties <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:internalFeatures:">internalFeatures</A></FONT>(Properties <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:internalFeatures:features">features</A></FONT>) {
+ 
+       <A HREF = "#Pcsc10CardTerminal:internalFeatures:features">features</A>.<METHODCALL><UNKNOWNCALL>put</UNKNOWNCALL></METHODCALL>(&quot;Release Date: &quot;, <A HREF = "#Pcsc10CardTerminal::DATE">DATE</A>);
+       <A HREF = "#Pcsc10CardTerminal:internalFeatures:features">features</A>.<METHODCALL><UNKNOWNCALL>put</UNKNOWNCALL></METHODCALL>(&quot;PCSC CardTerminal Version: &quot;, <A HREF = "#Pcsc10CardTerminal::VERSION">VERSION</A>);
+       <A HREF = "#Pcsc10CardTerminal:internalFeatures:features">features</A>.<METHODCALL><UNKNOWNCALL>put</UNKNOWNCALL></METHODCALL>(&quot;Reader Name: &quot;, getName());
+       <A HREF = "#Pcsc10CardTerminal:internalFeatures:features">features</A>.<METHODCALL><UNKNOWNCALL>put</UNKNOWNCALL></METHODCALL>(&quot;Reader Type: &quot;, getType());
+ 
+       <FONT COLOR="008000">return</FONT> <A HREF = "#Pcsc10CardTerminal:internalFeatures:features">features</A>;
+   }
+ 
+   <FONT COLOR="FF0000">/** Check whether there is a smart card present.
+    *
+    * @param  slot
+    *         Number of the slot to check (must be 0 for PCSC)
+    * @return True if there is a smart card inserted in the card
+    *         terminals slot.
+    */</FONT>
+   <FONT COLOR="008000">public</FONT> <FONT COLOR="008000">synchronized</FONT> <FONT COLOR="008000">boolean</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:isCardPresent:">isCardPresent</A></FONT>(<FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:isCardPresent:slot">slot</A></FONT>) 
+     throws CardTerminalException {
+ 
+       <FONT COLOR="008000">return</FONT> <A HREF = "#Pcsc10CardTerminal::CachedCardStatus">CachedCardStatus</A>;
+ 
+   }
+ 
+    <FONT COLOR="FF0000">/**
+     * Update the smart card status.
+     * 
+     * @param slot
+     * @return True if there is a smart card inserted in the card terminals
+     * slot.
+     */</FONT>
+    <FONT COLOR="008000">protected</FONT> <FONT COLOR="008000">boolean</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:UpdateCardStatus:">UpdateCardStatus</A></FONT>(<FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:UpdateCardStatus:slot">slot</A></FONT>)
+        throws CardTerminalException {
+ 
+       <FONT COLOR="008000">int</FONT>       <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:UpdateCardStatus:offset">offset</A></FONT>, <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:UpdateCardStatus:i">i</A></FONT>, <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:UpdateCardStatus:k">k</A></FONT>, <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:UpdateCardStatus:l">l</A></FONT>;
+       <FONT COLOR="008000">boolean</FONT>   <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:UpdateCardStatus:protocolSet">protocolSet</A></FONT> = <FONT COLOR="008000">false</FONT>;
+ 
+ 
+     <FONT COLOR="FF0000">// check if terminal is already closed...</FONT>
+     <FONT COLOR="008000">if</FONT> (!<A HREF = "#Pcsc10CardTerminal::closed">closed</A>) {
+ 
+       <FONT COLOR="FF0000">// check for the right slot-number</FONT>
+       <FONT COLOR="008000">if</FONT> (<A HREF = "#Pcsc10CardTerminal:UpdateCardStatus:slot">slot</A> != 0) {
+           <FONT COLOR="008000">throw</FONT> <FONT COLOR="008000">new</FONT> CardTerminalException(&quot;Invalid Slot number: &quot; + <A HREF = "#Pcsc10CardTerminal:UpdateCardStatus:slot">slot</A>);
+       }
+       <FONT COLOR="FF0000">/* fill in the data structure <FONT COLOR="008000">for</FONT> the state request */</FONT>
+       <A HREF = "#Pcsc10CardTerminal::PcscReaderState">PcscReaderState</A>[] rState = <FONT COLOR="008000">new</FONT> <A HREF = "#Pcsc10CardTerminal::PcscReaderState">PcscReaderState</A>[1];
+       <A HREF = "#Pcsc10CardTerminal::rState">rState</A>[0] = <FONT COLOR="008000">new</FONT> PcscReaderState();
+       <A HREF = "#Pcsc10CardTerminal::rState">rState</A>[0].CurrentState = Pcsc10Constants.SCARD_STATE_UNAWARE;
+       <A HREF = "#Pcsc10CardTerminal::rState">rState</A>[0].Reader = getName();
+ 
+       <FONT COLOR="008000">try</FONT> {
+         <FONT COLOR="FF0000">/* set the timeout to 1 second */</FONT>
+         <A HREF = "#Pcsc10CardTerminal::pcsc">pcsc</A>.<METHODCALL><A HREF = "OCFPCSC1.html#OCFPCSC1:SCardGetStatusChange:">SCardGetStatusChange</A></METHODCALL>(<A HREF = "#Pcsc10CardTerminal::context">context</A>, 1, rState);
+ 
+         <FONT COLOR="FF0000">// PTR 0219: check if a card is present but unresponsive</FONT>
+         <FONT COLOR="008000">if</FONT> ( ((<A HREF = "#Pcsc10CardTerminal::rState">rState</A>[0].EventState &amp; <A HREF = "#Pcsc10CardTerminal::SCARD_STATE_MUTE">SCARD_STATE_MUTE</A>)!=0)
+              &amp;&amp;
+              ((<A HREF = "#Pcsc10CardTerminal::rState">rState</A>[0].EventState &amp; <A HREF = "#Pcsc10CardTerminal::SCARD_STATE_PRESENT">SCARD_STATE_PRESENT</A>)!=0)) {
+ 
+           <FONT COLOR="008000">throw</FONT> <FONT COLOR="008000">new</FONT> CardTerminalException(&quot;Card present but unresponsive in <A HREF = "#Pcsc10CardTerminal:UpdateCardStatus:slot">slot</A> &quot;+<A HREF = "#Pcsc10CardTerminal:UpdateCardStatus:slot">slot</A>);
+         }
+ 
+       } <FONT COLOR="008000">catch</FONT> (<A HREF = "PcscException.html#PcscException::">PcscException</A> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:UpdateCardStatus:e">e</A></FONT>) {
+       <FONT COLOR="008000">throw</FONT> <A HREF = "Pcsc10CardTerminal.html#Pcsc10CardTerminal:translatePcscException:">translatePcscException</A>(<A HREF = "#Pcsc10CardTerminal:UpdateCardStatus:e">e</A>);
+       }
+ 
+       cachedATR = <A HREF = "#Pcsc10CardTerminal::rState">rState</A>[0].ATR;
+ 
+       <FONT COLOR="FF0000">// check the length of the returned ATR. if ATR is empty / null, no card is inserted</FONT>
+       <FONT COLOR="008000">if</FONT> (cachedATR != <FONT COLOR="008000">null</FONT>) {
+       <FONT COLOR="008000">if</FONT> (cachedATR.length &gt; 0) {
+ 
+           <FONT COLOR="FF0000">// Determine which card protocol is used by the card</FONT>
+ 
+           <FONT COLOR="FF0000">// While a TDi character exist,</FONT>
+           <FONT COLOR="FF0000">// places l on the next TDi</FONT>
+           <FONT COLOR="FF0000">// protocol memorises the first found protocol.</FONT>
+           <FONT COLOR="FF0000">// Today, we assumes that only T=0, T=1 or T=0/1 are supported.</FONT>
+           <FONT COLOR="FF0000">// So we memorised the first founded protocol which must be</FONT>
+           <FONT COLOR="FF0000">// T=0 for bi-protocol card according to ISO standard.</FONT>
+           <A HREF = "#Pcsc10CardTerminal:UpdateCardStatus:l">l</A> = 1;        <FONT COLOR="FF0000">// T0 offset</FONT>
+ 
+           <FONT COLOR="008000">while</FONT> ((<A HREF = "#Pcsc10CardTerminal::cachedATR">cachedATR</A>[<A HREF = "#Pcsc10CardTerminal:UpdateCardStatus:l">l</A>] &amp; (<FONT COLOR="008000">byte</FONT>) 0x80) != (<FONT COLOR="008000">byte</FONT>) 0x00) {
+           <A HREF = "#Pcsc10CardTerminal:UpdateCardStatus:offset">offset</A> = 0;
+ 
+           <FONT COLOR="008000">for</FONT> (<A HREF = "#Pcsc10CardTerminal:UpdateCardStatus:k">k</A> = (<FONT COLOR="008000">byte</FONT>) 0x10, <A HREF = "#Pcsc10CardTerminal:UpdateCardStatus:i">i</A> = 0; <A HREF = "#Pcsc10CardTerminal:UpdateCardStatus:i">i</A> &lt; 4; <A HREF = "#Pcsc10CardTerminal:UpdateCardStatus:k">k</A> &lt;&lt;= 1, <A HREF = "#Pcsc10CardTerminal:UpdateCardStatus:i">i</A>++) {
+               <FONT COLOR="008000">if</FONT> ((<A HREF = "#Pcsc10CardTerminal::cachedATR">cachedATR</A>[<A HREF = "#Pcsc10CardTerminal:UpdateCardStatus:l">l</A>] &amp; <A HREF = "#Pcsc10CardTerminal:UpdateCardStatus:k">k</A>) != (<FONT COLOR="008000">byte</FONT>) 0x00) {
+               <A HREF = "#Pcsc10CardTerminal:UpdateCardStatus:offset">offset</A>++;
+               }
+           }
+ 
+           <A HREF = "#Pcsc10CardTerminal:UpdateCardStatus:l">l</A> += <A HREF = "#Pcsc10CardTerminal:UpdateCardStatus:offset">offset</A>;
+ 
+           <FONT COLOR="008000">if</FONT> (!<A HREF = "#Pcsc10CardTerminal:UpdateCardStatus:protocolSet">protocolSet</A>) {
+               <A HREF = "#Pcsc10CardTerminal:UpdateCardStatus:protocolSet">protocolSet</A> = <FONT COLOR="008000">true</FONT>;
+               <A HREF = "#Pcsc10CardTerminal::protocolUsed">protocolUsed</A> = <A HREF = "#Pcsc10CardTerminal::cachedATR">cachedATR</A>[<A HREF = "#Pcsc10CardTerminal:UpdateCardStatus:l">l</A>] &amp; (<FONT COLOR="008000">byte</FONT>) 0x0F;
+ 
+               <FONT COLOR="008000">break</FONT>;
+           }
+           }
+ 
+           <FONT COLOR="FF0000">// Card is present</FONT>
+           <A HREF = "#Pcsc10CardTerminal::CachedCardStatus">CachedCardStatus</A> = <FONT COLOR="008000">true</FONT>;
+           <FONT COLOR="008000">return</FONT> <FONT COLOR="008000">true</FONT>;
+       } <FONT COLOR="008000">else</FONT> {
+           <FONT COLOR="FF0000">// No Card is present</FONT>
+           <A HREF = "#Pcsc10CardTerminal::CachedCardStatus">CachedCardStatus</A> = <FONT COLOR="008000">false</FONT>;
+           <FONT COLOR="008000">return</FONT> <FONT COLOR="008000">false</FONT>;
+       }
+       } <FONT COLOR="008000">else</FONT> {
+       <FONT COLOR="FF0000">// No Card is present</FONT>
+       <A HREF = "#Pcsc10CardTerminal::CachedCardStatus">CachedCardStatus</A> = <FONT COLOR="008000">false</FONT>;
+       <FONT COLOR="008000">return</FONT> <FONT COLOR="008000">false</FONT>;
+       }
+     } <FONT COLOR="008000">else</FONT> {
+     <FONT COLOR="008000">return</FONT> <FONT COLOR="008000">false</FONT>; <FONT COLOR="FF0000">// return &quot;no card inserted&quot;, because terminal is already closed</FONT>
+     }
+    }
+ 
+    <FONT COLOR="FF0000">/** @deprecated since OCF1.2
+    */</FONT>
+   <FONT COLOR="008000">public</FONT> CardID <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:getCardID:">getCardID</A></FONT>(<FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:getCardID:slot">slot</A></FONT>, <FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:getCardID:timeout">timeout</A></FONT>) 
+     throws CardTerminalException {
+ 
+     <FONT COLOR="008000">return</FONT> <A HREF = "Pcsc10CardTerminal.html#Pcsc10CardTerminal:getCardID:">getCardID</A>(<A HREF = "#Pcsc10CardTerminal:getCardID:slot">slot</A>);
+   }
+ 
+ 
+   <FONT COLOR="FF0000">/** Return the &lt;tt&gt;CardID&lt;/tt&gt; of the presently inserted card. Will returned
+    *  the cached card if slot's status has not changed; otherwise it will
+    *  really retrieve the &lt;tt&gt;CardID&lt;/tt&gt;.&lt;p&gt;
+    *
+    *  @param      slot
+    *      slot number
+    *  @return     A &lt;tt&gt;CardID&lt;/tt&gt; object representing the inserted smart card.
+    *  @exception  opencard.core.terminal.CardTerminalException
+    *      thrown when problem occured getting the ATR of the card
+    */</FONT>
+   <FONT COLOR="008000">public</FONT> CardID <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:getCardID:">getCardID</A></FONT>(<FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:getCardID:slot">slot</A></FONT>)  
+     throws CardTerminalException {
+ 
+     <FONT COLOR="FF0000">// ... the PCSC card terminal has only one slot</FONT>
+     <FONT COLOR="008000">if</FONT> (<A HREF = "#Pcsc10CardTerminal:getCardID:slot">slot</A> != 0) {
+     <FONT COLOR="008000">throw</FONT> <FONT COLOR="008000">new</FONT> CardTerminalException(&quot;Invalid <A HREF = "#Pcsc10CardTerminal:getCardID:slot">slot</A> number: &quot; + <A HREF = "#Pcsc10CardTerminal:getCardID:slot">slot</A>);
+     }
+     <FONT COLOR="008000">if</FONT> (<A HREF = "#Pcsc10CardTerminal::CachedCardStatus">CachedCardStatus</A> &amp;&amp; (<A HREF = "#Pcsc10CardTerminal::cid">cid</A> != <FONT COLOR="008000">null</FONT>)) {
+     <FONT COLOR="008000">return</FONT> <A HREF = "#Pcsc10CardTerminal::cid">cid</A>;
+     } <FONT COLOR="008000">else</FONT> {
+     <FONT COLOR="008000">return</FONT> <FONT COLOR="008000">null</FONT>;
+     }
+   }
+ 
+   <FONT COLOR="FF0000">/** 
+    * The internal openSlotChannel method.
+    *  &lt;tt&gt;internalOpenSlotChannel&lt;/tt&gt; is executed at the beginning of openSlotChannel.
+    *
+    * @param     slotID
+    *    The number of the slot for which a &lt;tt&gt;SlotChannel&lt;/tt&gt; is requested.
+    */</FONT>
+   <FONT COLOR="008000">protected</FONT> <FONT COLOR="008000">synchronized</FONT> <FONT COLOR="008000">void</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:internalOpenSlotChannel:">internalOpenSlotChannel</A></FONT>(<FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:internalOpenSlotChannel:slotID">slotID</A></FONT>)
+     throws CardTerminalException {
+         
+       <FONT COLOR="FF0000">// cardConnect();</FONT>
+       <A HREF = "#Pcsc10CardTerminal::itracer">itracer</A>.<METHODCALL><UNKNOWNCALL>debug</UNKNOWNCALL></METHODCALL>(&quot;internalOpenSlotChannel&quot;, &quot;CONNECT CARD:&quot;);
+       <A HREF = "Pcsc10CardTerminal.html#Pcsc10CardTerminal:powerUpCard:">powerUpCard</A>(0, -1);
+   }
+ 
+   <FONT COLOR="FF0000">/**
+    * The internal closeSlotChannel method.
+    * &lt;tt&gt;internalCloseSlotChannel&lt;/tt&gt; is executed
+    * at the end of closeSlotChannel.
+    *
+    * @param     sc
+    *        The &lt;tt&gt;SlotChannel&lt;/tt&gt; to close.
+    * @exception CardTerminalException
+    *            thrown in case of errors closing the card (e.g. error disconnecting the card).
+    */</FONT>
+   <FONT COLOR="008000">protected</FONT> <FONT COLOR="008000">void</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:internalCloseSlotChannel:">internalCloseSlotChannel</A></FONT>(SlotChannel <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:internalCloseSlotChannel:sc">sc</A></FONT>)
+     throws CardTerminalException {
+       <FONT COLOR="008000">super</FONT>.<A HREF = "Pcsc10CardTerminal.html#Pcsc10CardTerminal:internalCloseSlotChannel:">internalCloseSlotChannel</A>(<A HREF = "#Pcsc10CardTerminal:internalCloseSlotChannel:sc">sc</A>);
+       <FONT COLOR="FF0000">//cardDisconnect(Pcsc10Constants.SCARD_LEAVE_CARD);</FONT>
+       <A HREF = "Pcsc10CardTerminal.html#Pcsc10CardTerminal:powerDownCard:">powerDownCard</A>(0, -1);
+   }
+ 
+   
+   <FONT COLOR="FF0000">/** returns <FONT COLOR="008000">true</FONT> <FONT COLOR="008000">if</FONT> card is connected */</FONT>
+   <FONT COLOR="008000">private</FONT> <FONT COLOR="008000">boolean</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:isCardConnected:">isCardConnected</A></FONT>(<FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:isCardConnected:slot">slot</A></FONT>) throws CardTerminalException {
+       <FONT COLOR="008000">boolean</FONT>   <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:isCardConnected:cardstatus">cardstatus</A></FONT> = <FONT COLOR="008000">false</FONT>;
+ 
+       <FONT COLOR="008000">try</FONT> {
+       <A HREF = "#Pcsc10CardTerminal:isCardConnected:cardstatus">cardstatus</A> = <A HREF = "Pcsc10CardTerminal.html#Pcsc10CardTerminal:isCardPresent:">isCardPresent</A>(<A HREF = "#Pcsc10CardTerminal:isCardConnected:slot">slot</A>);
+       
+       <FONT COLOR="008000">if</FONT> (<A HREF = "#Pcsc10CardTerminal:isCardConnected:cardstatus">cardstatus</A> &amp; (<A HREF = "#Pcsc10CardTerminal::cardHandle">cardHandle</A> == 0)) {
+           <A HREF = "Pcsc10CardTerminal.html#Pcsc10CardTerminal:cardConnect:">cardConnect</A>();
+       }
+       } <FONT COLOR="008000">catch</FONT> (CardTerminalException <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:isCardConnected:e">e</A></FONT>) {
+       <FONT COLOR="008000">throw</FONT> <FONT COLOR="008000">new</FONT> CardTerminalException(<A HREF = "#Pcsc10CardTerminal:isCardConnected:e">e</A>.<METHODCALL><UNKNOWNCALL>getMessage</UNKNOWNCALL></METHODCALL>());
+       }
+       
+       <FONT COLOR="008000">return</FONT> <A HREF = "#Pcsc10CardTerminal:isCardConnected:cardstatus">cardstatus</A>;
+   }
+   
+   <FONT COLOR="FF0000">/** get card handle */</FONT>
+   <FONT COLOR="008000">private</FONT> <FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:getCardHandle:">getCardHandle</A></FONT>() {
+     <FONT COLOR="008000">return</FONT> <A HREF = "#Pcsc10CardTerminal::cardHandle">cardHandle</A>;
+   }
+   
+   <FONT COLOR="FF0000">/** connect to the card 
+       replaced &quot;Pcsc10Constants.SCARD_SHARE_EXCLUSIVE&quot; by &quot;portMode&quot;
+   */</FONT>
+   <FONT COLOR="008000">private</FONT> <FONT COLOR="008000">void</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:cardConnect:">cardConnect</A></FONT>() throws CardTerminalException {
+     
+     <FONT COLOR="FF0000">// we use the EXCLUSIVE mode of PCSC, so we cannot connect</FONT>
+     <FONT COLOR="FF0000">// to the reader without a card inserted</FONT>
+     
+     Integer <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:cardConnect:returnedProtocol">returnedProtocol</A></FONT> = <FONT COLOR="008000">new</FONT> <CONSTRUCTORCALL>Integer</CONSTRUCTORCALL>(0);    
+     <FONT COLOR="008000">try</FONT> {
+       <A HREF = "#Pcsc10CardTerminal::itracer">itracer</A>.<METHODCALL><UNKNOWNCALL>debug</UNKNOWNCALL></METHODCALL>(&quot;cardConnect&quot;, &quot;connect to smartcard&quot;);
+       <A HREF = "#Pcsc10CardTerminal::cardHandle">cardHandle</A> = <A HREF = "#Pcsc10CardTerminal::pcsc">pcsc</A>.<METHODCALL><A HREF = "OCFPCSC1.html#OCFPCSC1:SCardConnect:">SCardConnect</A></METHODCALL>(<A HREF = "#Pcsc10CardTerminal::context">context</A>,
+                                      getName(),
+                      <A HREF = "#Pcsc10CardTerminal::portMode">portMode</A>,
+                      Pcsc10Constants.SCARD_PROTOCOL_T0
+                      | Pcsc10Constants.SCARD_PROTOCOL_T1,
+                    <A HREF = "#Pcsc10CardTerminal:cardConnect:returnedProtocol">returnedProtocol</A>);
+ 
+       <A HREF = "#Pcsc10CardTerminal::itracer">itracer</A>.<METHODCALL><UNKNOWNCALL>debug</UNKNOWNCALL></METHODCALL>(&quot;cardConnect&quot;, &quot;got card handle: &quot; + <A HREF = "#Pcsc10CardTerminal::cardHandle">cardHandle</A>);
+       
+       <FONT COLOR="008000">if</FONT> (<A HREF = "#Pcsc10CardTerminal::cardHandle">cardHandle</A> == 0) {
+       <FONT COLOR="008000">throw</FONT> <FONT COLOR="008000">new</FONT> CardTerminalException(&quot;No <A HREF = "#Pcsc10CardTerminal::cardHandle">cardHandle</A> present.  &quot;, <FONT COLOR="008000">this</FONT>);
+       }
+       <A HREF = "Pcsc10CardTerminal.html#Pcsc10CardTerminal:UpdateCardStatus:">UpdateCardStatus</A>(0);
+       
+     } <FONT COLOR="008000">catch</FONT>(<A HREF = "PcscException.html#PcscException::">PcscException</A> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:cardConnect:e">e</A></FONT>) {
+       <FONT COLOR="008000">throw</FONT> <A HREF = "Pcsc10CardTerminal.html#Pcsc10CardTerminal:translatePcscException:">translatePcscException</A>(<A HREF = "#Pcsc10CardTerminal:cardConnect:e">e</A>);
+     }    
+   }
+   
+   <FONT COLOR="FF0000">/** encapsulates SCardDisconnect
+    *
+    * @param disposition
+    */</FONT>
+   <FONT COLOR="008000">private</FONT> <FONT COLOR="008000">void</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:cardDisconnect:">cardDisconnect</A></FONT>(<FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:cardDisconnect:disposition">disposition</A></FONT>) throws CardTerminalException {
+     <FONT COLOR="008000">if</FONT> (<A HREF = "#Pcsc10CardTerminal::cardHandle">cardHandle</A> != 0) {
+       <FONT COLOR="008000">try</FONT> {
+         <A HREF = "#Pcsc10CardTerminal::itracer">itracer</A>.<METHODCALL><UNKNOWNCALL>debug</UNKNOWNCALL></METHODCALL>(&quot;cardDisconnect&quot;, &quot;disconnect smartcard - <A HREF = "#Pcsc10CardTerminal::cardHandle">cardHandle</A>=&quot; + <A HREF = "#Pcsc10CardTerminal::cardHandle">cardHandle</A>);
+         <A HREF = "#Pcsc10CardTerminal::pcsc">pcsc</A>.<METHODCALL><A HREF = "OCFPCSC1.html#OCFPCSC1:SCardDisconnect:">SCardDisconnect</A></METHODCALL>(<A HREF = "#Pcsc10CardTerminal::cardHandle">cardHandle</A>, <A HREF = "#Pcsc10CardTerminal:cardDisconnect:disposition">disposition</A>);
+       } <FONT COLOR="008000">catch</FONT> (<A HREF = "PcscException.html#PcscException::">PcscException</A> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:cardDisconnect:e">e</A></FONT>) {
+         <FONT COLOR="008000">throw</FONT> <A HREF = "Pcsc10CardTerminal.html#Pcsc10CardTerminal:translatePcscException:">translatePcscException</A>(<A HREF = "#Pcsc10CardTerminal:cardDisconnect:e">e</A>);
+       } <FONT COLOR="008000">finally</FONT> {
+         <A HREF = "#Pcsc10CardTerminal::itracer">itracer</A>.<METHODCALL><UNKNOWNCALL>debug</UNKNOWNCALL></METHODCALL>(&quot;cardDisconnect&quot;, &quot;invalidate card handle&quot;);
+         <A HREF = "#Pcsc10CardTerminal::cardHandle">cardHandle</A> = 0;
+       }
+     } <FONT COLOR="008000">else</FONT>
+       <A HREF = "#Pcsc10CardTerminal::itracer">itracer</A>.<METHODCALL><UNKNOWNCALL>debug</UNKNOWNCALL></METHODCALL>(&quot;cardDisconnect&quot;, &quot;<A HREF = "#Pcsc10CardTerminal::cardHandle">cardHandle</A> already 0 - disconnect impossible&quot;);
+   }
+ 
+ 
+   <FONT COLOR="FF0000">/** Send control command to terminal.
+    *
+    * @param     cmd
+    *            a byte array containing the command to be send to the card terminal
+    * @return    Response from terminal.
+    * @exception opencard.core.terminal.CardTerminalException
+    *            Exception thrown by driver.
+    * @see       opencard.opt.terminal.TerminalCommand
+    */</FONT>
+   <FONT COLOR="008000">public</FONT> byte[] <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:sendTerminalCommand:">sendTerminalCommand</A></FONT>(byte[] cmd)
+     throws CardTerminalException {
+ 
+     <FONT COLOR="008000">byte</FONT>[]    responseData = <FONT COLOR="008000">null</FONT>;
+ 
+     <FONT COLOR="008000">if</FONT> (<A HREF = "#Pcsc10CardTerminal::cardHandle">cardHandle</A> == 0)
+       <FONT COLOR="008000">throw</FONT> <FONT COLOR="008000">new</FONT> CardTerminalException(&quot;no card present&quot;, <FONT COLOR="008000">this</FONT>);
+ 
+     <FONT COLOR="008000">try</FONT> {
+ 
+     responseData = <A HREF = "#Pcsc10CardTerminal::pcsc">pcsc</A>.<METHODCALL><A HREF = "OCFPCSC1.html#OCFPCSC1:SCardControl:">SCardControl</A></METHODCALL>(<A HREF = "#Pcsc10CardTerminal::cardHandle">cardHandle</A>, 0, cmd);
+ 
+     <A HREF = "Pcsc10CardTerminal.html#Pcsc10CardTerminal:checkNonNullResponse:">checkNonNullResponse</A>(responseData);
+ 
+     <FONT COLOR="008000">return</FONT> responseData;
+ 
+     } <FONT COLOR="008000">catch</FONT> (<A HREF = "PcscException.html#PcscException::">PcscException</A> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:sendTerminalCommand:e">e</A></FONT>) {
+       <FONT COLOR="008000">throw</FONT> <A HREF = "Pcsc10CardTerminal.html#Pcsc10CardTerminal:translatePcscException:">translatePcscException</A>(<A HREF = "#Pcsc10CardTerminal:sendTerminalCommand:e">e</A>);
+     }
+   }
+ 
+    <FONT COLOR="FF0000">/**
+     * Send powerUpCard command to terminal.
+     * 
+     * @exception CardTerminalException
+     * @param slotID integer containing the card terminal slotID
+     * @param ms integer containing the timeout
+     * @param empty not used
+     * @return Response from terminal.
+     * @see opencard.opt.terminal.TerminalCommand
+     */</FONT>
+    <FONT COLOR="008000">public</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:powerUpCard:byte">byte</A></FONT>[] <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:powerUpCard:">powerUpCard</A></FONT>(<FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:powerUpCard:slotID">slotID</A></FONT>, <FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:powerUpCard:ms">ms</A></FONT>, 
+                              <FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:powerUpCard:empty">empty</A></FONT>) throws CardTerminalException {
+ 
+        <FONT COLOR="FF0000">// check if card handle exists</FONT>
+        <FONT COLOR="008000">if</FONT> (<A HREF = "#Pcsc10CardTerminal::CachedCardStatus">CachedCardStatus</A>) {
+ 
+        <A HREF = "#Pcsc10CardTerminal::itracer">itracer</A>.<METHODCALL><UNKNOWNCALL>debug</UNKNOWNCALL></METHODCALL>(&quot;PowerUpCard&quot;, &quot;<A HREF = "#Pcsc10CardTerminal::cardHandle">cardHandle</A> exists - <FONT COLOR="008000">try</FONT> reconnect&quot;);
+ 
+        Integer        <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:powerUpCard:returnedProtocol">returnedProtocol</A></FONT> = <FONT COLOR="008000">new</FONT> <CONSTRUCTORCALL>Integer</CONSTRUCTORCALL>(0);
+ 
+        <FONT COLOR="008000">try</FONT> {
+ 
+            <FONT COLOR="008000">if</FONT> (<A HREF = "#Pcsc10CardTerminal::cardHandle">cardHandle</A> != 0) {
+            <A HREF = "#Pcsc10CardTerminal::pcsc">pcsc</A>.<METHODCALL><A HREF = "OCFPCSC1.html#OCFPCSC1:SCardReconnect:">SCardReconnect</A></METHODCALL>(<A HREF = "#Pcsc10CardTerminal::cardHandle">cardHandle</A>, <A HREF = "#Pcsc10CardTerminal::portMode">portMode</A>, 
+                        Pcsc10Constants.SCARD_PROTOCOL_T0 
+                        | Pcsc10Constants.SCARD_PROTOCOL_T1, 
+                        Pcsc10Constants.SCARD_UNPOWER_CARD, 
+                        <A HREF = "#Pcsc10CardTerminal:powerUpCard:returnedProtocol">returnedProtocol</A>);
+            } <FONT COLOR="008000">else</FONT> {
+            <A HREF = "#Pcsc10CardTerminal::cardHandle">cardHandle</A> = 
+                <A HREF = "#Pcsc10CardTerminal::pcsc">pcsc</A>.<METHODCALL><A HREF = "OCFPCSC1.html#OCFPCSC1:SCardConnect:">SCardConnect</A></METHODCALL>(<A HREF = "#Pcsc10CardTerminal::context">context</A>, getName(), <A HREF = "#Pcsc10CardTerminal::portMode">portMode</A>, 
+                      Pcsc10Constants.SCARD_PROTOCOL_T0 
+                      | Pcsc10Constants.SCARD_PROTOCOL_T1, <A HREF = "#Pcsc10CardTerminal:powerUpCard:returnedProtocol">returnedProtocol</A>);
+            }
+ 
+            <A HREF = "Pcsc10CardTerminal.html#Pcsc10CardTerminal:UpdateCardStatus:">UpdateCardStatus</A>(0);
+ 
+            <FONT COLOR="008000">if</FONT> (cachedATR == <FONT COLOR="008000">null</FONT>) {
+            <FONT COLOR="008000">throw</FONT> <FONT COLOR="008000">new</FONT> CardTerminalException(&quot;No ATR present. Card badly inserted? &quot;, 
+                            <FONT COLOR="008000">this</FONT>);
+            }
+            <A HREF = "#Pcsc10CardTerminal::cid">cid</A> = <FONT COLOR="008000">new</FONT> CardID(<FONT COLOR="008000">this</FONT>, 0, cachedATR);
+ 
+        } <FONT COLOR="008000">catch</FONT> (<A HREF = "PcscException.html#PcscException::">PcscException</A> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:powerUpCard:e">e</A></FONT>) {
+            <FONT COLOR="008000">throw</FONT> <A HREF = "Pcsc10CardTerminal.html#Pcsc10CardTerminal:translatePcscException:">translatePcscException</A>(<A HREF = "#Pcsc10CardTerminal:powerUpCard:e">e</A>);
+        }
+ 
+        <FONT COLOR="008000">return</FONT> cachedATR;
+ 
+        } <FONT COLOR="008000">else</FONT> {
+        <A HREF = "#Pcsc10CardTerminal::itracer">itracer</A>.<METHODCALL><UNKNOWNCALL>debug</UNKNOWNCALL></METHODCALL>(&quot;powerUpCard&quot;, &quot;card reset failed - no card inserted&quot;);
+ 
+        <FONT COLOR="008000">return</FONT> <FONT COLOR="008000">null</FONT>;
+        }
+    }
+ 
+ 
+    <FONT COLOR="FF0000">/**
+     * Send powerUpCard command to terminal.
+     * 
+     * @exception CardTerminalException
+     * @param slotID integer containing the card terminal slotID
+     * @param ms integer containing the timeout
+     * @return Response from terminal.
+     * @see opencard.opt.terminal.TerminalCommand
+     */</FONT>
+    <FONT COLOR="008000">public</FONT> <FONT COLOR="008000">void</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:powerUpCard:">powerUpCard</A></FONT>(<FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:powerUpCard:slotID">slotID</A></FONT>, <FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:powerUpCard:ms">ms</A></FONT>) throws CardTerminalException {
+ 
+        <FONT COLOR="008000">try</FONT> {
+        <A HREF = "Pcsc10CardTerminal.html#Pcsc10CardTerminal:powerUpCard:">powerUpCard</A>(<A HREF = "#Pcsc10CardTerminal:powerUpCard:slotID">slotID</A>, <A HREF = "#Pcsc10CardTerminal:powerUpCard:ms">ms</A>, 0);
+        } <FONT COLOR="008000">catch</FONT> (Exception <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:powerUpCard:e">e</A></FONT>) {
+        <FONT COLOR="008000">throw</FONT> <FONT COLOR="008000">new</FONT> CardTerminalException(<A HREF = "#Pcsc10CardTerminal:powerUpCard:e">e</A>.<METHODCALL><UNKNOWNCALL>getMessage</UNKNOWNCALL></METHODCALL>());
+        }
+ 
+    }
+ 
+    <FONT COLOR="FF0000">/**
+     * Send powerDownCard command to terminal.
+     * 
+     * @exception CardTerminalException
+     * @param slotID integer containing the card terminal slotID
+     * @param ms integer containing the timeout
+     * @return Response from terminal.
+     * @see opencard.opt.terminal.TerminalCommand
+     */</FONT>
+     <FONT COLOR="008000">public</FONT> <FONT COLOR="008000">void</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:powerDownCard:">powerDownCard</A></FONT>(<FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:powerDownCard:slotID">slotID</A></FONT>, <FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:powerDownCard:ms">ms</A></FONT>)
+     throws CardTerminalException {
+ 
+     <A HREF = "Pcsc10CardTerminal.html#Pcsc10CardTerminal:cardDisconnect:">cardDisconnect</A>(Pcsc10Constants.SCARD_UNPOWER_CARD);
+ 
+     <FONT COLOR="008000">return</FONT>;
+ 
+     }
+ 
+   <FONT COLOR="FF0000">/** check that Response from card is not <FONT COLOR="008000">null</FONT> */</FONT>
+   <FONT COLOR="008000">private</FONT> <FONT COLOR="008000">void</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:checkNonNullResponse:">checkNonNullResponse</A></FONT>(byte [] responseData)
+       throws CardTerminalException {
+       <FONT COLOR="008000">if</FONT> (responseData == <FONT COLOR="008000">null</FONT>) {
+       <FONT COLOR="008000">throw</FONT> <FONT COLOR="008000">new</FONT> CardTerminalException(&quot;No response from reader. &quot;, <FONT COLOR="008000">this</FONT>);
+       }
+   }
+ 
+   <FONT COLOR="FF0000">/** The implementation of &lt;tt&gt;CardTerminal.internalSendAPDU()&lt;/tt&gt;.
+    *
+    * @param slot
+    *        logical slot number
+    * @param capdu
+    *        C-APDU to send to the card
+    * @param ms
+    *        not supported, ignored
+    */</FONT>
+   <FONT COLOR="008000">protected</FONT> ResponseAPDU <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:internalSendAPDU:">internalSendAPDU</A></FONT>(<FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:internalSendAPDU:slot">slot</A></FONT>, CommandAPDU <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:internalSendAPDU:capdu">capdu</A></FONT>, <FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:internalSendAPDU:ms">ms</A></FONT>) 
+     throws CardTerminalException {
+ 
+     <FONT COLOR="FF0000">// ... the Pcsc card terminal has only one slot</FONT>
+     <FONT COLOR="008000">if</FONT> (<A HREF = "#Pcsc10CardTerminal:internalSendAPDU:slot">slot</A> != 0)
+       <FONT COLOR="008000">throw</FONT> <FONT COLOR="008000">new</FONT> CardTerminalException(&quot;Invalid <A HREF = "#Pcsc10CardTerminal:internalSendAPDU:slot">slot</A>: &quot; + <A HREF = "#Pcsc10CardTerminal:internalSendAPDU:slot">slot</A>);
+ 
+     <A HREF = "#Pcsc10CardTerminal::itracer">itracer</A>.<METHODCALL><UNKNOWNCALL>debug</UNKNOWNCALL></METHODCALL>(&quot;internalSendAPDU&quot;, &quot;sending &quot; + <A HREF = "#Pcsc10CardTerminal:internalSendAPDU:capdu">capdu</A>);
+ 
+     <FONT COLOR="008000">byte</FONT> [] responseData = <FONT COLOR="008000">null</FONT>;
+ 
+     <FONT COLOR="FF0000">// line &quot;responseData = pcsc.SCardTransmit(cardHandle, capdu.getBytes());&quot;</FONT>
+     <FONT COLOR="FF0000">// modified for managing all 4 cases with automatic APDU chaining</FONT>
+     <FONT COLOR="FF0000">// when necessary...</FONT>
+     
+     <A HREF = "#Pcsc10CardTerminal::lenbuf">lenbuf</A> = (<FONT COLOR="008000">int</FONT>) <A HREF = "#Pcsc10CardTerminal:internalSendAPDU:capdu">capdu</A>.<UNKNOWNCALL>getLength</UNKNOWNCALL>();
+ 
+     <FONT COLOR="008000">byte</FONT>[]    apduCommand = <FONT COLOR="008000">new</FONT> <FONT COLOR="008000">byte</FONT>[<A HREF = "#Pcsc10CardTerminal::lenbuf">lenbuf</A>];
+ 
+     System.arraycopy(<A HREF = "#Pcsc10CardTerminal:internalSendAPDU:capdu">capdu</A>.<METHODCALL><UNKNOWNCALL>getBuffer</UNKNOWNCALL></METHODCALL>(), 0, apduCommand, 0, <A HREF = "#Pcsc10CardTerminal::lenbuf">lenbuf</A>);
+ 
+     <FONT COLOR="FF0000">// Transfer the APDU command inside the bufferCommand.</FONT>
+     <FONT COLOR="008000">if</FONT> (<A HREF = "#Pcsc10CardTerminal::lenbuf">lenbuf</A> &gt; 4) {
+     <A HREF = "#Pcsc10CardTerminal::le">le</A> = <A HREF = "#Pcsc10CardTerminal::apduCommand">apduCommand</A>[4];
+     <A HREF = "#Pcsc10CardTerminal::le">le</A> = <FONT COLOR="008000">this</FONT>.<A HREF = "Pcsc10CardTerminal.html#Pcsc10CardTerminal:convertByte:">convertByte</A>(<A HREF = "#Pcsc10CardTerminal::le">le</A>);
+     
+     <FONT COLOR="008000">if</FONT> (<A HREF = "#Pcsc10CardTerminal::le">le</A> == 0) {
+         <A HREF = "#Pcsc10CardTerminal::le">le</A> = 256;
+     }
+     }
+     
+     <FONT COLOR="FF0000">// main transmition block</FONT>
+     <FONT COLOR="008000">try</FONT> {
+     
+     <FONT COLOR="FF0000">// if T=1 or else T=0</FONT>
+     <FONT COLOR="008000">if</FONT> (<A HREF = "#Pcsc10CardTerminal::protocolUsed">protocolUsed</A> == 1) {
+         
+         <FONT COLOR="FF0000">// T=1 transmition</FONT>
+         responseData = <A HREF = "#Pcsc10CardTerminal::pcsc">pcsc</A>.<METHODCALL><A HREF = "OCFPCSC1.html#OCFPCSC1:SCardTransmit:">SCardTransmit</A></METHODCALL>(<A HREF = "#Pcsc10CardTerminal::cardHandle">cardHandle</A>, apduCommand);
+         
+     } <FONT COLOR="008000">else</FONT> {
+         
+         <FONT COLOR="FF0000">// Determine which type of Exchange between the reader</FONT>
+         <FONT COLOR="008000">if</FONT> (<A HREF = "#Pcsc10CardTerminal::lenbuf">lenbuf</A> == 4) {
+         <FONT COLOR="FF0000">// Case 1 short</FONT>
+         <A HREF = "#Pcsc10CardTerminal::caseAPDU">caseAPDU</A> = 1;
+         <A HREF = "#Pcsc10CardTerminal::itracer">itracer</A>.<METHODCALL><UNKNOWNCALL>debug</UNKNOWNCALL></METHODCALL>(&quot;internalSendAPDU&quot;, &quot;Case 1&quot;);
+         } <FONT COLOR="008000">else</FONT> <FONT COLOR="008000">if</FONT> (<A HREF = "#Pcsc10CardTerminal::lenbuf">lenbuf</A> == 5) {
+         <FONT COLOR="FF0000">// Case 2 short</FONT>
+         <A HREF = "#Pcsc10CardTerminal::itracer">itracer</A>.<METHODCALL><UNKNOWNCALL>debug</UNKNOWNCALL></METHODCALL>(&quot;internalSendAPDU&quot;, &quot;Case 2&quot;);
+         <A HREF = "#Pcsc10CardTerminal::caseAPDU">caseAPDU</A> = 2;
+         <A HREF = "#Pcsc10CardTerminal::le">le</A> = <A HREF = "#Pcsc10CardTerminal::apduCommand">apduCommand</A>[4];
+         } <FONT COLOR="008000">else</FONT> <FONT COLOR="008000">if</FONT> ((<A HREF = "#Pcsc10CardTerminal::le">le</A> + 5) == <A HREF = "#Pcsc10CardTerminal::lenbuf">lenbuf</A>) {    
+         <FONT COLOR="FF0000">// Case 3 short</FONT>
+         <A HREF = "#Pcsc10CardTerminal::itracer">itracer</A>.<METHODCALL><UNKNOWNCALL>debug</UNKNOWNCALL></METHODCALL>(&quot;internalSendAPDU&quot;, &quot;Case 3&quot;);
+         <A HREF = "#Pcsc10CardTerminal::caseAPDU">caseAPDU</A> = 3;
+         } <FONT COLOR="008000">else</FONT> <FONT COLOR="008000">if</FONT> ((<A HREF = "#Pcsc10CardTerminal::le">le</A> + 5 + 1) == <A HREF = "#Pcsc10CardTerminal::lenbuf">lenbuf</A>) {
+         <FONT COLOR="FF0000">// Case 4 short</FONT>
+         <A HREF = "#Pcsc10CardTerminal::itracer">itracer</A>.<METHODCALL><UNKNOWNCALL>debug</UNKNOWNCALL></METHODCALL>(&quot;internalSendAPDU&quot;, &quot;Case 4&quot;);
+         <A HREF = "#Pcsc10CardTerminal::caseAPDU">caseAPDU</A> = 4;
+         <A HREF = "#Pcsc10CardTerminal::le">le</A> = <A HREF = "Pcsc10CardTerminal.html#Pcsc10CardTerminal:convertByte:">convertByte</A>(<A HREF = "#Pcsc10CardTerminal::apduCommand">apduCommand</A>[apduCommand.length - 1]);
+         apduCommand = <FONT COLOR="008000">new</FONT> <FONT COLOR="008000">byte</FONT>[<A HREF = "#Pcsc10CardTerminal::lenbuf">lenbuf</A> - 1];
+         System.arraycopy(<A HREF = "#Pcsc10CardTerminal:internalSendAPDU:capdu">capdu</A>.<METHODCALL><UNKNOWNCALL>getBuffer</UNKNOWNCALL></METHODCALL>(),
+                  0,
+                  apduCommand,
+                  0, 
+                  <A HREF = "#Pcsc10CardTerminal::lenbuf">lenbuf</A> - 1);
+         } <FONT COLOR="008000">else</FONT> {
+         <FONT COLOR="008000">throw</FONT> <FONT COLOR="008000">new</FONT> CardTerminalException(&quot;Did not recognize the APDU command&quot;);
+         } <FONT COLOR="FF0000">// if (Determine which type of Exchange)</FONT>
+ 
+         <FONT COLOR="FF0000">// T=0 transmition (first command)</FONT>
+         <A HREF = "#Pcsc10CardTerminal::itracer">itracer</A>.<METHODCALL><UNKNOWNCALL>debug</UNKNOWNCALL></METHODCALL>(&quot;internalSendAPDU&quot;, &quot;Send APDU Command&quot;);
+         responseData = <A HREF = "#Pcsc10CardTerminal::pcsc">pcsc</A>.<METHODCALL><A HREF = "OCFPCSC1.html#OCFPCSC1:SCardTransmit:">SCardTransmit</A></METHODCALL>(<A HREF = "#Pcsc10CardTerminal::cardHandle">cardHandle</A>, apduCommand);
+         <A HREF = "#Pcsc10CardTerminal::itracer">itracer</A>.<METHODCALL><UNKNOWNCALL>debug</UNKNOWNCALL></METHODCALL>(&quot;internalSendAPDU&quot;, HexString.hexify(responseData));
+         
+         <A HREF = "Pcsc10CardTerminal.html#Pcsc10CardTerminal:checkNonNullResponse:">checkNonNullResponse</A>(responseData);
+ 
+         <FONT COLOR="FF0000">// main switch block for cases 2 and 4</FONT>
+         <FONT COLOR="008000">switch</FONT> (<A HREF = "#Pcsc10CardTerminal::caseAPDU">caseAPDU</A>) {
+         
+         <FONT COLOR="008000">case</FONT> 2: {
+         <A HREF = "#Pcsc10CardTerminal::itracer">itracer</A>.<METHODCALL><UNKNOWNCALL>debug</UNKNOWNCALL></METHODCALL>(&quot;internalSendAPDU&quot;, 
+                   &quot;<FONT COLOR="008000">case</FONT> 2  status returned&quot; 
+                   + <A HREF = "#Pcsc10CardTerminal::responseData">responseData</A>[responseData.length - 2]);
+         
+         <FONT COLOR="FF0000">// if 6C</FONT>
+         <FONT COLOR="008000">if</FONT> (<A HREF = "#Pcsc10CardTerminal::responseData">responseData</A>[responseData.length - 2] == (<FONT COLOR="008000">byte</FONT>) 0x6c) {
+ 
+             <FONT COLOR="FF0000">// received 0x6C Need to reissue the same command</FONT>
+             <FONT COLOR="FF0000">// with La found responseData.</FONT>
+             <FONT COLOR="FF0000">// responseData   = sw1 sw2</FONT>
+             <FONT COLOR="008000">int</FONT>     <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:internalSendAPDU:la_length">la_length</A></FONT> = 
+             <A HREF = "Pcsc10CardTerminal.html#Pcsc10CardTerminal:convertByte:">convertByte</A>(<A HREF = "#Pcsc10CardTerminal::responseData">responseData</A>[responseData.length - 1]);
+             
+             <FONT COLOR="008000">if</FONT> (<A HREF = "#Pcsc10CardTerminal:internalSendAPDU:la_length">la_length</A> == 0) {
+             <A HREF = "#Pcsc10CardTerminal:internalSendAPDU:la_length">la_length</A> = 256;
+             }
+             
+             <FONT COLOR="008000">int</FONT>     <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:internalSendAPDU:temp_le">temp_le</A></FONT> = <FONT COLOR="008000">this</FONT>.<A HREF = "Pcsc10CardTerminal.html#Pcsc10CardTerminal:convertByte:">convertByte</A>(<A HREF = "#Pcsc10CardTerminal::le">le</A>);
+             
+             <FONT COLOR="008000">if</FONT> (<A HREF = "#Pcsc10CardTerminal:internalSendAPDU:temp_le">temp_le</A> == 0) {
+             <A HREF = "#Pcsc10CardTerminal:internalSendAPDU:temp_le">temp_le</A> = 256;
+             }
+             
+             <A HREF = "#Pcsc10CardTerminal::apduCommand">apduCommand</A>[4] = 
+             (<FONT COLOR="008000">byte</FONT>) <A HREF = "#Pcsc10CardTerminal::responseData">responseData</A>[responseData.length - 1]; <FONT COLOR="FF0000">// P3</FONT>
+             
+             <FONT COLOR="FF0000">// T=0 transmition (command w/ La)</FONT>
+             responseData = <A HREF = "#Pcsc10CardTerminal::pcsc">pcsc</A>.<METHODCALL><A HREF = "OCFPCSC1.html#OCFPCSC1:SCardTransmit:">SCardTransmit</A></METHODCALL>(<A HREF = "#Pcsc10CardTerminal::cardHandle">cardHandle</A>, 
+                               apduCommand);
+             
+             <A HREF = "#Pcsc10CardTerminal::itracer">itracer</A>.<METHODCALL><UNKNOWNCALL>debug</UNKNOWNCALL></METHODCALL>(&quot;internalSendAPDU&quot;, 
+                   HexString.hexify(responseData));
+             
+             <A HREF = "Pcsc10CardTerminal.html#Pcsc10CardTerminal:checkNonNullResponse:">checkNonNullResponse</A>(responseData);
+             
+             <A HREF = "#Pcsc10CardTerminal::itracer">itracer</A>.<METHODCALL><UNKNOWNCALL>debug</UNKNOWNCALL></METHODCALL>(&quot;internalSendAPDU&quot;, 
+                   &quot;<A HREF = "#Pcsc10CardTerminal::le">le</A> &quot;
+                   + HexString.hexify(<A HREF = "#Pcsc10CardTerminal:internalSendAPDU:temp_le">temp_le</A>) 
+                   + &quot;la &quot;
+                   + HexString.hexify(<A HREF = "#Pcsc10CardTerminal:internalSendAPDU:la_length">la_length</A>));
+ 
+             <FONT COLOR="008000">if</FONT> (<A HREF = "#Pcsc10CardTerminal:internalSendAPDU:temp_le">temp_le</A> &lt; <A HREF = "#Pcsc10CardTerminal:internalSendAPDU:la_length">la_length</A>) {
+ 
+             <FONT COLOR="008000">byte</FONT>[]       buffer = <FONT COLOR="008000">new</FONT> <FONT COLOR="008000">byte</FONT>[<A HREF = "#Pcsc10CardTerminal:internalSendAPDU:temp_le">temp_le</A> + 2];
+             
+             System.arraycopy(responseData, 0, buffer, 0, 
+                      <A HREF = "#Pcsc10CardTerminal:internalSendAPDU:temp_le">temp_le</A>);
+             System.arraycopy(responseData, 
+                      responseData.length - 2, buffer, 
+                      <A HREF = "#Pcsc10CardTerminal:internalSendAPDU:temp_le">temp_le</A>, 2);
+             
+             responseData = <FONT COLOR="008000">new</FONT> <FONT COLOR="008000">byte</FONT>[buffer.length];
+             
+             <FONT COLOR="FF0000">// System.arraycopy(buffer, buffer.length, responseData, responseData.length - 2, buffer.length);</FONT>
+             System.arraycopy(buffer, 0, responseData, 0, 
+                      buffer.length);
+             
+             } <FONT COLOR="FF0000">// if (temp_le &lt; la_length)</FONT>
+ 
+         } <FONT COLOR="FF0000">// if (6C)</FONT>
+ 
+         <FONT COLOR="008000">break</FONT>;
+         } <FONT COLOR="FF0000">// case 2</FONT>
+         
+         <FONT COLOR="008000">case</FONT> 4: {
+         <A HREF = "#Pcsc10CardTerminal::itracer">itracer</A>.<METHODCALL><UNKNOWNCALL>debug</UNKNOWNCALL></METHODCALL>(&quot;internalSendAPDU&quot;,
+                   &quot;Case 4  + ISO TPDU support :  &quot;
+                   + <A HREF = "#Pcsc10CardTerminal::TPDU_Uses_ISO">TPDU_Uses_ISO</A>
+                   + &quot;  status returned by the card&quot;
+                   + <A HREF = "#Pcsc10CardTerminal::responseData">responseData</A>[responseData.length - 2]);
+         
+         <FONT COLOR="FF0000">/* Note: Some smartcard are not fully compatible
+            with ISO normatives in case short 4.
+            So when a card returns a 0x9000 to inform a good
+            transfer of the APDU command then the terminal
+            have to terminate the transaction and it shall
+            return the sw1 sw2 to the user. In the case of
+            fully ISO, the terminal sends a get response
+            to extract the &quot;le&quot; bytes requested inside
+            the APDU command. */</FONT>
+         
+         <FONT COLOR="FF0000">// if 61 etc.</FONT>
+         <FONT COLOR="008000">if</FONT> (<A HREF = "#Pcsc10CardTerminal::responseData">responseData</A>[responseData.length - 2] == (<FONT COLOR="008000">byte</FONT>) 0x61
+             || (<A HREF = "#Pcsc10CardTerminal::responseData">responseData</A>[responseData.length - 2] == (<FONT COLOR="008000">byte</FONT>) 0x90 
+             &amp;&amp; <A HREF = "#Pcsc10CardTerminal::TPDU_Uses_ISO">TPDU_Uses_ISO</A>)
+             || <A HREF = "#Pcsc10CardTerminal::responseData">responseData</A>[responseData.length - 2] == (<FONT COLOR="008000">byte</FONT>) 0x9F) {
+             
+             <FONT COLOR="008000">byte</FONT>[]  apduCommand1 = <FONT COLOR="008000">new</FONT> <FONT COLOR="008000">byte</FONT>[5];
+             
+             <A HREF = "#Pcsc10CardTerminal::apduCommand1">apduCommand1</A>[0] = <A HREF = "#Pcsc10CardTerminal::apduCommand">apduCommand</A>[0];
+             <A HREF = "#Pcsc10CardTerminal::apduCommand1">apduCommand1</A>[1] = (<FONT COLOR="008000">byte</FONT>) 0xC0; <FONT COLOR="FF0000">// INS (Get Response)</FONT>
+             <A HREF = "#Pcsc10CardTerminal::apduCommand1">apduCommand1</A>[2] = (<FONT COLOR="008000">byte</FONT>) 0x00; <FONT COLOR="FF0000">// P1</FONT>
+             <A HREF = "#Pcsc10CardTerminal::apduCommand1">apduCommand1</A>[3] = (<FONT COLOR="008000">byte</FONT>) 0x00; <FONT COLOR="FF0000">// P2</FONT>
+             
+             <FONT COLOR="FF0000">// init the p3 with the Le</FONT>
+             <FONT COLOR="008000">int</FONT>     <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:internalSendAPDU:temp_le">temp_le</A></FONT> = <FONT COLOR="008000">this</FONT>.<A HREF = "Pcsc10CardTerminal.html#Pcsc10CardTerminal:convertByte:">convertByte</A>(<A HREF = "#Pcsc10CardTerminal::le">le</A>);
+             
+             <FONT COLOR="008000">if</FONT> (<A HREF = "#Pcsc10CardTerminal::le">le</A> == 0) {
+             <A HREF = "#Pcsc10CardTerminal:internalSendAPDU:temp_le">temp_le</A> = 256;
+             }
+             
+             <FONT COLOR="FF0000">// Default Case Le is requested in the get response</FONT>
+             <A HREF = "#Pcsc10CardTerminal::apduCommand1">apduCommand1</A>[4] = (<FONT COLOR="008000">byte</FONT>) <A HREF = "#Pcsc10CardTerminal::le">le</A>;
+             
+             <FONT COLOR="FF0000">// verify if we have La &lt; Le in the case of sw2 = 0x61</FONT>
+             <FONT COLOR="008000">if</FONT> (<A HREF = "#Pcsc10CardTerminal::responseData">responseData</A>[responseData.length - 2] != (<FONT COLOR="008000">byte</FONT>) 0x90) {
+             <FONT COLOR="008000">if</FONT> (<A HREF = "Pcsc10CardTerminal.html#Pcsc10CardTerminal:convertByte:">convertByte</A>(<A HREF = "#Pcsc10CardTerminal::responseData">responseData</A>[responseData.length - 1])
+                 &lt; <A HREF = "#Pcsc10CardTerminal:internalSendAPDU:temp_le">temp_le</A>) {
+                 <FONT COLOR="FF0000">// La is requested in the get response</FONT>
+                 <A HREF = "#Pcsc10CardTerminal::apduCommand1">apduCommand1</A>[4] = 
+                 (<FONT COLOR="008000">byte</FONT>) <A HREF = "#Pcsc10CardTerminal::responseData">responseData</A>[responseData.length - 1];
+             }
+             }
+             
+             <FONT COLOR="FF0000">// T=0 transmition (command w/ Le)</FONT>
+             responseData = <A HREF = "#Pcsc10CardTerminal::pcsc">pcsc</A>.<METHODCALL><A HREF = "OCFPCSC1.html#OCFPCSC1:SCardTransmit:">SCardTransmit</A></METHODCALL>(<A HREF = "#Pcsc10CardTerminal::cardHandle">cardHandle</A>, 
+                               apduCommand1);
+             
+             <A HREF = "Pcsc10CardTerminal.html#Pcsc10CardTerminal:checkNonNullResponse:">checkNonNullResponse</A>(responseData);
+             
+             <FONT COLOR="FF0000">// if 6C</FONT>
+             <FONT COLOR="008000">if</FONT> (<A HREF = "#Pcsc10CardTerminal::responseData">responseData</A>[responseData.length - 2] == (<FONT COLOR="008000">byte</FONT>) 0x6c) {
+             
+             <FONT COLOR="FF0000">// receive 0x6C Need to reissue the same command</FONT>
+             <FONT COLOR="FF0000">// with La found responseData.</FONT>
+             <FONT COLOR="FF0000">// responseData   = sw1 sw2</FONT>
+             <FONT COLOR="008000">int</FONT>  <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:internalSendAPDU:la_length">la_length</A></FONT> = 
+                 <A HREF = "Pcsc10CardTerminal.html#Pcsc10CardTerminal:convertByte:">convertByte</A>(<A HREF = "#Pcsc10CardTerminal::responseData">responseData</A>[responseData.length - 1]);
+             
+             <A HREF = "#Pcsc10CardTerminal:internalSendAPDU:temp_le">temp_le</A> = <FONT COLOR="008000">this</FONT>.<A HREF = "Pcsc10CardTerminal.html#Pcsc10CardTerminal:convertByte:">convertByte</A>(<A HREF = "#Pcsc10CardTerminal::le">le</A>);
+             
+             <FONT COLOR="008000">if</FONT> (<A HREF = "#Pcsc10CardTerminal:internalSendAPDU:temp_le">temp_le</A> == 0) {
+                 <A HREF = "#Pcsc10CardTerminal:internalSendAPDU:temp_le">temp_le</A> = 256;
+             }
+             
+             <A HREF = "#Pcsc10CardTerminal::apduCommand1">apduCommand1</A>[4] = 
+                 (<FONT COLOR="008000">byte</FONT>) <A HREF = "#Pcsc10CardTerminal::responseData">responseData</A>[responseData.length - 1]; <FONT COLOR="FF0000">// P3</FONT>
+             
+             <FONT COLOR="FF0000">// T=0 transmition (command w/ La)</FONT>
+             responseData = <A HREF = "#Pcsc10CardTerminal::pcsc">pcsc</A>.<METHODCALL><A HREF = "OCFPCSC1.html#OCFPCSC1:SCardTransmit:">SCardTransmit</A></METHODCALL>(<A HREF = "#Pcsc10CardTerminal::cardHandle">cardHandle</A>, 
+                               apduCommand1);
+             
+             <A HREF = "Pcsc10CardTerminal.html#Pcsc10CardTerminal:checkNonNullResponse:">checkNonNullResponse</A>(responseData);
+             
+             <FONT COLOR="008000">if</FONT> (<A HREF = "#Pcsc10CardTerminal:internalSendAPDU:temp_le">temp_le</A> &lt; <A HREF = "#Pcsc10CardTerminal:internalSendAPDU:la_length">la_length</A>) {
+ 
+                 <FONT COLOR="008000">byte</FONT>[]    buffer = <FONT COLOR="008000">new</FONT> <FONT COLOR="008000">byte</FONT>[<A HREF = "#Pcsc10CardTerminal::le">le</A> + 2];
+                 
+                 System.arraycopy(responseData, 0, buffer, 0, 
+                          <A HREF = "#Pcsc10CardTerminal:internalSendAPDU:temp_le">temp_le</A>);
+                 System.arraycopy(responseData, 
+                          responseData.length - 2, 
+                          buffer, <A HREF = "#Pcsc10CardTerminal:internalSendAPDU:temp_le">temp_le</A>, 2);
+                 
+                 responseData = <FONT COLOR="008000">new</FONT> <FONT COLOR="008000">byte</FONT>[buffer.length];
+                 
+                 System.arraycopy(buffer, buffer.length, 
+                          responseData, 
+                          responseData.length - 2, 
+                          buffer.length);
+ 
+             } <FONT COLOR="FF0000">// if (temp_le &lt; la_length)</FONT>
+ 
+             } <FONT COLOR="FF0000">// if (6C)</FONT>
+ 
+         } <FONT COLOR="FF0000">// if (61 etc.)</FONT>
+         
+         <FONT COLOR="008000">break</FONT>;
+         } <FONT COLOR="FF0000">// case 4</FONT>
+         
+         } <FONT COLOR="FF0000">// switch (main switch block for cases 2 and 4)</FONT>
+ 
+     } <FONT COLOR="FF0000">// if (if T=1 or else T=0)</FONT>
+     
+     } <FONT COLOR="008000">catch</FONT> (<A HREF = "PcscException.html#PcscException::">PcscException</A> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:internalSendAPDU:e">e</A></FONT>) {
+       
+     <FONT COLOR="FF0000">// check for SemaphoreTimeout</FONT>
+     <FONT COLOR="008000">if</FONT> (<A HREF = "#Pcsc10CardTerminal:internalSendAPDU:e">e</A>.<METHODCALL><A HREF = "PcscException.html#PcscException:returnCode:">returnCode</A></METHODCALL>() == 0x79) {
+         <FONT COLOR="FF0000">// try a card reset (reconnect) with timeout 5 seconds</FONT>
+         <A HREF = "Pcsc10CardTerminal.html#Pcsc10CardTerminal:internalReset:">internalReset</A>(0,5000);
+         <FONT COLOR="008000">throw</FONT> <FONT COLOR="008000">new</FONT> CardTerminalException(&quot;PC/SC Error: semaphore timeout - perhaps forbidden or wrong card command.&quot;);
+     } <FONT COLOR="008000">else</FONT> {
+         <FONT COLOR="008000">throw</FONT> <A HREF = "Pcsc10CardTerminal.html#Pcsc10CardTerminal:translatePcscException:">translatePcscException</A>(<A HREF = "#Pcsc10CardTerminal:internalSendAPDU:e">e</A>);
+     }
+ 
+     } <FONT COLOR="FF0000">// try (main transmition block)</FONT>
+ 
+     ResponseAPDU <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:internalSendAPDU:rAPDU">rAPDU</A></FONT> = <FONT COLOR="008000">new</FONT> <CONSTRUCTORCALL>ResponseAPDU</CONSTRUCTORCALL>(responseData);
+     <A HREF = "#Pcsc10CardTerminal::itracer">itracer</A>.<METHODCALL><UNKNOWNCALL>debug</UNKNOWNCALL></METHODCALL>(&quot;internalSendAPDU&quot;, &quot;receiving &quot; + <A HREF = "#Pcsc10CardTerminal:internalSendAPDU:rAPDU">rAPDU</A>);
+     <FONT COLOR="008000">return</FONT> <A HREF = "#Pcsc10CardTerminal:internalSendAPDU:rAPDU">rAPDU</A>;
+ }
+ 
+ 
+   <FONT COLOR="FF0000">/** Signal to observers that an inserted card was removed.&lt;p&gt;
+    *
+    * @param slot
+    *        slot number
+    */</FONT>
+   <FONT COLOR="008000">protected</FONT> <FONT COLOR="008000">void</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:cardRemoved:">cardRemoved</A></FONT>(<FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:cardRemoved:slotID">slotID</A></FONT>) {
+ 
+     <FONT COLOR="008000">super</FONT>.<A HREF = "Pcsc10CardTerminal.html#Pcsc10CardTerminal:cardRemoved:">cardRemoved</A>(<A HREF = "#Pcsc10CardTerminal:cardRemoved:slotID">slotID</A>);
+ 
+     <FONT COLOR="008000">try</FONT> {
+       <A HREF = "Pcsc10CardTerminal.html#Pcsc10CardTerminal:cardDisconnect:">cardDisconnect</A>(Pcsc10Constants.SCARD_LEAVE_CARD);
+     } <FONT COLOR="008000">catch</FONT> (CardTerminalException <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:cardRemoved:cte">cte</A></FONT>) {
+       <FONT COLOR="FF0000">// ignore this exception</FONT>
+     }
+   }
+ 
+   <FONT COLOR="FF0000">/** This method is normally used by the &lt;tt&gt;CardTerminalRegistry&lt;/tt&gt; to
+    *  generate the &lt;tt&gt;OpenCard&lt;/tt&gt; events if the Slot implementation does
+    *  not support events itself.
+    */</FONT>
+   <FONT COLOR="008000">public</FONT> <FONT COLOR="008000">void</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:poll:">poll</A></FONT>() 
+     throws CardTerminalException {
+ 
+     <FONT COLOR="008000">if</FONT> (!<A HREF = "#Pcsc10CardTerminal::closed">closed</A>) {
+       <A HREF = "Pcsc10CardTerminal.html#Pcsc10CardTerminal:UpdateCardStatus:">UpdateCardStatus</A>(0);
+       <FONT COLOR="008000">try</FONT> {
+         <FONT COLOR="008000">boolean</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:poll:newStatus">newStatus</A></FONT> = <A HREF = "Pcsc10CardTerminal.html#Pcsc10CardTerminal:isCardPresent:">isCardPresent</A>(0);
+         <FONT COLOR="008000">if</FONT> (<A HREF = "#Pcsc10CardTerminal::cardInserted">cardInserted</A> != <A HREF = "#Pcsc10CardTerminal:poll:newStatus">newStatus</A>) {
+           <A HREF = "#Pcsc10CardTerminal::itracer">itracer</A>.<METHODCALL><UNKNOWNCALL>debug</UNKNOWNCALL></METHODCALL>(&quot;poll&quot;, &quot;status change&quot;);
+           <A HREF = "#Pcsc10CardTerminal::cardInserted">cardInserted</A> = !<A HREF = "#Pcsc10CardTerminal::cardInserted">cardInserted</A>;
+           <FONT COLOR="FF0000">// ... notify listeners</FONT>
+           <FONT COLOR="008000">if</FONT> (<A HREF = "#Pcsc10CardTerminal::cardInserted">cardInserted</A>) {
+             <A HREF = "#Pcsc10CardTerminal::cid">cid</A> = <FONT COLOR="008000">new</FONT> CardID(<FONT COLOR="008000">this</FONT>, 0, cachedATR); <FONT COLOR="FF0000">// U.Steinmueller Infineon</FONT>
+             <A HREF = "#Pcsc10CardTerminal::cardInserted">cardInserted</A>(0);
+           } <FONT COLOR="008000">else</FONT> {
+             <A HREF = "Pcsc10CardTerminal.html#Pcsc10CardTerminal:cardRemoved:">cardRemoved</A>(0);
+         cachedATR = <FONT COLOR="008000">null</FONT>;        <FONT COLOR="FF0000">// invalidate ATR</FONT>
+         <A HREF = "#Pcsc10CardTerminal::cid">cid</A> = <FONT COLOR="008000">null</FONT>;              <FONT COLOR="FF0000">// invalidate CardID</FONT>
+           }
+         } <FONT COLOR="008000">else</FONT> {
+           <FONT COLOR="FF0000">// ... no change took place</FONT>
+           <A HREF = "#Pcsc10CardTerminal::itracer">itracer</A>.<METHODCALL><UNKNOWNCALL>debug</UNKNOWNCALL></METHODCALL>(&quot;poll&quot;, &quot;no status change&quot;);
+         }
+       }
+       <FONT COLOR="008000">catch</FONT> (CardTerminalException <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:poll:cte">cte</A></FONT>) {
+         <A HREF = "#Pcsc10CardTerminal::itracer">itracer</A>.<METHODCALL><UNKNOWNCALL>debug</UNKNOWNCALL></METHODCALL>(&quot;poll&quot;, <A HREF = "#Pcsc10CardTerminal:poll:cte">cte</A>);
+ 
+         <FONT COLOR="FF0000">// make sure the CardTerminalException is </FONT>
+         <FONT COLOR="FF0000">// propagated to listeners waiting for a card</FONT>
+         <A HREF = "#Pcsc10CardTerminal::cardInserted">cardInserted</A>(0);
+       }
+     }
+   }
+ 
+ 
+   <FONT COLOR="FF0000">/** translate the PcscException into CardTerminalException.&lt;p&gt;
+     */</FONT>
+   <FONT COLOR="008000">protected</FONT> CardTerminalException <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:translatePcscException:">translatePcscException</A></FONT>(<A HREF = "PcscException.html#PcscException::">PcscException</A> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:translatePcscException:e">e</A></FONT>) {
+     <FONT COLOR="008000">return</FONT> <FONT COLOR="008000">new</FONT> CardTerminalException(&quot;Pcsc10CardTerminal: &quot; + <A HREF = "#Pcsc10CardTerminal:translatePcscException:e">e</A>.getMessage(), <FONT COLOR="008000">this</FONT>);
+   }
+ 
+     <FONT COLOR="FF0000">/**
+      * convertByte
+      */</FONT>
+     <FONT COLOR="008000">protected</FONT> <FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:convertByte:">convertByte</A></FONT>(<FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:convertByte:byteToConvert">byteToConvert</A></FONT>) {
+     <FONT COLOR="008000">int</FONT>       <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:convertByte:e">e</A></FONT> = <A HREF = "#Pcsc10CardTerminal:convertByte:byteToConvert">byteToConvert</A> &amp; 0x7f;
+ 
+     <FONT COLOR="008000">if</FONT> ((<A HREF = "#Pcsc10CardTerminal:convertByte:byteToConvert">byteToConvert</A> &amp; 0x80) == 0x80) {
+         <A HREF = "#Pcsc10CardTerminal:convertByte:e">e</A> += 128;
+     }
+ 
+     <FONT COLOR="008000">return</FONT> <A HREF = "#Pcsc10CardTerminal:convertByte:e">e</A>;
+     }
+ 
+     <FONT COLOR="FF0000">/**
+      * Returns TPDU ISO mode.
+      *
+      * @throws CardTerminalException
+      */</FONT>
+     <FONT COLOR="008000">public</FONT> <FONT COLOR="008000">boolean</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:isISOTPDU:">isISOTPDU</A></FONT>() throws CardTerminalException {
+     <FONT COLOR="008000">return</FONT> <A HREF = "#Pcsc10CardTerminal::TPDU_Uses_ISO">TPDU_Uses_ISO</A>;
+     }
+ 
+     <FONT COLOR="FF0000">/**
+      * Set the TPDU to use ISO or not ISO mode.
+      *
+      * @throws CardTerminalException
+      */</FONT>
+     <FONT COLOR="008000">public</FONT> <FONT COLOR="008000">void</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:setISOTPDUMode:">setISOTPDUMode</A></FONT>(<FONT COLOR="008000">boolean</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminal:setISOTPDUMode:Uses_ISO_norm">Uses_ISO_norm</A></FONT>)
+     throws CardTerminalException {
+ 
+     <A HREF = "#Pcsc10CardTerminal::TPDU_Uses_ISO">TPDU_Uses_ISO</A> = <A HREF = "#Pcsc10CardTerminal:setISOTPDUMode:Uses_ISO_norm">Uses_ISO_norm</A>;
+ 
+     }
+ 
+ }
+</PRE></BODY></HTML> 

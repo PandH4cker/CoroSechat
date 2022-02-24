@@ -1,0 +1,7 @@
+Name: com/gemplus/opencard/terminal/apduio
+Specification-Title: "OCF1.2 ApduIO CardTerminal" 
+Specification-Version: "0.1"
+Specification-Vendor: "Gemplus".
+Implementation-Title: "com.gemplus.opencard.terminal.apduio" 
+Implementation-Version: "0.1"
+Implementation-Vendor: "Gemplus"

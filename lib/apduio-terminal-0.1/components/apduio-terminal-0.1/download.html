@@ -1,0 +1,232 @@
+<!-- ----------------------------------------------------------------- -->
+
+
+<!doctype html public "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html lang=en-us>
+
+
+<!-- ----------------------------------------------------------------- -->
+<head>
+
+<!-- TITLE ------------------------- -->
+<title>Apduio CardTerminal Download Page</title>
+
+<!-- STYLE ------------------------- -->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="Stylesheet" type="text/css" href="../../doc/opencard.css">
+<link rel="Stylesheet" type="text/css" href="../../doc/index.css">
+<!-- ------------------------------- -->
+
+<!-- MISC. META/LINK INFO ---------- -->
+<link rev="Made" href="mailto:Christophe.Muller@research.gemplus.com">
+<meta name="Author" content="Christophe Muller">
+<meta name="RCS-Id" content="$Id: $">
+<!-- ------------------------------- -->
+
+</head>
+<!-- ----------------------------------------------------------------- -->
+
+
+<!-- ----------------------------------------------------------------- -->
+<body>
+
+<!-- PAGE HEADER (H1 TITLE) -------- -->
+<!-- <p class="banner">
+<a href="http://www.gemplus.com/developers">
+<img src="../../images/developers.jpg" alt="Gemplus Developers" align="left"
+border="0" hspace="7"></a>
+<a href="http://www.opencard.org/">
+<img src="../../images/ocf_logo.jpg" alt="OpenCard Framework" align="right"
+border="0" hspace="7"></a>
+<br></p>
+-->
+
+<p><center> <!--...for old browsers...-->
+<h1 class="index">Apduio CardTerminal Download Page</h1>
+</center>
+<!-- ------------------------------- -->
+
+<!-- ABSTRACT ---------------------- -->
+<p><a name="abstract"></a>
+<div class="abstract">
+<table bgcolor="#eeeedd" align="center" width="80%" cellpadding="5"><tr><td>
+<img src="../../images/CardTerminals.gif" alt="Download CardTerminals now!" 
+     border="0" hspace="16" vspace="2" align="left">
+<p>
+This page describes how to <a href="#Distribution">download</a>, and
+<a href="#Installation">install</a> the Apduio CardTerminal component
+that allows to communicate with a process running the Sun's
+<strong>JavaCard simulator</strong> (found in the
+<a href="http://java.sun.com/products/javacard/dev_kit.html">
+Java Card 2.1.2 Development Kit</a>.
+
+<p>
+See also the
+<a href="doc/README-GemplusApduio.html">Apduio&nbsp;CardTerminal&nbsp;Home-Page</a>
+for a complete on-line documentation set about this component.
+
+<p>
+This is a first alpha version and is provided <em>AS-IS</em>.
+See the <a href="#warning">Important Note</a> section below.</td></tr></table>
+</div>
+<!-- ------------------------------- -->
+
+<!-- WARNING ----------------------- -->
+<p><a name="warning"></a>
+<table cellpadding="5" class="warning"><tr>
+<td class="red">&nbsp;</td><td class="warning">
+<img src="../../images/Warning.gif" alt="Warning!"
+     hspace="3" vspace="1" align="left">
+<p class="warning">
+<strong>IMPORTANT NOTE:</strong> The presented Java software code
+<span class="stabilo">is&nbsp;an&nbsp;alpha-version&nbsp;for developers</span>
+and <strong>IS PROVIDED AS-IS</strong> by Gemplus and potentially many
+other contributors (see the <a href="doc/README-GemplusApduio.html#changes">
+RCS log files</a>).
+Thus this code is provided to you <span class="stabilo">
+without&nbsp;any warranty&nbsp;of&nbsp;any&nbsp;kind!</span> Please see the
+<a href="doc/LICENSE-GemplusApduio.txt">LICENSE file</a> for more details.
+Therefore, this code has not been tested by many people yet; it may
+contain bugs or even semantic misbehaviour; and it has not been reviewed
+as a supported Gemplus product.
+Comments, problem reports, or even submissions of source code
+enhancements or patches
+<a href="mailto:developers@gemplus.com?subject=[Gemplus ApduioCardTerminal] Comment,Suggestion,PR">are highly welcome</a>.
+</p></tr></table>
+<!-- ------------------------------- -->
+
+
+<p>
+<a name="Distribution">&nbsp;</a>
+<!-- ------------------------------- -->
+<table cellspacing="0" cellpadding="10" border="0"><tr><td>
+
+   <h2 class="index">Distribution</h2>
+
+</td></tr><tr><td>
+<img src="../../images/Box.gif" alt="Components"></td><td>
+<img src="../../images/FileTarGz.gif" alt="tar.gz for Unix platforms"></td><td>
+or</td><td>
+<img src="../../images/FileZip.gif" alt="zip for Win32 platforms">
+</td></tr></table>
+<!-- ------------------------------- -->
+
+<p>
+Two distribution files are available: one in <a class="file">"tar.gz"</a>
+format, and one in <a class="file">"zip"</a> format. Select the one
+corresponding to your platform and/or available unpacking tools, e.g.,
+
+<ul>
+   <p>
+   <li> if you are under Unix, download:
+<u>"<a class="file"><a href="../../download/apduio-terminal-0.1.tar.gz">apduio-terminal-0.1.tar.gz</a></a>"</u>
+   <p>
+   <li> if you are under Windows, download:
+<u>"<a class="file"><a href="../../download/apduio-terminal-0.1.zip">apduio-terminal-0.1.zip</a></a>"</u>
+</ul>
+
+<p>
+Note that the "<a class="file">tar.gz</a>" file is significantly
+smaller (30% smaller), so if you have the right WINZIP plugin for
+"<a class="file">tar.gz</a>" files, it is advised to choose this one.
+
+<p>
+<a name="Installation">&nbsp;</a>
+<!-- ------------------------------- -->
+<table cellspacing="0" cellpadding="0" border="0"><tr><td>
+
+   <h2 class="index">Installation</h2>
+
+</td></tr></table>
+<!-- ------------------------------- -->
+
+<table bgcolor="#eeeedd" align="center" cellpadding="5"><tr><td>
+<img src="../../images/Install.gif" alt="Install"
+     border="0" hspace="16" vspace="2" align="left">
+
+<p>
+This sections explains how to install the Apduio CardTerminal.
+For other types of CardTerminals, see their related "Download Page".
+
+<p>
+Note that if you are not using the <span class="ocf">CardTable</span>
+platform, there are some <a href="../../faqs/prerequisites.html">prerequisites</a>
+before being able to use OpenCard components. See the prerequisites page
+for more details.
+</td></tr></table>
+
+<p>
+For installing Gemplus Apduio CardTerminals component:
+
+<ol>
+   <p>
+   <li> first, download <a class="file">"apduio-terminal-0.1.zip"</a> or
+        <a class="file">"apduio-terminal-0.1.tar.gz"</a> (see above),
+
+   <p>
+   <li> unpack the distribution <strong>in the directory containing
+        OCF</strong>, this should provide new files and directories
+	among which: <a class="file">"lib/apduio-terminal-0.1.jar"</a>,
+
+   <p>
+   <li> insert <a class="file">"lib/apduio-terminal-0.1.jar"</a> into your
+        <tt><strong>CLASSPATH</strong></tt> environment variable (JDK 1.x)
+	or copy this JAR file into your <a class="file">jre/lib/ext/</a>
+	directory (JDK 1.2 or 1.3).
+
+   <p>
+   <li> develop your own CardServices and Smart Card enabled applications
+        that requests and make use of <tt>CardTerminals</tt> (see the
+	<a href="../../doc/pguide1.2/PGuide.html">OpenCard Programmer's Guide</a>
+	for more details).
+
+   <p>
+   <li> configure your <a class="file">"opencard.properties"</a> in order
+        to use the <tt>ApduIOCardTerminalFactory</tt> factory.
+
+<p>
+     Example: Using a JavaCard simulator running on localhost, type
+     in your <a class="file">"opencard.properties"</a> file (on one line):
+<p>
+<pre>
+<font size="+1">
+OpenCard.services = opencard.opt.util.
+&nbsp;&nbsp;&nbsp;PassThruCardServiceFactory
+
+OpenCard.terminals = com.gemplus.opencard.terminal.apduio.
+&nbsp;&nbsp;&nbsp;ApduIOCardTerminalFactory|mySim|Socket|localhost:9025
+</font>
+</pre>
+
+</ol>
+
+<p>
+More detailed User's information on the CardTerminals component (e.g.,
+new features, complete User's Guide, etc.) and Developer's
+informartion (e.g., pointers to Javadocs and sources) is given in the
+<a href="doc/README-GemplusApduio.html">Apduio&nbsp;CardTerminal&nbsp;Home-Page</a>.
+
+<br>
+<br>
+<!-- ADDRESS ----------------------- -->
+<hr>
+<span class="stabilo">Please&nbsp;send&nbsp;any&nbsp;comments,</span>
+enhancements suggestions, or problem reports
+<span class="stabilo">to&nbsp;the
+<a href="mailto:developers@gemplus.com?subject=[Apduio CardTerminal Download Page] Comment/Suggestion">
+webmaster</a></span>
+who will take your comment into account or dispatch it to the right person.
+<!-- ------------------------------- -->
+
+<!--
+<hr>
+<p class="noindent">
+Copyright&nbsp;&copy;&nbsp;1999&nbsp;Gemplus -
+<a href="http://www.gemplus.com">About</a> -
+Last changes: Fri Feb  4 2000<br>
+-->
+
+</body>
+<!-- ----------------------------------------------------------------- -->
+
+</html>

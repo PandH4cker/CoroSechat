@@ -1,0 +1,160 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.5 [en] (WinNT; I) [Netscape]">
+   <title>Reference Implementation read me file</title>
+</head>
+<body>
+<a NAME="_top_"></a>
+<center><pre><a href="README-BaseOCF.html#_top_">Base OCF</a> <a href="README-Reference-Impl.html#_top_">Reference Implementation</a>&nbsp; <a href="Changes.html#Changes">Changes for OCF version 1.1</a> <a href="Changes.html#Changes2">Changes for OCF version 1.1.1
+
+</a>&nbsp; <a href="Changes.html#OCF1.2Changes">Changes for OCF version 1.2</a> <a href="README-configuration.html#_top_">Configuration</a>&nbsp; <a href="http://www.opencard.org">OpenCard Home</a></pre></center>
+
+<center>
+<hr>
+<br><img SRC="oc10.JPG" ALT="OCF Banner" height=87 width=255>
+<br>Please read the&nbsp; <a href="LICENSE-Reference-Impl">License!</a></center>
+
+<h1>
+<a NAME="RefImpl"></a>Reference Implementation README</h1>
+Since release 1.1 of the OpenCard Framework, the code making up the framework
+is organized in components. Each component is made up of one or more Java
+packages that provide a well-defined functionality to the application developer.
+To aid downloading, the components have been grouped together into installation
+packages.
+<br>In the OCF1.2 release an additional installation package was added:
+The BaseOCF package. This package contains the base-core and base-opt packages,
+which contain the fundamental OCF classes and which are the base that is
+needed in every OCF1.2 installation.
+<p>The contents of the OCF Reference Implementation installation package
+is described under <a href="README-Reference-Impl.html#Components">Components</a>.
+To learn about the remaining installation packages, read <a href="#Installation">Installation</a>.
+<p>Since it can be tedious to enter a large number of JAR files, each of
+which having a long file name, into the classpath, a tool has been provided
+that can repackage a selected set of JAR files into one target JAR file.
+This tool is described in <a href="#rejar">Using the Rejar Tool</a>.
+<br>
+<hr WIDTH="100%">
+<h2>
+<a NAME="Components"></a>Components</h2>
+The reference implementation contains source code, API documentation, and
+a JAR file for each component. The source code and API documentation is
+located under the <b>components/&lt;component name> </b>directory, while
+the JAR files are located in the <b>lib</b> subdirectory. The component
+and corresponding JAR file names can be taken from the table below. Clicking
+on the component name will take you to the API documentation.
+<br>&nbsp;
+<table BORDER COLS=2 WIDTH="100%" >
+<tr>
+<td><b>Component Names</b></td>
+
+<td><b>Jar File Name</b></td>
+</tr>
+
+<tr>
+<td><a href="components/sb-demo/apidocs/index.html">sb-demo</a></td>
+
+<td>sb-demo.jar, sb-demo-ext.jar</td>
+</tr>
+
+<tr>
+<td><a href="components/reference-services/apidocs/index.html">reference-services</a></td>
+
+<td>reference-services.jar</td>
+</tr>
+
+<tr>
+<td><a href="components/reference-terminals-windows/apidocs/index.html">reference-terminals-windows</a></td>
+
+<td>reference-terminals-windows.jar</td>
+</tr>
+
+<tr>
+<td><a href="components/gemplus-terminals/apidocs/index.html">gemplus-terminals</a></td>
+
+<td>gemplus-terminals.jar</td>
+</tr>
+
+<tr>
+<td><a href="components/pcsc-wrapper-src/apidocs/index.html">pcsc-wrapper-src</a></td>
+
+<td>pcsc-wrapper-src.jar</td>
+</tr>
+
+<tr>
+<td><a href="components/migterminals/apidocs/index.html">migterminals</a></td>
+
+<td>migterminals.jar</td>
+</tr>
+
+<tr>
+<td><a href="components/rejar-tool/apidocs/index.html">rejar-tool</a></td>
+
+<td>rejar-tool.jar</td>
+</tr>
+</table>
+
+<h2>
+<a NAME="Installation"></a>OCF Installation Packages</h2>
+The installation packages were defined to satisfy the U.S. restrictions
+on export of cryptographic code as well to allow separation of proprietary
+code from the publically available reference implementation.
+<p>The installation packages build on one another to avoid duplicating
+code.
+<ol>
+<li>
+<a href="README-BaseOCF.html#_top_">BaseOCF</a> - contains the exportable
+(according to export restrictions) source and executable code of the OpenCard
+Framework owned by the OpenCard Framework consortium. This package is required
+by all other packages.</li>
+
+<li>
+<a href="README-Reference-Impl.html#_top_">Reference Implementation</a>
+- contains the exportable (according to export restrictions) source and
+executable code. This package is required by all other packages.</li>
+
+<li>
+<a href="README-Reference-Impl-US.html#_top_">Reference Implementation
+U.S. Extension</a> - contains reference implementation functionality that
+cannot be exported outside North America.</li>
+</ol>
+
+<hr WIDTH="100%">
+<h2>
+<a NAME="rejar"></a>Using the Rejar Tool</h2>
+
+<h4>
+Intention</h4>
+Including several Jar archives into the CLASSPATH variable can quickly
+become an error-prone and frustrating burden for the user. To ease this
+situation we provide this tool which allows to generate one big Jar archive
+from several smaller ones.
+<br>The need for such a tool arose because JDK's <tt>jar</tt> tool currently
+does not allow to modification of an existing Jar archive.
+<h4>
+Usage</h4>
+To start the tool type the following on the commandline:
+<pre><tt>&nbsp; > java com.ibm.tools.rejar.ReJar &lt;sourceJarArchiveDirectory> [&lt;destJarArchive>]</tt></pre>
+(assuming your CLASSPATH variable contains the necessary classes) *. This
+will cause a window to appear offering you all the Jar archives that were
+found in <tt>&lt;sourceJarArchiveDirectory></tt>. From this list you may
+select the ones you want to put into your destination Jar archive. Do this
+by selecting the according archive with the mouse and pressing the <tt>select</tt>
+button. Undoing a selection works the same way apart from that you'll have
+to press the <tt>deselect</tt> button. You can determine the destination
+Jar archive in one of two ways. Either type its file name on the command
+line as the second argument or into the text field component of the ReJar
+main window labelled <tt>new JAR file</tt>. To start the repackaging process
+press the <tt>create JAR file</tt> button. To close the program press the
+<tt>exit</tt>
+button.
+<br>* If you are on a Windows platform and used one of the provided self-extracting
+archives you will find a <tt>ReJarTool.bat</tt> file in the deliverable's
+top directory that will start the tool.
+<br>
+<hr WIDTH="100%">
+<br><i><font size=-1>This page was created by Scott Nicklous and Lothar
+Merk.</font></i>
+</body>
+</html>

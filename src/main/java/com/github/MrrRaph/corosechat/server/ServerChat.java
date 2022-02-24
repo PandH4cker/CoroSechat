@@ -35,7 +35,7 @@ public class ServerChat {
      * The default port if not specified is 8080
      */
     private static final int DEFAULT_PORT = 8080;
-    private static final int MAX_USERS = 10;
+    public static final int MAX_USERS = 10;
     private int port;
     private String host;
 

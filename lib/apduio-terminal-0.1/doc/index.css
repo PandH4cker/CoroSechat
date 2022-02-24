@@ -1,0 +1,144 @@
+body {
+        background: white;
+        color: black;
+        font-size: 10pt;
+}
+
+h1.index {
+	margin-top: 0.5em;
+	margin-bottom: 0.1em;
+	text-align: center;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 24pt;
+	font-weight: bold;
+	color: #0050B2; /* light dodgerblue4 */
+	line-height: 180%
+}
+
+h2.index {
+        font-style: normal;
+        text-align: left;
+        font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 18pt;
+        font-weight: normal;
+        color: #228B22; /* forest green */
+}
+
+h3.index {
+	text-align: left;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-weight: normal;
+	color: #0050B2; /* light dodgerblue4 */
+}
+
+h4.index {
+	text-align: left;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-weight: normal;
+	color: #0050B2; /* light dodgerblue4 */
+}
+
+strong {
+        color:#006699; /* deepskyblue4 */
+}
+
+p.justified {
+	text-indent: 1.5em; 
+	text-align: justify;
+}
+
+th {
+        font-weight: bold;
+}
+
+a:link {
+	color: #551a8b;
+}
+
+a:visited {
+	color: #551a8b;
+}
+
+a:active {
+	color: #996600;
+}
+
+a:hover {
+	text-decoration: underline;
+	background-color: #CCFFFF;
+}
+
+/*	font-family: Courier, 'Courier New', monospace;*/
+
+a.section {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+        font-size: medium;
+	text-decoration: none;
+	font-weight: bold;
+	color: #0050B2;  /* light dodgerblue4 */
+}
+
+a.list {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-weight: bold;
+	color: #556b2f; /* dark olive green */
+}
+
+font.list {
+	color: #556b2f; /* dark olive green */
+}
+
+span.section {
+	color: #0050B2;
+	font-weight: bold;
+        background: #d4d4d4;/*#fea500;*/
+}
+
+span.ocf {
+	color: #556b2f; /* dark olive green */
+}
+
+img.center {
+	align: center;
+}
+
+ul {
+	list-style-type: lower-roman;
+	list-style-position: inside;
+}
+
+#pop1 {
+	position: absolute; visibility: hidden; 
+	z-index: 20; top: 0px; left:0px;
+}
+
+#pop2 {
+	position: absolute; visibility: hidden; 
+	z-index: 20; top: 0px; left:0px;
+}
+
+#pop3 {
+	position: absolute; visibility: hidden; 
+	z-index: 20; top: 0px; left:0px;
+}
+
+#pop4 {
+	position: absolute; visibility: hidden; 
+	z-index: 20; top: 0px; left:0px;
+}
+
+#pop5 {
+	position: absolute; visibility: hidden; 
+	z-index: 20; top: 0px; left:0px;
+}
+
+.popbox {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 10pt;
+	color: #0050B2; /* light dodgerblue4 */
+	background-color: #ffffcc;
+	layer-background-color: #ffd700;
+	border-width: 3;
+	border-style: outset;
+	border-color: #ffd700;
+}

@@ -1,0 +1,147 @@
+<HTML> <body bgcolor = "FFFFFF"> <PRE>
+<FONT COLOR="FF0000">/*
+  * Copyright © 1997 - 1999 IBM Corporation.
+  * 
+  * Redistribution and use in source (source code) and binary (object code)
+  * forms, with or without modification, are permitted provided that the
+  * following conditions are met:
+  * 1. Redistributed source code must retain the above copyright notice, this
+  * list of conditions and the disclaimer below.
+  * 2. Redistributed object code must reproduce the above copyright notice,
+  * this list of conditions and the disclaimer below in the documentation
+  * and/or other materials provided with the distribution.
+  * 3. The name of IBM may not be used to endorse or promote products derived
+  * from this software or in any other form without specific prior written
+  * permission from IBM.
+  * 4. Redistribution of any modified code must be labeled &quot;Code derived from
+  * the original OpenCard Framework&quot;.
+  * 
+  * THIS SOFTWARE IS PROVIDED BY IBM &quot;AS IS&quot; FREE OF CHARGE. IBM SHALL NOT BE
+  * LIABLE FOR INFRINGEMENTS OF THIRD PARTIES RIGHTS BASED ON THIS SOFTWARE.  ANY
+  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+  * DISCLAIMED.  IBM DOES NOT WARRANT THAT THE FUNCTIONS CONTAINED IN THIS
+  * SOFTWARE WILL MEET THE USER'S REQUIREMENTS OR THAT THE OPERATION OF IT WILL
+  * BE UNINTERRUPTED OR ERROR-FREE.  IN NO EVENT, UNLESS REQUIRED BY APPLICABLE
+  * LAW, SHALL IBM BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+  * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+  * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+  * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+  * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.  ALSO, IBM IS UNDER NO OBLIGATION
+  * TO MAINTAIN, CORRECT, UPDATE, CHANGE, MODIFY, OR OTHERWISE SUPPORT THIS
+  * SOFTWARE.
+  */</FONT>
+ 
+ <FONT COLOR="008000">package</FONT> com.ibm.opencard.terminal.pcsc;
+ 
+ <FONT COLOR="008000">import</FONT> java.util.Hashtable;
+ 
+ <FONT COLOR="FF0000">/** 
+  * returns text message from given PCSC error code
+  *
+  * @author  Stephan Breideneich (sbreiden@de.ibm.com)
+  * @version $Id: PcscError.java,v 2.0 2001/06/14 13:32:36 root Exp root $
+  */</FONT>
+ <FONT COLOR="008000">public</FONT> <FONT COLOR="008000">class</FONT> <FONT COLOR = "800080"><A NAME = "PcscError::">PcscError</A></FONT> {
+ 
+   <FONT COLOR="008000">private</FONT> <FONT COLOR="008000">static</FONT> Hashtable <FONT COLOR = "800080"><A NAME = "PcscError::errorTable">errorTable</A></FONT> = <FONT COLOR="008000">new</FONT> <CONSTRUCTORCALL>Hashtable</CONSTRUCTORCALL>();
+ 
+   <FONT COLOR="FF0000">/** initialize the error table */</FONT>
+   <FONT COLOR="008000">static</FONT> {
+     errorTable.put(<FONT COLOR="008000">new</FONT> Integer(0x80100001), 
+                    &quot;An internal consistency check failed.&quot;);
+     errorTable.put(<FONT COLOR="008000">new</FONT> Integer(0x80100002),
+                    &quot;The action was cancelled by an SCardCancel request.&quot;);
+     errorTable.put(<FONT COLOR="008000">new</FONT> Integer(0x80100003),
+                    &quot;The supplied handle was invalid.&quot;);
+     errorTable.put(<FONT COLOR="008000">new</FONT> Integer(0x80100004),
+                    &quot;One or more of the supplied parameters could not &quot; 
+                    + &quot;be properly interpreted.&quot;);
+     errorTable.put(<FONT COLOR="008000">new</FONT> Integer(0x80100005),
+                    &quot;Registry startup information is missing or invalid.&quot;);
+     errorTable.put(<FONT COLOR="008000">new</FONT> Integer(0x80100006),
+                    &quot;Not enough memory available to complete <FONT COLOR="008000">this</FONT> command.&quot;);
+     errorTable.put(<FONT COLOR="008000">new</FONT> Integer(0x80100007),
+                    &quot;An internal consistency timer has expired.&quot;);
+     errorTable.put(<FONT COLOR="008000">new</FONT> Integer(0x80100008),
+                    &quot;The data buffer to receive returned data is too &quot; 
+                    + &quot;small <FONT COLOR="008000">for</FONT> the returned data&quot;);
+     errorTable.put(<FONT COLOR="008000">new</FONT> Integer(0x80100009),
+                    &quot;The specified reader name is not recognized.&quot;);
+     errorTable.put(<FONT COLOR="008000">new</FONT> Integer(0x8010000A),
+                    &quot;The user-specified timeout value has expired.&quot;);
+     errorTable.put(<FONT COLOR="008000">new</FONT> Integer(0x8010000B),
+                    &quot;The smart card cannot be accessed because of other &quot;
+                    + &quot;connections outstanding&quot;);
+     errorTable.put(<FONT COLOR="008000">new</FONT> Integer(0x8010000C),
+                    &quot;The operation requires a Smart Card, but no &quot; 
+                    + &quot;Smart Card is currently in the device&quot;);
+     errorTable.put(<FONT COLOR="008000">new</FONT> Integer(0x8010000D),
+                    &quot;The specified smart card name is not recognized.&quot;);
+     errorTable.put(<FONT COLOR="008000">new</FONT> Integer(0x8010000E),
+                    &quot;The system could not dispose of the media &quot;
+                    + &quot;in the requested manner.&quot;);
+     errorTable.put(<FONT COLOR="008000">new</FONT> Integer(0x8010000F),
+                    &quot;The requested protocols are incompatible with the &quot;
+                    + &quot;protocol currently in use with the smart card.&quot;);
+     errorTable.put(<FONT COLOR="008000">new</FONT> Integer(0x80100010),
+                    &quot;The reader or smart card is not ready to accept commands.&quot;);
+     errorTable.put(<FONT COLOR="008000">new</FONT> Integer(0x80100011),
+                    &quot;One or more of the supplied parameters values could &quot;
+                    + &quot;not be properly interpreted&quot;);
+     errorTable.put(<FONT COLOR="008000">new</FONT> Integer(0x80100012),
+                    &quot;The action was cancelled by the system, presumably to &quot;
+                    + &quot;log off or shut down.&quot;);
+     errorTable.put(<FONT COLOR="008000">new</FONT> Integer(0x80100013),
+                    &quot;An internal communications error has been detected.&quot;);
+     errorTable.put(<FONT COLOR="008000">new</FONT> Integer(0x80100014),
+                    &quot;An internal error has been detected, &quot;
+                    + &quot;but the source is unknown.&quot;);
+     errorTable.put(<FONT COLOR="008000">new</FONT> Integer(0x80100015),
+                    &quot;An ATR obtained from the registry &quot;
+                    + &quot;is not a valid ATR string.&quot;);
+     errorTable.put(<FONT COLOR="008000">new</FONT> Integer(0x80100016),
+                    &quot;An attempt was made to end a non-existent transaction.&quot;);
+     errorTable.put(<FONT COLOR="008000">new</FONT> Integer(0x80100017),
+                    &quot;The specified reader is not currently available <FONT COLOR="008000">for</FONT> use.&quot;);
+     errorTable.put(<FONT COLOR="008000">new</FONT> Integer(0x80100018),
+                    &quot;Internal flag to force server termination.&quot;);
+     errorTable.put(<FONT COLOR="008000">new</FONT> Integer(0x80100019),
+                    &quot;The PCI Receive buffer was too small.&quot;);
+     errorTable.put(<FONT COLOR="008000">new</FONT> Integer(0x8010001A),
+                    &quot;The reader driver does not meet &quot;
+                    + &quot;minimal requirements <FONT COLOR="008000">for</FONT> support.&quot;);
+     errorTable.put(<FONT COLOR="008000">new</FONT> Integer(0x8010001B),
+                    &quot;The reader driver did not produce a unique reader name.&quot;);
+     errorTable.put(<FONT COLOR="008000">new</FONT> Integer(0x8010001C),
+                    &quot;The smart card does not meet &quot;
+                    + &quot;minimal requirements <FONT COLOR="008000">for</FONT> support.&quot;);
+     errorTable.put(<FONT COLOR="008000">new</FONT> Integer(0x8010001D),
+                    &quot;The Smart card resource manager is not running.&quot;);
+     errorTable.put(<FONT COLOR="008000">new</FONT> Integer(0x8010001E),
+                    &quot;The Smart card resource manager has shut down.&quot;);
+     errorTable.put(<FONT COLOR="008000">new</FONT> Integer(0x80100065),
+                    &quot;The reader cannot communicate with the smart card, &quot;
+                    + &quot;due to ATR configuration conflicts.&quot;);
+     errorTable.put(<FONT COLOR="008000">new</FONT> Integer(0x80100066),
+                    &quot;The smart card is not responding to a reset.&quot;);
+     errorTable.put(<FONT COLOR="008000">new</FONT> Integer(0x80100067),
+                    &quot;Power has been removed from the smart card, &quot;
+                    + &quot;so that further communication is not possible.&quot;);
+     errorTable.put(<FONT COLOR="008000">new</FONT> Integer(0x80100068),
+                    &quot;The smart card has been reset, &quot;
+                    + &quot;so any shared state information is invalid.&quot;);
+     errorTable.put(<FONT COLOR="008000">new</FONT> Integer(0x80100069),
+                    &quot;The smart card has been removed, so that further &quot;
+                    + &quot;communication is not possible.&quot;);
+   }
+ 
+   <FONT COLOR="FF0000">/** returns the associated message to the error code.
+    */</FONT>
+   <FONT COLOR="008000">public</FONT> <FONT COLOR="008000">static</FONT> String <FONT COLOR = "800080"><A NAME = "PcscError:getMessage:">getMessage</A></FONT>(<FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "PcscError:getMessage:errorCode">errorCode</A></FONT>) {
+     <FONT COLOR="008000">return</FONT> (String)<A HREF = "#PcscError::errorTable">errorTable</A>.<METHODCALL><UNKNOWNCALL>get</UNKNOWNCALL></METHODCALL>(<FONT COLOR="008000">new</FONT> Integer(<A HREF = "#PcscError:getMessage:errorCode">errorCode</A>));
+   }
+ }
+</PRE></BODY></HTML> 

@@ -1,0 +1,16 @@
+com.ms.security
+netscape.security
+opencard.opt.applet
+opencard.opt.applet.mgmt
+opencard.opt.database
+opencard.opt.emv.mgmt
+opencard.opt.iso.fs
+opencard.opt.javacard
+opencard.opt.ms
+opencard.opt.netscape
+opencard.opt.security
+opencard.opt.service
+opencard.opt.signature
+opencard.opt.terminal
+opencard.opt.terminal.protocol
+opencard.opt.util

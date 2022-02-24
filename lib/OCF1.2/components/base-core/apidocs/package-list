@@ -1,0 +1,5 @@
+opencard.core
+opencard.core.event
+opencard.core.service
+opencard.core.terminal
+opencard.core.util

@@ -1,0 +1,911 @@
+<!doctype html public "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html lang=en-us>
+
+
+<!-- ----------------------------------------------------------------- -->
+<head>
+
+<!-- TITLE ------------------------- -->
+<title>Apduio CardTerminal Home-Page</title>
+
+<!-- STYLE ------------------------- -->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="Stylesheet" type="text/css" href="../../../doc/opencard.css">
+<link rel="Stylesheet" type="text/css" href="../../../doc/index.css">
+<!-- ------------------------------- -->
+
+<!-- MISC. META/LINK INFO ---------- -->
+<link rev="Alternate" media="all" href="../../../doc/README-GemplusApduio.txt">
+<link rev="Glossary" href="#glossary">
+<link rev="Made" href="mailto:lago@research.gemplus.com">
+<meta name="Author" content="Laurent Lagosanto">
+<meta name="RCS-Id" content="$Id: README-GemplusApduio.html,v 0.1 2001/07/05 15:02:41 root Exp root $">
+<!-- ------------------------------- -->
+
+</head>
+<!-- ----------------------------------------------------------------- -->
+
+
+<!-- ----------------------------------------------------------------- -->
+<body>
+<!-- ----------------------------------------------------------------- -->
+<!--                   BODY HEADER SECTIONS                            -->
+<!-- ----------------------------------------------------------------- -->
+
+<!-- PAGE HEADER (H1 TITLE) -------- -->
+<!--
+<p class="banner">
+<a href="http://www.gemplus.com/developers">
+<img src="developers.jpg" alt="Gemplus Developers" align="left"
+border="0" hspace="7"></a>
+<a href="http://www.opencard.org/">
+<img src="ocf.jpg" alt="OpenCard Framework" align="right"
+border="0" hspace="7"></a>
+<br></p>
+-->
+
+<p><center> <!--...for old browsers...-->
+&nbsp;<h1 class="index">Apduio CardTerminal for the Java Card Development Kit Simulator</h1>
+</center></p>
+<h2 class="index">`com.gemplus.opencard.terminal.apduio'</h2>
+<!-- ------------------------------- -->
+
+
+<!-- ASCII NOTE -------------------- -->
+<p class="asciinote">
+<pre> </pre> <!--...for vertical space on a tty print...-->
+Note: If you are reading the text (ASCII) version of this page
+(doc/README-GemplusApduio.txt), be informed that there is an
+hypertext (HTML) version which exactly matches the text version at the
+following location:
+<pre>   components/gemplus-apduio-0.1/doc/README-GemplusApduio.html</pre>
+</p>
+<!-- ------------------------------- -->
+
+
+<!-- ABSTRACT ---------------------- -->
+<p></p><a name="abstract"><hr></a>
+<div class="abstract">
+This page is intended for Java Card applications developers;
+it is dedicated to the <em>Gemplus Apduio CardTerminal</em>
+Java package(s) that can be used together with the Sun's
+<em>Java Card 2.1.2 Development Kit</em> and the
+<span class="ocf">"OpenCard Framework"</span>.
+
+Among other things, it describes how to
+<a href="#Distribution Availibility"
+title="Distribution Availibility section">download</a>,
+<a href="#Installation and User's Guide"
+title="Installation Guide section">install</a>, and
+<a href="#For using"
+title="User's Guide section">use</a> this CardTerminal.
+
+<p>
+Note: This is a first version and is provided <em>AS-IS</em>. See the
+<a href="#warning">Important Note</a> below.
+</p>
+</div>
+<!-- ------------------------------- -->
+
+
+<!-- WARNING ----------------------- -->
+<a name="warning"><hr></a>
+<p class="warning">
+<strong>IMPORTANT NOTE:</strong> The presented Java software code
+<span class="stabilo">
+is&nbsp;an&nbsp;alpha-version&nbsp;for&nbsp;developers</span>
+and <em>IS PROVIDED AS-IS</em> by Gemplus.
+Please see the <a href="LICENSE-GemplusApduio.txt">LICENSE file</a>
+for more details.
+
+Therefore, this code has not been tested by many people yet; it may contain
+bugs or even semantic misbehaviour; and it has not been reviewed
+as a supported Gemplus product; so <span class="stabilo">comments,
+suggestions, problem reports, or even enhancements
+<a href="mailto:developers@gemplus.com?subject=[Gemplus Apduio CardTerminals] Comment,Suggestion,PR">are highly welcome</a>.</span>
+</p>
+<!-- ------------------------------- -->
+
+
+<!-- RELATED DOC. ------------------- -->
+<br>
+<h4>Related Reference Documentation:</h4>
+
+<table width="100%" cellspacing="8" cellpadding="8" border="0">
+<tr>
+<td><img src="../../../images/License.gif" alt="" align="left" ></td>
+<td>The <a href="LICENSE-GemplusApduio.txt">LICENSE file</a> for this
+        packages.</td>
+</tr>
+<tr>
+<td><img src="../../../images/Web.gif" alt="" align="left"></td>
+<td><span class="ocf">Opencard 1.2 Framework</span> documentation: 
+        see <a href="http://www.opencard.org/index-docs.html">
+        the&nbsp;Opencard&nbsp;Web&nbsp;Site</a> for Programmer's Guide,
+        Reference Javadocs, etc.</td>
+</tr>
+<tr>
+<td><img src="../../../images/Web.gif" alt="" align="left"></td>
+<td>Java Card documentation:
+        see <a href="http://java.sun.com/products/javacard/index.html">
+        the&nbsp;Sun&nbsp;Java&nbsp;Card&nbsp;Web&nbsp;Site</a> for Tutorials,
+	Programmer's Guide, Reference Javadocs, etc. See also the
+	<a href="http://java.sun.com/products/javacard/dev_kit.html">
+	Java Card 2.1.2 Development Kit</a> download page. The kit
+	includes its own documentation (e.g., Java Card 2.1.2
+	Development Kit User's Guide).</td>
+</tr>
+<tr>
+<td><img src="../../../images/Api.gif" alt="" align="left"></td>
+<td><strong>com.gemplus.opencard.terminal.apduio</strong>
+        package <a href="overview-summary.html">Reference&nbsp;Documents</a>
+        generated by the
+        <a href="http://java.sun.com/j2se/javadoc/index.html">
+        <tt>Javadoc</tt> tool</a> from Sun Microsystems.</td>
+</tr>
+<tr>
+<td><img src="../../../images/Sources.gif" alt="" align="left"></td>
+<td><strong>com.gemplus.opencard.terminal.apduio</strong>
+        package <a href="sources/index.html">Sources</a>
+        generated by the
+        <a href="http://www.ce.washington.edu/~soroos/java/java2html.html">
+        <tt>Java2html</tt></a> tool.</td>
+</table>
+<!-- ------------------------------- -->
+
+<!-- ----------------------------------------------------------------- -->
+<!--                  Distribution Availibility                        -->
+<!-- ----------------------------------------------------------------- -->
+
+<p><a name="Distribution Availibility"><hr></a>
+<!-- =============================================== -->
+<table width="100%" cellspacing="0" cellpadding="0" border="0"><tr><td>
+<table cellspacing="0" cellpadding="0" border="0"><tr>
+<td><img src="../../../images/tc1.gif" alt="" width=52 height=64 valign=top></td
+>
+<td background="../../../images/tc2.gif">
+
+   <h2 class="index">Distribution Availibility &nbsp; </h2></td>
+
+<td><img src="../../../images/tc3.gif" alt="" width=22 height=64 valign=top></td
+>
+</tr></table></td>
+<td><img src="../../../images/Disks.gif" alt="Distribs" align="left"></td>
+</td></tr></table>
+<!-- =============================================== -->
+
+<p>
+<a name="License Policy">&nbsp;</a>
+<!-- ------------------------------- -->
+<table cellspacing="0" cellpadding="0" border="0"><tr><td>
+
+   <h3 class="index">License Policy</h3>
+
+</td></tr><tr><td>
+<img src="../../../images/OpenSource.gif" alt="OpenSource" align="middle">
+</td></tr></table>
+<!-- ------------------------------- -->
+
+<p>
+This package is <a href="http://www.gnu.org/philosophy/free-sw.html">
+free software</a> provided with sources by <a href="http://www.gemplus.com/">
+Gemplus</a>. This means that you should have received a copy of the source
+code with the executable form of this component (i.e., the JAR files),
+or if it is not the case, you can get it at the location given just
+below. Also, you have the rights to use it, adapt it for your needs,
+and redistribute copies of the component, whether it has been modified
+or not. See our <a href="LICENSE-GemplusApduio.txt">LICENSE file</a>,
+compliant with the <a href="http://www.opensource.org/">
+OpenSource</a> definition, for more details on redistributions
+conditions (basically do not advertise using the Gemplus name and
+retain the original copyright, even in the case of modifications).
+
+<p>
+This package is provided <em>AS-IS</em>. See the <a href="#warning">
+Important Note</a> section above. A disclaimer of warranty and limitation
+of liability is included in the License.
+
+<p>
+You are free to use the Gemplus Apduio CardTerminal, or write your own,
+starting from scratch, or adapt this one. In the case where you have fixed
+problems or make enhancements to this package, we would like to get those
+changes back in order to integrate them for the benefit of most people.
+
+<p>
+<a name="Primary Web Location">&nbsp;</a>
+<!-- ------------------------------- -->
+<table cellspacing="0" cellpadding="0" border="0"><tr><td>
+
+   <h3 class="index">Primary Web Location</h3>
+
+</td></tr><tr><td>
+<img src="../../../images/Home.gif" alt="Home" align="middle">
+</td></tr></table>
+<!-- ------------------------------- -->
+
+<p>
+This component can be downloaded from the
+<strong>Gemplus Developer's Web Site</strong>
+<a href="http://www.gemplus.fr/developers/technologies/opencard/">
+OpenCard Page</a> (in the "Technologies" section).
+
+<p>
+This web site is the developer's section of the general Gemplus
+web and it needs a registration before any downloading of code.
+It is a simple form requesting an email address and a password
+(similar to the Java developer's section).
+
+<p>
+In the OpenCard Page, you will find links to the 
+<a href="http://www.gemplus.fr/developers/technologies/opencard/cardterminals/download.html">
+CardTerminals Download&nbsp;Page
+</a>.
+In case you are reading the ASCII version of this README file,
+the download page location is the following URL:
+
+<br>
+<br>
+<font size="-1">
+<tt>
+http://www.gemplus.fr/developers/technologies/opencard/cardterminals/download.html
+</tt>
+</font>
+
+<!-- ----------------------------------------------------------------- -->
+<!--                   Software Organization                           -->
+<!-- ----------------------------------------------------------------- -->
+
+<p><a name="Software Organization"><hr></a>
+<!-- =============================================== -->
+<table width="100%" cellspacing="0" cellpadding="0" border="0"><tr><td>
+<table cellspacing="0" cellpadding="0" border="0"><tr>
+<td><img src="../../../images/tc1.gif" alt="" width=52 height=64 valign=top></td
+>
+<td background="../../../images/tc2.gif">
+
+   <h2 class="index">Software Organization &nbsp; </h2></td>
+
+<td><img src="../../../images/tc3.gif" alt="" width=22 height=64 valign=top></td
+>
+</tr></table></td>
+<td><img src="../../../images/summer-oak1.png" alt="Distribs" align="left"></td>
+</td></tr></table>
+<!-- =============================================== -->
+
+
+<!-- ------------------------------- -->
+<table cellspacing="0" cellpadding="0" border="0"><tr><td>
+
+   <h3 class="index">Archive Contents</h3>
+
+</td></tr><tr><td>
+<img src="../../../images/ArtFolderEmpty.gif" alt="Archive" align="middle">
+</td></tr></table>
+<!-- ------------------------------- -->
+
+<p>
+The Apduio CardTerminal is distributed in a <a class="file">ZIP</a>
+or in a <a class="file">TAR.GZ</a> archive file.
+A detailed content of the archive can be found in the following
+automatically-generated <a href="tree.txt">Directory Hierarchy</a>.
+
+<p>
+To summarize this hierarchy, the major files and directories found
+in the <a class="file">"gemplus-apduio-0.1.{zip,tar.gz}"</a> archive are:
+
+<pre>
+    <a class="file">"doc/README-GemplusApduio.txt"</a>: the ASCII version of this file,<br>
+    <a class="file">"doc/LICENSE-GemplusApduio.txt"</a>: copyright statements,<br>
+    <a class="file">"lib/gemplus-apduio-0.1.jar"</a>: a <strong>ready to use</strong> Java JAR file,<br>
+    <a class="file">"components/gemplus-apduio-0.1/doc/"</a>: package documentation,<br>
+    <a class="file">"components/gemplus-apduio-0.1/src/"</a>: package source code,<br>
+    <a class="file">"components/gemplus-apduio-0.1/doc/README-GemplusApduio.html"</a>:
+       this file (HTML version),<br>
+    <a class="file">"images/"</a>: miscellaneous icons.
+</pre>
+
+<br>
+<!-- ------------------------------- -->
+<table cellspacing="0" cellpadding="0" border="0"><tr><td>
+
+   <h3 class="index">Features</h3>
+
+</td></tr><tr><td>
+<img src="../../../images/ArtFolderFull.gif" alt="Features">
+</td></tr></table>
+<!-- ------------------------------- -->
+
+<p>
+The Gemplus Apduio CardTerminal is an implementation
+of an OCF CardTerminal to access the Java Card 2.1.2 Simulator
+distributed by Sun Microsystems in its
+<a href="http://java.sun.com/products/javacard/dev_kit.html">
+Java Card 2.1.2 Development Kit</a> 
+
+<!-- ----------------------------------------------------------------- -->
+<!--                Installation and User's Guide                      -->
+<!-- ----------------------------------------------------------------- -->
+
+<p><a name="Installation and User's Guide"><hr></a>
+<!-- =============================================== -->
+<table width="100%" cellspacing="0" cellpadding="0" border="0"><tr><td>
+<table cellspacing="0" cellpadding="0" border="0"><tr>
+<td><img src="../../../images/tc1.gif" width=52 height=64 valign=top></td>
+<td background="../../../images/tc2.gif">
+
+   <h2 class="index">Installation and User's Guide &nbsp; </h2></td>
+
+<td><img src="../../../images/tc3.gif" width=22 height=64 valign=top></td>
+</tr></table></td>
+<td><img src="../../../images/textediticon.jpg" alt="Distribs" align="left"></td>
+</td></tr></table>
+<!-- =============================================== -->
+
+
+<!-- ------------------------------- -->
+<table cellspacing="0" cellpadding="0" border="0"><tr><td>
+
+   <h3 class="index">For installing Apduio CardTerminal</h3>
+
+</td></tr><tr><td>
+<img src="../../../images/Install.gif" alt="Installation">
+</td></tr></table>
+<!-- ------------------------------- -->
+
+<p>
+See the
+<a href="../download.html">Download&nbsp;Page</a>
+for instructions on how to download and install the
+<tt>Apduio</tt> CardTerminal component on your platform.
+
+
+<p>
+<a name="Additional Prerequisites">&nbsp;</a>
+<!-- ------------------------------- -->
+<table cellspacing="0" cellpadding="0" border="0"><tr><td>
+
+   <h3 class="index">Additional Prerequisites</h3>
+
+</td></tr><tr><td>
+<img src="../../../images/Prerequisites.gif" alt="Installation">
+</td></tr></table>
+<!-- ------------------------------- -->
+
+<p>
+In addition to the <a href="../../../doc/prerequisites.html">prerequisites</a>
+listed for all OCF components (i.e., JRE, Comm API, and OCF), there are
+some additional required software packages:
+
+<ul>
+   <p>
+   <li> The Java Card 2.1.2 Simulator distributed by Sun Microsystems
+        is of course mandatory in order to use this CardTerminal.
+	Please download and install the complete
+	<a href="http://java.sun.com/products/javacard/dev_kit.html">
+	Java Card 2.1.2 Development Kit</a>.
+</ul>
+
+<p>
+<a name="For using">&nbsp;</a>
+<!-- ------------------------------- -->
+<table cellspacing="0" cellpadding="0" border="0"><tr><td>
+
+   <h3 class="index">For using Apduio CardTerminal</h3>
+
+</td></tr><tr><td>
+<img src="../../../images/User.jpg" alt="Use">
+</td></tr></table>
+<!-- ------------------------------- -->
+
+<p>
+This section shows how to run a simple test with this CardTerminal (Apduio).
+
+<p>
+<ol>
+   <p>
+   <li> <strong>download</strong> and install the Java Card 2.1.2
+        Development Kit.
+   <p>
+   <li> <strong>execute</strong> the <tt>demo2</tt> sample,
+        and produce the <a class="file">"demoee"</a> file, as described
+	in the Chapter 3 of the Java Card 2.1.2 Development Kit Users Guide.
+   <p>
+   <li> <strong>download</strong> and install the distribution.
+   <p>
+   <li> <strong>configure</strong> your
+        <a class="file">"opencard.properties"</a> file
+        in order to use the Gemplus Apduio factory
+        (i.e., <a class="file">ApduioCardTerminalFactory</a>)
+	for the OpenCard.terminals property and the
+	<a class="file">PassThruCardServiceFactory</a>
+	for OpenCard.services.
+
+   <p>
+     Example: (warning: the lines are <strong>not</strong> cut!):
+
+<pre>
+<font size="+1">
+OpenCard.services = opencard.opt.util.
+&nbsp;&nbsp;&nbsp;PassThruCardServiceFactory
+
+OpenCard.terminals = com.gemplus.opencard.terminal.apduio.
+&nbsp;&nbsp;&nbsp;ApduIOCardTerminalFactory|mySim|Socket|localhost:9025
+</font>
+</pre>
+
+<p>
+Note that <tt>"Socket"</tt> and the specification of port <tt>"9025"</tt>
+are mandatory. However, <tt>"localhost"</tt> can be replaced by any machine
+name that can be accessed by TCP/IP (and on which the simulator is running).
+
+<p>
+   <li> <strong>test</strong> the component with the
+   <tt>"com.gemplus.opencard.terminal.apduio.test.Test"</tt> program.
+
+<p>
+     Example:
+
+     <ol>
+     <p>
+     <li>Type ('$' being a shell prompt):
+
+     <p>
+     <pre>
+     $ java com.gemplus.opencard.terminal.apduio.test.Test
+     </pre>
+
+     <p>
+     <li>In another console, run the <tt>cref</tt> for demo3,
+     as described in the Chapter 3 of the Java Card 2.1.2
+     Development Kit Users Guide.
+
+     <p>
+     I.e., type ('$' being a shell prompt):
+     <pre>
+     $ cref -i demoee
+     </pre>
+
+     <p>
+     <li>In the console running Test, you should see the following output:
+     <pre>
+     Card Inserted
+     Balance = 0x0032
+     Balance = 0x0022
+</pre>
+
+     <p>
+     <li>In the console running the cref, hit <tt>CTRL+C</tt>, then
+     in the console running Test, you should see the following output:
+     <p>
+     <pre>
+     Card Removed
+     </pre>
+
+     </ol>
+
+</ol>
+
+<!-- 
+<p>
+If during this test you encounter any error message, check the
+<a href="#Troubleshooting">Troubleshooting Section</a> to see
+if hints are available for this error.
+ -->
+
+<p>
+Note that this code is currently in alpha version and so limited
+User's documentation is provided at this stage.
+
+<p>
+Please See the <a href="overview-summary.html">Javadocs</a> for more details
+on the package API.
+
+<p>
+<a name="Limitations">&nbsp;</a>
+<!-- ------------------------------- -->
+<table cellspacing="0" cellpadding="0" border="0"><tr><td>
+
+   <h3 class="index">Limitations</h3>
+
+</td></tr><tr><td>
+<img src="../../../images/InProgress.gif" alt="Work In Progress" align="left">
+</td></tr></table>
+<!-- ------------------------------- -->
+
+<p>
+There are no known limitations for this component.
+
+
+<!-- ----------------------------------------------------------------- -->
+<!--                     Developer's Notes                             -->
+<!-- ----------------------------------------------------------------- -->
+
+<p><a name="Developer's Notes"><hr></a>
+<!-- =============================================== -->
+<table width="100%" cellspacing="0" cellpadding="0" border="0"><tr><td>
+<table cellspacing="0" cellpadding="0" border="0"><tr>
+<td><img src="../../../images/tc1.gif" width=52 height=64 valign=top></td>
+<td background="../../../images/tc2.gif">
+
+   <h2 class="index">Developer's Notes &nbsp; </h2></td>
+
+<td><img src="../../../images/tc3.gif" width=22 height=64 valign=top></td>
+</tr></table></td>
+<td><img src="../../../images/Javanote.gif" alt="Java Notes" align="left"></td>
+</td></tr></table>
+<!-- =============================================== -->
+
+
+<br>
+<!-- ------------------------------- -->
+<!-- 
+<table cellspacing="0" cellpadding="0" border="0"><tr><td>
+
+   <h3 class="index">Architecture of the GPK CardServices packages</h3>
+
+</td></tr><tr><td>
+<img src="../../../images/Architecture.gif" alt="" align="left">
+</td></tr></table>
+-->
+<!-- ------------------------------- -->
+
+<!-- 
+<p>
+<center>
+<img src="UML.gif" alt="[GPKCardService etc.]" align="center">
+</center>
+-->
+
+
+<p>
+<a name="Samples">&nbsp;</a>
+<!-- ------------------------------- -->
+<table cellspacing="0" cellpadding="0" border="0"><tr><td>
+
+   <h3 class="index">Sample Code</h3>
+
+</td></tr><tr><td>
+<img src="../../../images/Sources.gif" alt="SampleCode" align="left">
+</td></tr></table>
+<!-- ------------------------------- -->
+
+<p>
+In order to have an example of how to use the <tt>ApduioCardTerminal</tt>
+to communicate with a JavaCard applet, see the code of the
+following class: <a class="file" href="sources/Test.html">
+com.gemplus.opencard.terminal.apduio.test.Test</a>.
+
+<p>
+<a name="Sources">&nbsp;</a>
+<!-- ------------------------------- -->
+<table cellspacing="0" cellpadding="0" border="0"><tr><td>
+
+   <h3 class="index">Complete Sources</h3>
+
+</td></tr><tr><td>
+<img src="../../../images/AllSources.gif" alt="Installation" align="left">
+</td></tr></table>
+<!-- ------------------------------- -->
+
+<p>
+Sources of the current version (V 0.1) have been compiled into hypertext
+(HTML) versions in the
+<a href="sources/index.html">
+"components/apduio-terminal-0.1/doc/sources/"</a> subdirectory.
+
+<p>
+Otherwise, for looking at the sources of <em>previous versions</em>:
+
+<ol>
+   <p>
+   <li> <tt>$ cd <a class="file">components/apduio-terminal-0.1/src/</a></tt>
+   <p>
+   <li> and use RCS's command <STRONG><tt>co(1)</tt></STRONG> to check out
+   the files.
+</ol>
+
+<p>
+If you intend to work with RCS in order to retrieve, install,
+and/or edit previous versions, see also the
+<a href="#changes">RCS change logs</a> that are provided in Appendix.
+
+
+<p>
+<a name="Troubleshooting">&nbsp;</a>
+<!-- ------------------------------- -->
+<table cellspacing="0" cellpadding="0" border="0"><tr><td>
+
+   <h3 class="index">Troubleshooting</h3>
+
+</td></tr><tr><td>
+<img src="../../../images/TroubleShooting.gif" alt="Troubleshooting" align="left">
+</td></tr></table>
+<!-- ------------------------------- -->
+
+<p>
+This section provides tricks that are nice to know when using
+the component. It should also be enhanced in the future with
+a FAQ of common encountered problems.
+
+<ul class="disco">
+
+   <p>
+   <li> No known problems,... yet.
+
+</ul>
+
+
+
+<!-- ----------------------------------------------------------------- -->
+<!--                            APPENDIX                               -->
+<!-- ----------------------------------------------------------------- -->
+
+<p><a name="APPENDIX"><hr></a>
+<!-- =============================================== -->
+<center><table align="center" cellspacing="0" cellpadding="0" border="0"><tr><td>
+<table cellspacing="0" cellpadding="0" border="0"><tr>
+<td><img src="../../../images/tc1.gif" width=52 height=64 valign=top></td>
+<td background="../../../images/tc2.gif">
+
+   <h2 class="appendix">Appendixes &nbsp;</h2></td>
+
+<td><img src="../../../images/tc3.gif" width=22 height=64 valign=top></td>
+</tr></table></td>
+<td><img src="../../../images/Library.jpg" alt="Appendixes" align="middle"></td>
+</td></tr></table></center>
+<!-- =============================================== -->
+
+
+<!-- CHANGES ----------------------- -->
+<p><a name="changes"><hr></a>
+<!-- ------------------------------- -->
+<br>
+<table cellspacing="0" cellpadding="0" border="0"><tr><td>
+
+   <h3 class="appendix">Appendix A. Change Logs</h3>
+
+</td></tr><tr><td>
+<img src="../../../images/Changes.gif" alt="Changes" align="left">
+</td></tr></table>
+<!-- ------------------------------- -->
+
+<p>
+In order to help tracking new features and bug fixes, a listing of
+previous RCS change logs for the main file of the package (i.e.,
+for <a class="file">MANIFEST</a>) is provided below.
+
+<pre>
+============================================================
+Log files for MANIFEST (from version 0.0 to now)
+============================================================
+----------------------------
+revision 0.1
+date: 2001/07/05 08:35:01
+First distributed version
+============================================================
+</pre>
+<!-- ------------------------------- -->
+
+
+<!-- GLOSSARY ---------------------- -->
+<p><a name="glossary"><hr></a>
+<!-- ------------------------------- -->
+<br>
+<table cellspacing="0" cellpadding="0" border="0"><tr><td>
+
+   <h3 class="appendix">Appendix B. GLOSSARY</h3>
+
+</td></tr><tr><td>
+<img src="../../../images/Glossary.gif" alt="Glossary" align="left">
+</td></tr></table>
+<!-- ------------------------------- -->
+
+<p><strong>This appendix is informative.</strong></p>
+
+<a name="APDU"><p>&nbsp;</p></a>
+<span class="pullquote">APDU</span>
+<p class="pull">
+	An APDU, <strong>A</strong>pplication <strong>P</strong>rotocol
+	<strong>D</strong>ata <strong>U</strong>nit, is the basic command
+	unit for a smart card. An APDU contains either a command message
+	or a response message, sent from the card reader to the 
+	smart card or from the card to the reader.
+</p>
+<hr style="display: none;">
+
+<a name="API"><p>&nbsp;</p></a>
+<span class="pullquote">API</span>
+<p class="pull">
+	An API, <strong>A</strong>pplication <strong>P</strong>rogramming
+	<strong>I</strong>nterface, is an abstract definition of a service
+	that can be provided either by a server, a component, an object
+	class, etc. In the Java world, an API can be a <em>Java Interface</em>
+	or a set of interfaces and abstract or concrete classes. For servers
+	or other computing languages, it can be a set or functions (such as
+	the C-based PKCS#11 API) or a language independent API defined
+	in an <em>IDL</em>, such as the <a href="http://www.infosys.tuwien.ac.at/Research/Corba/OMG/arch2.htm#445963">OMG IDL.</a>
+</p>
+<hr style="display: none;">
+
+<a name="OCF"><p>&nbsp;</p></a>
+<span class="pullquote">OCF, OpenCard Framework</span>
+<p class="pull">
+	OCF, the <span class="ocf">OpenCard Framework</span>, is a
+	standardized, easy-to-use framework for implementing
+	Smartcard-enabled solutions and Smartcard-based
+	services. <span class="ocf">OpenCard Framework</span>
+	capitalizes on the broad, cross-platform benefits of
+	Java, providing an open architecture and a set of common APIs
+	(Application Program Interfaces) geared for this purpose. 
+	For more details about the basic architecture, concepts, and
+	objectives of the <span class="ocf">OpenCard Framework</span>, see
+	the <a href="#ref-ocf-intro">General Information Web Document</a>
+	and other documentation.
+</p>
+<hr style="display: none;">
+
+<!-- 
+<a name=""><p>&nbsp;</p></a>
+<span class="pullquote"></span>
+<p class="pull">
+	
+</p>
+<hr style="display: none;">
+-->
+
+
+<!-- REFERENCES -------------------- -->
+<p><a name="references"><hr></a>
+<!-- ------------------------------- -->
+<br>
+<table cellspacing="0" cellpadding="0" border="0"><tr><td>
+
+   <h3 class="appendix">Appendix C. References</h3>
+
+</td></tr><tr><td>
+<img src="../../../images/Web.gif" alt="References" align="left">
+</td></tr></table>
+<!-- ------------------------------- -->
+
+<p><strong>This appendix is informative.</strong></p>
+
+<dl>
+
+<!-- Java -->
+
+<dt><a class="references" name="ref-java-intro" id="ref-java-intro">
+[Java Intro]
+</a></dt>
+
+<dd>
+"The Java Tutorial Second Edition", by Mary Campione, Kathy Walrath,
+Addison-Wesley, March 1998.<br>
+Available at: <a href="http://java.sun.com/docs/books/tutorial/index.html">http://java.sun.com/docs/books/tutorial/index.html</a>
+</dd>
+
+
+<dt><a class="references" name="ref-java-docs" id="ref-java-docs">
+[Java Documentation]
+</a></dt>
+
+<dd>
+"Java Platform Documentation" Home-page, by Sun Microsystems.<br>
+Available at: <a href="http://java.sun.com/docs/index.html">http://java.sun.com/docs/index.html</a>
+</dd>
+
+
+<!-- Opencard -->
+
+<dt><a class="references" name="ref-ocf-intro" id="ref-ocf-intro">
+[Opencard Intro]
+</a></dt>
+
+<dd>
+"OpenCard Framework -- General Information Web Document", by "The OpenCard
+Consortium", October 1998.<br>
+Available at: <a href="http://www.opencard.org/docs/gim/ocfgim.html">http://www.opencard.org/docs/gim/ocfgim.html</a>
+</dd>
+
+
+<dt><a class="references" name="ref-ocf-w" id="ref-ocf-w">
+[Opencard Whitepaper]
+</a></dt>
+
+<dd>
+"OpenCard Framework", by Reto Hermann, Dirk Husemann (IBM Research Division).<br>
+Available at: <a href="http://www.ibm.com/java/education/opencard-framework/">http://www.ibm.com/java/education/opencard-framework/</a>
+</dd>
+
+
+<dt><a class="references" name="ref-ocf-prog" id="ref-ocf-prog">
+[Opencard Programming]
+</a></dt>
+
+<dd>
+"OpenCard Framework 1.1.1 Programmer's Guide", by "The OpenCard
+Consortium", April 1999.<br>
+Available at: <a href="http://www.opencard.org/docs/pguide/PGuide.html">http://www.opencard.org/docs/pguide/PGuide.html</a>
+</dd>
+
+
+<dt><a class="references" name="ref-ocf-book" id="ref-ocf-book">
+[Smart Card Application Development Using Java]
+</a></dt>
+
+<dd>
+"Smart Card Application Development Using Java", by Hansmann, Uwe;
+Nicklous, Martin S.; Schäck, Thomas and Seliger, Frank, ISBN 3-540-65829-7,
+Springer Heidelberg, 1999.<br>
+Information about this book is available at:
+<a href="http://www.opencard.org/SCJavaBook">
+http://www.opencard.org/SCJavaBook</a>
+</dd>
+
+<!-- Smartcards -->
+
+<dt><a class="references" name="ref-java-jc" id="ref-java-jc">
+[Javacard]
+</a></dt>
+
+<dd>
+"Java Card Technology" Home-Page, by Sun Microsystems.<br>
+Available at: <a href="http://java.sun.com/products/javacard/index.html#presentations">http://java.sun.com/products/javacard/index.html#presentations</a>
+</dd>
+
+
+</dl>
+
+
+
+<!-- ----------------------------------------------------------------- -->
+<!--                   BODY FOOTER SECTIONS                            -->
+<!-- ----------------------------------------------------------------- -->
+
+<!-- ADDRESS ----------------------- -->
+<p><a name="contact"><hr></a>
+<!-- ------------------------------- -->
+<br>
+<table cellspacing="0" cellpadding="0" border="0"><tr><td>
+
+   <h3 class="index">Contacts</h3>
+
+</td></tr><tr><td>
+<img src="../../../images/Contact.gif" alt="Contacts" align="left">
+</td></tr></table>
+<!-- ------------------------------- -->
+
+<p>
+Several communications tools are available,
+<span class="stabilo">please&nbsp;select&nbsp;the&nbsp;right&nbsp;one</span>
+according to your needs, i.e.,:
+
+<ul class="disco">
+   <p>
+   <li> For submitting source code enhancements or patches to problems,
+        send an email directly to the
+	<a href="mailto:lago@research.gemplus.com?subject=[Gemplus Apduio CardTerminal] Comment,Suggestion">component author</a>.
+   <p>
+   <li> For help on usage, or submissions of suggestions/problem reports,
+        post your comments or questions to the
+<a href="http://www.gemplus.fr/developers/passwd_protected/discus/index.html">
+        Gemplus Developer's Site Forum</a> (in the topic named
+	<strong>"OCF Forum"</strong>),
+   <p>
+   <li> At last, for any comments on the OpenCard framework (i.e., not
+        directly related to the Java Card simulator CardTerminal issues),
+	post your comments or questions to the
+	<a href="http://www.opencard.org/">OpenCard mailing-list</a>
+	(instructions	on how to subscribe are available on the
+	OpenCard Home-Page).
+</ul>
+
+<br>
+<hr>
+<p>
+Last changes: Thu Jul  5 2001<br>
+
+</body>
+<!-- ----------------------------------------------------------------- -->
+
+
+</html>

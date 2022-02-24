@@ -1,0 +1,102 @@
+pcsc-wrapper-2.0
+|-- doc
+|   |-- LICENSE-Reference-Impl.txt
+|   |-- MANIFEST
+|   |-- Makefile
+|   |-- RCS
+|   |-- README-PCSCWrapper.html
+|   |-- README-PCSCWrapper.txt
+|   |-- allclasses-frame.html
+|   |-- com
+|   |   `-- ibm
+|   |       `-- opencard
+|   |           `-- terminal
+|   |               |-- pcsc
+|   |               |   |-- PcscError.html
+|   |               |   |-- package-frame.html
+|   |               |   |-- package-summary.html
+|   |               |   `-- package-tree.html
+|   |               `-- pcsc10
+|   |                   |-- OCFPCSC1.html
+|   |                   |-- Pcsc10CardTerminal.html
+|   |                   |-- Pcsc10CardTerminalFactory.html
+|   |                   |-- Pcsc10Constants.html
+|   |                   |-- PcscException.html
+|   |                   |-- PcscReaderState.html
+|   |                   |-- package-frame.html
+|   |                   |-- package-summary.html
+|   |                   `-- package-tree.html
+|   |-- deprecated-list.html
+|   |-- help-doc.html
+|   |-- index-all.html
+|   |-- index.html
+|   |-- make_javadocs.sh
+|   |-- make_tree.sh
+|   |-- overview-frame.html
+|   |-- overview-summary.html
+|   |-- overview-tree.html
+|   |-- overview.html
+|   |-- package-list
+|   |-- packages.html
+|   |-- serialized-form.html
+|   |-- sources
+|   |   |-- OCFPCSC1.html
+|   |   |-- Pcsc10CardTerminal.html
+|   |   |-- Pcsc10CardTerminalFactory.html
+|   |   |-- Pcsc10Constants.html
+|   |   |-- PcscError.html
+|   |   |-- PcscException.html
+|   |   |-- PcscReaderState.html
+|   |   |-- file.gif
+|   |   |-- index.html
+|   |   `-- java2html.state
+|   |-- stylesheet.css
+|   `-- tree.txt
+|-- download.html
+`-- src
+    |-- MANIFEST
+    |-- Makefile
+    |-- Pcsc10LockableTerminal.java
+    |-- Pcsc10LockableTerminalFactory.java
+    |-- RCS
+    |   |-- MANIFEST,v
+    |   |-- Makefile,v
+    |   |-- OCFPCSC1.java,v
+    |   |-- Pcsc10CardTerminal.java,v
+    |   |-- Pcsc10CardTerminalFactory.java,v
+    |   |-- Pcsc10Constants.java,v
+    |   |-- Pcsc10LockableTerminal.java,v
+    |   |-- Pcsc10LockableTerminalFactory.java,v
+    |   |-- PcscError.java,v
+    |   |-- PcscException.java,v
+    |   `-- PcscReaderState.java,v
+    |-- pcsc
+    |   |-- PcscError.java
+    |   `-- RCS -> ../RCS
+    `-- pcsc10
+        |-- OCFPCSC1.cpp
+        |-- OCFPCSC1.h
+        |-- OCFPCSC1.java
+        |-- OCFPCSC1.rc
+        |-- Pcsc10CardTerminal.java
+        |-- Pcsc10CardTerminalFactory.java
+        |-- Pcsc10Constants.java
+        |-- PcscContexts.cpp
+        |-- PcscContexts.h
+        |-- PcscException.java
+        |-- PcscExceptions.cpp
+        |-- PcscExceptions.h
+        |-- PcscReaderState.java
+        |-- RCS -> ../RCS
+        |-- SeverityLevels.h
+        |-- Tracer.cpp
+        |-- Tracer.h
+        |-- fieldIO.cpp
+        |-- fieldIO.h
+        `-- natives
+            `-- MSWin32
+                |-- scarderr.h
+                |-- winscard.h
+                `-- winscard.lib
+
+17 directories, 82 files

@@ -17,17 +17,17 @@ import javax.crypto.*;
 import java.io.*;
 import java.math.BigInteger;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
-import java.security.spec.RSAPrivateKeySpec;
 import java.security.spec.RSAPublicKeySpec;
 import java.util.*;
 import java.util.stream.Stream;
+
+import static com.github.MrrRaph.corosechat.server.ServerChat.*;
 
 public class ServiceChat implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(ServiceChat.class.getSimpleName());
@@ -41,27 +41,6 @@ public class ServiceChat implements Runnable {
     private static final Map<String, Client> users = new HashMap<>();
 
     private static final Set<User> userDB = new HashSet<>();
-
-    private static final byte[] MODULUS_B = new byte[] {
-            (byte)0x90,(byte)0x08,(byte)0x15,(byte)0x32,(byte)0xb3,(byte)0x6a,(byte)0x20,(byte)0x2f,
-            (byte)0x40,(byte)0xa7,(byte)0xe8,(byte)0x02,(byte)0xac,(byte)0x5d,(byte)0xec,(byte)0x11,
-            (byte)0x1d,(byte)0xfa,(byte)0xf0,(byte)0x6b,(byte)0x1c,(byte)0xb7,(byte)0xa8,(byte)0x39,
-            (byte)0x19,(byte)0x50,(byte)0x9c,(byte)0x44,(byte)0xed,(byte)0xa9,(byte)0x51,(byte)0x01,
-            (byte)0x0f,(byte)0x11,(byte)0xd6,(byte)0xa3,(byte)0x60,(byte)0xa7,(byte)0x7e,(byte)0x95,
-            (byte)0xa2,(byte)0xfa,(byte)0xe0,(byte)0x8d,(byte)0x62,(byte)0x5b,(byte)0xf2,(byte)0x62,
-            (byte)0xa2,(byte)0x64,(byte)0xfb,(byte)0x39,(byte)0xb0,(byte)0xf0,(byte)0x6f,(byte)0xa2,
-            (byte)0x23,(byte)0xae,(byte)0xbc,(byte)0x5d,(byte)0xd0,(byte)0x1a,(byte)0x68,(byte)0x11,
-            (byte)0xa7,(byte)0xc7,(byte)0x1b,(byte)0xda,(byte)0x17,(byte)0xc7,(byte)0x14,(byte)0xab,
-            (byte)0x25,(byte)0x92,(byte)0xbf,(byte)0xcc,(byte)0x81,(byte)0x65,(byte)0x7a,(byte)0x08,
-            (byte)0x90,(byte)0x59,(byte)0x7f,(byte)0xc4,(byte)0xf9,(byte)0x43,(byte)0x9c,(byte)0xaa,
-            (byte)0xbe,(byte)0xe4,(byte)0xf8,(byte)0xfb,(byte)0x03,(byte)0x74,(byte)0x3d,(byte)0xfb,
-            (byte)0x59,(byte)0x7a,(byte)0x56,(byte)0xa3,(byte)0x19,(byte)0x66,(byte)0x43,(byte)0x77,
-            (byte)0xcc,(byte)0x5a,(byte)0xae,(byte)0x21,(byte)0xf5,(byte)0x20,(byte)0xa1,(byte)0x22,
-            (byte)0x8f,(byte)0x3c,(byte)0xdf,(byte)0xd2,(byte)0x03,(byte)0xe9,(byte)0xc2,(byte)0x38,
-            (byte)0xe7,(byte)0xd9,(byte)0x38,(byte)0xef,(byte)0x35,(byte)0x82,(byte)0x48,(byte)0xb7
-    };
-
-    private static final byte[] PUBLIC_EXPONENT_B = new byte[] { (byte)0x01,(byte)0x00,(byte)0x01 };
 
     public ServiceChat(final Socket socket) throws IOException {
         this.socket = socket;
@@ -90,7 +69,7 @@ public class ServiceChat implements Runnable {
     @Override
     public void run() {
         try {
-            if (users.size() + 1 > 3) {
+            if (users.size() + 1 > MAX_USERS) {
                 this.socket.close();
                 return;
             }
@@ -109,85 +88,73 @@ public class ServiceChat implements Runnable {
                             Writifier.systemWriter(this.out, "username: ");
                     } while(username.trim().isEmpty());
 
-                    this.pseudo = username;
+                    User user = getUser(username);
 
-                    String mod_s = new String(Hex.encodeHex(MODULUS_B));
-                    String pub_s = new String(Hex.encodeHex(PUBLIC_EXPONENT_B));
+                    if (user != null) {
+                        Random r = new Random(new Date().getTime());
+                        r.nextBytes(challengeBytes);
 
-                    BigInteger modulus = new BigInteger(mod_s, 16);
-                    BigInteger pubExponent = new BigInteger(pub_s, 16);
+                        System.out.println("Challenge Bytes plaintext: " + com.github.MrrRaph.corosechat.client.utils.bytes.ByteUtil.printBytes(challengeBytes));
 
-                    RSAPublicKeySpec publicSpec = new RSAPublicKeySpec(modulus, pubExponent);
+                        Security.addProvider(new BouncyCastleProvider());
+                        Cipher cRSA_NO_PAD = Cipher.getInstance("RSA/NONE/NoPadding", "BC");
+                        cRSA_NO_PAD.init(Cipher.ENCRYPT_MODE, user.getPublicKey());
 
-                    KeyFactory factory = KeyFactory.getInstance("RSA");
-                    PublicKey pub = factory.generatePublic(publicSpec);
+                        challengeBytes[0] &= 0x3F;
+                        byte[] ciphered = cRSA_NO_PAD.doFinal(challengeBytes);
 
-                    Random r = new Random(new Date().getTime());
-                    r.nextBytes(challengeBytes);
+                        Writifier.systemWriter(this.out, "Challenge:" + new String(Base64.encodeBase64(ciphered)));
 
-                    Security.addProvider(new BouncyCastleProvider());
-                    Cipher cRSA_NO_PAD = Cipher.getInstance("RSA/NONE/NoPadding", "BC");
-                    cRSA_NO_PAD.init(Cipher.ENCRYPT_MODE, pub);
-                    challengeBytes[0] = 1;
-                    byte[] ciphered = cRSA_NO_PAD.doFinal(challengeBytes);
-
-                    Writifier.systemWriter(this.out, "Challenge:" + new String(Base64.encodeBase64(ciphered)));
-
-                    String uncipheredChallenge = "";
-                    do {
-                        if (this.in.hasNextLine()) uncipheredChallenge = this.in.nextLine();
-                    } while(uncipheredChallenge.isEmpty());
-
-                    byte[] unciphered =  Base64.decodeBase64(uncipheredChallenge.getBytes());
-                    if (Arrays.equals(unciphered, challengeBytes)) {
-                        Writifier.systemWriter(this.out, "Welcome ! You are now authenticated.");
-                    } else {
-                        Writifier.systemWriter(this.out, "Challenge verification failed.");
-                        Writifier.systemWriter(this.out, "Socket closed.");
-                        return;
-                    }
-                } catch (NoSuchAlgorithmException | NoSuchProviderException |
-                         NoSuchPaddingException   | InvalidKeySpecException |
-                         InvalidKeyException      | IllegalBlockSizeException | BadPaddingException e) {
-                    e.printStackTrace();
-                }
-                /*if (this.in.hasNextLine()) {
-                    do {
-                        String username = null, password = null;
+                        String uncipheredChallenge = "";
                         do {
-                            if (this.in.hasNextLine())
-                                username = StringUtils.removeNonPrintable(this.in.nextLine().trim());
-                            if (Objects.requireNonNull(username).isEmpty())
-                                Writifier.systemWriter(this.out, "username: ");
-                        } while(username.trim().isEmpty());
+                            if (this.in.hasNextLine()) uncipheredChallenge = this.in.nextLine();
+                        } while(uncipheredChallenge.isEmpty());
 
-                        User user = getUser(username);
+                        byte[] unciphered =  Base64.decodeBase64(uncipheredChallenge.getBytes());
+                        if (Arrays.equals(unciphered, challengeBytes)) {
+                            if (users.containsKey(username)) {
+                                Writifier.systemWriter(this.out, "Error: An user with the same pseudo is already connected.");
+                                logger.log("Failing attempt for connecting to " + username + ": User already connected.", Level.WARNING);
+                                this.socket.close();
+                                return;
+                            }
 
-                        do {
-                            Writifier.systemWriter(this.out, "password: ");
-                            if (this.in.hasNextLine())
-                                password = this.in.nextLine();
-                        } while(Objects.requireNonNull(password).isEmpty());
-
-                        if (user != null) {
-                            if (user.getPassword().equals(password)) {
-                                if (users.containsKey(username)) {
-                                    Writifier.systemWriter(this.out, "Error: An user with the same pseudo is already connected.");
-                                    logger.log("Failing attempt for connecting to " + username + ": User already connected.", Level.WARNING);
-                                    this.socket.close();
-                                    return;
-                                }
-                                this.pseudo = user.getUsername();
-                            } else Writifier.systemWriter(this.out,"Wrong username or password!");
+                            Writifier.systemWriter(this.out, "Welcome ! You are now authenticated.");
+                            this.pseudo = user.getUsername();
                         } else {
-                            userDB.add(new User(username, password, UserGroup.REGULAR_USER));
-                            Writifier.systemWriter(this.out,"New user created!");
-                            logger.log("A new user has been created with username " + username, Level.INFO);
-                            this.socket.close();
+                            Writifier.systemWriter(this.out, "Challenge verification failed.");
+                            Writifier.systemWriter(this.out, "Socket closed.");
                             return;
                         }
-                    } while (users.containsKey(this.pseudo) || this.pseudo == null ||this.pseudo.isEmpty());
-                }*/
+                    } else {
+                        Writifier.systemWriter(this.out, "Public Key:");
+                        String[] splittedResponse = new String[0];
+                        do {
+                            if (this.in.hasNextLine())
+                                splittedResponse = this.in.nextLine().split(" ");
+                        } while (splittedResponse.length == 0);
+
+                        String mod_s = new String(Hex.encodeHex(Base64.decodeBase64(splittedResponse[0].getBytes())));
+                        String pub_s = new String(Hex.encodeHex(Base64.decodeBase64(splittedResponse[1].getBytes())));
+
+                        BigInteger modulus = new BigInteger(mod_s, 16);
+                        BigInteger pubExponent = new BigInteger(pub_s, 16);
+
+                        RSAPublicKeySpec publicSpec = new RSAPublicKeySpec(modulus, pubExponent);
+
+                        KeyFactory factory = KeyFactory.getInstance("RSA");
+                        PublicKey publicKey = factory.generatePublic(publicSpec);
+                        userDB.add(new User(username, publicKey, UserGroup.REGULAR_USER));
+                        Writifier.systemWriter(this.out,"New user created!");
+                        logger.log("A new user has been created with username " + username, Level.INFO);
+                        this.socket.close();
+                        return;
+                    }
+                } catch (NoSuchAlgorithmException  | NoSuchProviderException |
+                         NoSuchPaddingException    | InvalidKeyException     |
+                         IllegalBlockSizeException | BadPaddingException e) {
+                    e.printStackTrace();
+                }
             }
 
             if (!this.isAdmin)
@@ -268,8 +235,20 @@ public class ServiceChat implements Runnable {
                             case ADD_ACCOUNT -> {
                                 if (isAdmin) {
                                     String[] splittedInput = input.split(" ");
-                                    if (splittedInput.length < 3) Writifier.systemWriter(this.out, "Usage: /addAccount username password");
-                                    else addAccount(splittedInput[1]);
+                                    if (splittedInput.length < 3) Writifier.systemWriter(this.out, "Usage: /addAccount username publicKeyModulus publicKeyExponent");
+                                    else {
+                                        String mod_s = new String(Hex.encodeHex(Base64.decodeBase64(splittedInput[2].getBytes())));
+                                        String pub_s = new String(Hex.encodeHex(Base64.decodeBase64(splittedInput[3].getBytes())));
+
+                                        BigInteger modulus = new BigInteger(mod_s, 16);
+                                        BigInteger pubExponent = new BigInteger(pub_s, 16);
+
+                                        RSAPublicKeySpec publicSpec = new RSAPublicKeySpec(modulus, pubExponent);
+
+                                        KeyFactory factory = KeyFactory.getInstance("RSA");
+                                        PublicKey publicKey = factory.generatePublic(publicSpec);
+                                        addAccount(splittedInput[1], publicKey);
+                                    }
                                 }
                             }
 
@@ -297,6 +276,8 @@ public class ServiceChat implements Runnable {
             }
         } catch (IOException | InterruptedException e) {
             logger.log(e.getMessage(), Level.ERROR);
+        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+            e.printStackTrace();
         }
     }
 
@@ -307,7 +288,7 @@ public class ServiceChat implements Runnable {
             Files.delete(p);
 
         for (User u : userDB)
-            Files.write(p, (u.getUsername() + ":" + u.getPassword() + ":" + u.getGroup() + "\n").getBytes(), StandardOpenOption.APPEND, StandardOpenOption.CREATE);
+            Files.write(p, (u.getUsername() + ":" + u.getPublicKey() + ":" + u.getGroup() + "\n").getBytes(), StandardOpenOption.APPEND, StandardOpenOption.CREATE);
     }
 
     private void loadDatabase() throws IOException {
@@ -316,15 +297,15 @@ public class ServiceChat implements Runnable {
             try (Stream<String> stream = Files.lines(p)) {
                 stream.forEach(line -> {
                     String[] splittedLine = line.split(":");
-                    userDB.add(new User(splittedLine[0], splittedLine[1], UserGroup.REGULAR_USER));
+                    userDB.add(new User(splittedLine[0], null, UserGroup.REGULAR_USER)); // TODO: Change the public key
                     logger.log(splittedLine[0] + " account has been added from database.", Level.INFO);
                 });
             }
         }
     }
 
-    private void addAccount(String username) {
-        if (userDB.add(new User(username, username, UserGroup.REGULAR_USER)))
+    private void addAccount(String username, PublicKey publicKey) {
+        if (userDB.add(new User(username, publicKey, UserGroup.REGULAR_USER)))
             logger.log(username + " account has been added by the administrator.", Level.INFO);
         else Writifier.systemWriter(this.out, username + " already exists.");
     }

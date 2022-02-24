@@ -1,0 +1,308 @@
+<HTML> <body bgcolor = "FFFFFF"> <PRE>
+<FONT COLOR="FF0000">/*
+  * Copyright © 1997 - 1999 IBM Corporation.
+  * 
+  * Redistribution and use in source (source code) and binary (object code)
+  * forms, with or without modification, are permitted provided that the
+  * following conditions are met:
+  * 1. Redistributed source code must retain the above copyright notice, this
+  * list of conditions and the disclaimer below.
+  * 2. Redistributed object code must reproduce the above copyright notice,
+  * this list of conditions and the disclaimer below in the documentation
+  * and/or other materials provided with the distribution.
+  * 3. The name of IBM may not be used to endorse or promote products derived
+  * from this software or in any other form without specific prior written
+  * permission from IBM.
+  * 4. Redistribution of any modified code must be labeled &quot;Code derived from
+  * the original OpenCard Framework&quot;.
+  * 
+  * THIS SOFTWARE IS PROVIDED BY IBM &quot;AS IS&quot; FREE OF CHARGE. IBM SHALL NOT BE
+  * LIABLE FOR INFRINGEMENTS OF THIRD PARTIES RIGHTS BASED ON THIS SOFTWARE.  ANY
+  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+  * DISCLAIMED.  IBM DOES NOT WARRANT THAT THE FUNCTIONS CONTAINED IN THIS
+  * SOFTWARE WILL MEET THE USER'S REQUIREMENTS OR THAT THE OPERATION OF IT WILL
+  * BE UNINTERRUPTED OR ERROR-FREE.  IN NO EVENT, UNLESS REQUIRED BY APPLICABLE
+  * LAW, SHALL IBM BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+  * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+  * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+  * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+  * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.  ALSO, IBM IS UNDER NO OBLIGATION
+  * TO MAINTAIN, CORRECT, UPDATE, CHANGE, MODIFY, OR OTHERWISE SUPPORT THIS
+  * SOFTWARE.
+  */</FONT>
+ 
+ <FONT COLOR="008000">package</FONT> com.ibm.opencard.terminal.pcsc10;
+ 
+ <FONT COLOR="008000">import</FONT> opencard.core.terminal.CardTerminalFactory;
+ <FONT COLOR="008000">import</FONT> opencard.core.terminal.CardTerminal;
+ <FONT COLOR="008000">import</FONT> opencard.core.terminal.CardTerminalException;
+ <FONT COLOR="008000">import</FONT> opencard.core.terminal.CardTerminalRegistry;
+ <FONT COLOR="008000">import</FONT> opencard.core.util.Tracer;
+ 
+ <FONT COLOR="FF0000">/** &lt;tt&gt;CardTerminalFactory&lt;/tt&gt; for PCSC card terminals.
+   *
+   * @author  Stephan Breideneich (sbreiden@de.ibm.com)&lt;br&gt;
+   * Modified by Jean-Francois.GREZES-EXTERNAL@gemplus.com (Tue, 6 Mar 2001)
+   *    to allow spaces in PC/SC reader labels (using &lt;space&gt; tag).
+   * @version $Id: Pcsc10CardTerminalFactory.java,v 2.0 2001/06/14 13:32:36 root Exp root $
+   *
+   * @see opencard.core.terminal.CardTerminalFactory
+   */</FONT>
+ <FONT COLOR="008000">public</FONT> <FONT COLOR="008000">class</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminalFactory::">Pcsc10CardTerminalFactory</A></FONT> <FONT COLOR="008000">implements</FONT> CardTerminalFactory {
+   <FONT COLOR="008000">private</FONT> Tracer <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminalFactory::itracer">itracer</A></FONT> = <FONT COLOR="008000">new</FONT> <CONSTRUCTORCALL>Tracer</CONSTRUCTORCALL>(<FONT COLOR="008000">this</FONT>, Pcsc10CardTerminalFactory.<FONT COLOR="008000">class</FONT>);
+ 
+   <FONT COLOR="FF0000">/** The reference to the PCSC ResourceManager <FONT COLOR="008000">for</FONT> <FONT COLOR="008000">this</FONT> card terminal. */</FONT>
+   <FONT COLOR="008000">private</FONT> <A HREF = "OCFPCSC1.html#OCFPCSC1::">OCFPCSC1</A> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminalFactory::pcsc">pcsc</A></FONT> = <FONT COLOR="008000">null</FONT>;
+ 
+     <FONT COLOR="FF0000">/**
+      * The terminal status constants and variable
+      */</FONT>
+     <FONT COLOR="008000">static</FONT> <FONT COLOR="008000">final</FONT> <FONT COLOR="008000">byte</FONT>            <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminalFactory::NONE">NONE</A></FONT> = 0;
+     <FONT COLOR="008000">static</FONT> <FONT COLOR="008000">final</FONT> <FONT COLOR="008000">byte</FONT>            <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminalFactory::SHARED">SHARED</A></FONT> = 1;
+     <FONT COLOR="008000">static</FONT> <FONT COLOR="008000">final</FONT> <FONT COLOR="008000">byte</FONT>            <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminalFactory::EXCLUSIVE">EXCLUSIVE</A></FONT> = 2;
+ 
+     <FONT COLOR="008000">static</FONT> <FONT COLOR="008000">final</FONT> <FONT COLOR="008000">byte</FONT>            <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminalFactory::PORT_NOTUSED">PORT_NOTUSED</A></FONT> = 0;
+     <FONT COLOR="008000">static</FONT> <FONT COLOR="008000">final</FONT> <FONT COLOR="008000">byte</FONT>            <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminalFactory::PORT_USED">PORT_USED</A></FONT> = 1;
+ 
+     <FONT COLOR="008000">public</FONT> <FONT COLOR="008000">static</FONT> <FONT COLOR="008000">byte</FONT>           <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminalFactory::terminalsStatus">terminalsStatus</A></FONT>[][] = <FONT COLOR="008000">null</FONT>;
+ 
+     <FONT COLOR="FF0000">/**
+      * The PCSC terminal list variable
+      */</FONT>
+     <FONT COLOR="008000">public</FONT> <FONT COLOR="008000">static</FONT> String[]       terminals = <FONT COLOR="008000">null</FONT>;
+ 
+   <FONT COLOR="FF0000">/** Instantiate and initialize an &lt;tt&gt;Pcsc10TerminalFactory&lt;/tt&gt;.
+    *
+    * @exception CardTerminalException
+    *                    Thrown when a problem occured.
+    */</FONT>
+   <FONT COLOR="008000">public</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminalFactory:Pcsc10CardTerminalFactory:">Pcsc10CardTerminalFactory</A></FONT>()
+     throws CardTerminalException {
+     <FONT COLOR="008000">super</FONT>();
+     <A HREF = "Pcsc10CardTerminalFactory.html#Pcsc10CardTerminalFactory:open:">open</A>();
+   }
+ 
+   <FONT COLOR="FF0000">/** create a specific &lt;tt&gt;CardTerminal&lt;/tt&gt; object that knows how to handle
+    *  a specific card terminal and register it to the CardTerminalRegistry.
+    *  @param     ctr
+    *         the CardTerminalRegistry for registration-process
+    *  @param     terminalInfo
+    *             null - not needed for this factory
+    *  @see       opencard.core.terminal.CardTerminalFactory
+    */</FONT>
+   <FONT COLOR="008000">public</FONT> <FONT COLOR="008000">void</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminalFactory:createCardTerminals:">createCardTerminals</A></FONT>(CardTerminalRegistry <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminalFactory:createCardTerminals:ctr">ctr</A></FONT>, <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminalFactory:createCardTerminals:String">String</A></FONT>[] <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminalFactory:createCardTerminals:terminalInfo">terminalInfo</A></FONT>)
+     throws CardTerminalException {
+ 
+       <FONT COLOR="FF0000">// Compute list of terminals that are known by the PCSC ResourceManager</FONT>
+       <FONT COLOR="008000">if</FONT> (terminals == <FONT COLOR="008000">null</FONT>) {
+       terminals = <A HREF = "Pcsc10CardTerminalFactory.html#Pcsc10CardTerminalFactory:ListReaders:">ListReaders</A>();
+       <A HREF = "#Pcsc10CardTerminalFactory::terminalsStatus">terminalsStatus</A> = <FONT COLOR="008000">new</FONT> <FONT COLOR="008000">byte</FONT>[terminals.length][2];
+       }
+ 
+       <FONT COLOR="FF0000">// when no info on the properties line, then add all the terminals</FONT>
+       <FONT COLOR="FF0000">// that can be found in the PCSC ResourceManager:</FONT>
+       <FONT COLOR="008000">if</FONT> (<A HREF = "#Pcsc10CardTerminalFactory:createCardTerminals:terminalInfo">terminalInfo</A>.<UNKNOWNCALL>length</UNKNOWNCALL> == 0) {
+       <A HREF = "#Pcsc10CardTerminalFactory:createCardTerminals:String">String</A>[] terminals = <A HREF = "Pcsc10CardTerminalFactory.html#Pcsc10CardTerminalFactory:ListReaders:">ListReaders</A>();
+       <FONT COLOR="008000">for</FONT> (<FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminalFactory:createCardTerminals:i">i</A></FONT>=0;<A HREF = "#Pcsc10CardTerminalFactory:createCardTerminals:i">i</A>&lt;terminals.length;<A HREF = "#Pcsc10CardTerminalFactory:createCardTerminals:i">i</A>++) {
+           <A HREF = "#Pcsc10CardTerminalFactory:createCardTerminals:ctr">ctr</A>.<METHODCALL><UNKNOWNCALL>add</UNKNOWNCALL></METHODCALL>(<FONT COLOR="008000">new</FONT> Pcsc10CardTerminal(<A HREF = "#Pcsc10CardTerminalFactory::terminals">terminals</A>[<A HREF = "#Pcsc10CardTerminalFactory:createCardTerminals:i">i</A>],
+                          &quot;PCSC10&quot;,
+                          &quot;&quot;,
+                          <FONT COLOR="008000">this</FONT>,
+                          <A HREF = "#Pcsc10CardTerminalFactory:createCardTerminals:i">i</A>));
+       }
+       } <FONT COLOR="008000">else</FONT> {
+       <FONT COLOR="FF0000">// otherwise, only the terminals found in the PCSC ResourceManager</FONT>
+       <FONT COLOR="FF0000">// that have been requested in the properties file:</FONT>
+ 
+       String    <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminalFactory:createCardTerminals:wspace">wspace</A></FONT> = &quot; &quot;;
+       <FONT COLOR="008000">boolean</FONT>   <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminalFactory:createCardTerminals:readerRequestedAssigned">readerRequestedAssigned</A></FONT> = <FONT COLOR="008000">false</FONT>;
+ 
+       <FONT COLOR="FF0000">// Search in the pcsc reader list to find a matched reader</FONT>
+       <FONT COLOR="008000">for</FONT> (<FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminalFactory:createCardTerminals:i">i</A></FONT> = 0; <A HREF = "#Pcsc10CardTerminalFactory:createCardTerminals:i">i</A> &lt; terminals.length; <A HREF = "#Pcsc10CardTerminalFactory:createCardTerminals:i">i</A>++) {
+ 
+           <FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminalFactory:createCardTerminals:index1">index1</A></FONT> = 0;
+           <FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminalFactory:createCardTerminals:index2">index2</A></FONT> = 0;
+ 
+               <FONT COLOR="FF0000">//Buffer to keep the opencard.properties entry (TerminalType)</FONT>
+               String <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminalFactory:createCardTerminals:Buf">Buf</A></FONT> = <FONT COLOR="008000">new</FONT> <CONSTRUCTORCALL>String</CONSTRUCTORCALL>(<A HREF = "#Pcsc10CardTerminalFactory:createCardTerminals:terminalInfo">terminalInfo</A>[1]);
+               <FONT COLOR="FF0000">//Resulting String after processing TerminalType parsing</FONT>
+               String <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminalFactory:createCardTerminals:OCFReader">OCFReader</A></FONT> = <FONT COLOR="008000">new</FONT> <CONSTRUCTORCALL>String</CONSTRUCTORCALL>();
+ 
+           <FONT COLOR="FF0000">// This routine replaces '&lt;space&gt;' by ' ', in order to</FONT>
+           <FONT COLOR="FF0000">// allow for real spaces in the opencard.properties file</FONT>
+           <FONT COLOR="FF0000">// when there are some in the PC/SC label.</FONT>
+               <FONT COLOR="FF0000">// Note: this code assumes the TerminalType can not begin</FONT>
+           <FONT COLOR="FF0000">// nor end with &lt;space&gt;</FONT>
+               <FONT COLOR="008000">while</FONT>((<A HREF = "#Pcsc10CardTerminalFactory:createCardTerminals:index2">index2</A> = <A HREF = "#Pcsc10CardTerminalFactory:createCardTerminals:Buf">Buf</A>.<METHODCALL><UNKNOWNCALL>indexOf</UNKNOWNCALL></METHODCALL>(&quot;&lt;space&gt;&quot;, <A HREF = "#Pcsc10CardTerminalFactory:createCardTerminals:index1">index1</A>)) != -1) {
+                 <A HREF = "#Pcsc10CardTerminalFactory:createCardTerminals:OCFReader">OCFReader</A> += <A HREF = "#Pcsc10CardTerminalFactory:createCardTerminals:Buf">Buf</A>.<METHODCALL><UNKNOWNCALL>substring</UNKNOWNCALL></METHODCALL>(<A HREF = "#Pcsc10CardTerminalFactory:createCardTerminals:index1">index1</A>, <A HREF = "#Pcsc10CardTerminalFactory:createCardTerminals:index2">index2</A>);
+                 <A HREF = "#Pcsc10CardTerminalFactory:createCardTerminals:OCFReader">OCFReader</A> += &quot; &quot;;
+                 <A HREF = "#Pcsc10CardTerminalFactory:createCardTerminals:index1">index1</A> = <A HREF = "#Pcsc10CardTerminalFactory:createCardTerminals:index2">index2</A> + 7;
+               }
+               <FONT COLOR="008000">if</FONT>(<A HREF = "#Pcsc10CardTerminalFactory:createCardTerminals:index1">index1</A> != <A HREF = "#Pcsc10CardTerminalFactory:createCardTerminals:Buf">Buf</A>.<UNKNOWNCALL>length</UNKNOWNCALL>())
+                 <A HREF = "#Pcsc10CardTerminalFactory:createCardTerminals:OCFReader">OCFReader</A> += <A HREF = "#Pcsc10CardTerminalFactory:createCardTerminals:Buf">Buf</A>.<METHODCALL><UNKNOWNCALL>substring</UNKNOWNCALL></METHODCALL>(<A HREF = "#Pcsc10CardTerminalFactory:createCardTerminals:index1">index1</A>, <A HREF = "#Pcsc10CardTerminalFactory:createCardTerminals:Buf">Buf</A>.<UNKNOWNCALL>length</UNKNOWNCALL>());
+ 
+ <FONT COLOR="FF0000">/*            //This routine replaces '_' by ' ' and '__' by '_'
+               char tmpChar;
+               while(index1 &lt; Buf.length()) {
+                 if((tmpChar = Buf.charAt(index1)) == '_') {
+                   //if last character is '_', replace by ' ' and break
+                   if(index1 == Buf.length() - 1) {
+                     OCFReader += &quot; &quot;;
+                     break;
+                   }
+                   //if '__', replace by '_'
+                   if(Buf.charAt(index1 + 1) == '_') {
+                     OCFReader += &quot;_&quot;;
+                     index1 += 2;
+                   }
+                   //if '_', replace by ' '
+                   else {
+                     OCFReader += &quot; &quot;;
+                     index1++;
+                   }
+                 }
+                 //if something else
+                 else {
+                   OCFReader += tmpChar;
+                   index1++;
+                 }
+               }
+ */</FONT>
+ 
+           <FONT COLOR="FF0000">// reader names are considered case-insensitives, as in Windows</FONT>
+               <FONT COLOR="008000">if</FONT> (<A HREF = "#Pcsc10CardTerminalFactory::terminals">terminals</A>[<A HREF = "#Pcsc10CardTerminalFactory:createCardTerminals:i">i</A>].toLowerCase().equals(<A HREF = "#Pcsc10CardTerminalFactory:createCardTerminals:OCFReader">OCFReader</A>.<METHODCALL><UNKNOWNCALL>toLowerCase</UNKNOWNCALL></METHODCALL>())
+           &amp;&amp; <A HREF = "#Pcsc10CardTerminalFactory::terminalsStatus">terminalsStatus</A>[<A HREF = "#Pcsc10CardTerminalFactory:createCardTerminals:i">i</A>][0] == <A HREF = "#Pcsc10CardTerminalFactory::PORT_NOTUSED">PORT_NOTUSED</A>) {
+           <A HREF = "#Pcsc10CardTerminalFactory:createCardTerminals:readerRequestedAssigned">readerRequestedAssigned</A> = <FONT COLOR="008000">true</FONT>;
+ 
+           <FONT COLOR="FF0000">// add the CardTerminal to CardTerminalRegistry</FONT>
+           <A HREF = "#Pcsc10CardTerminalFactory:createCardTerminals:ctr">ctr</A>.<METHODCALL><UNKNOWNCALL>add</UNKNOWNCALL></METHODCALL>(<FONT COLOR="008000">new</FONT> Pcsc10CardTerminal(<A HREF = "#Pcsc10CardTerminalFactory::terminals">terminals</A>[<A HREF = "#Pcsc10CardTerminalFactory:createCardTerminals:i">i</A>],
+                          &quot;PCSC10&quot;,
+                          &quot;&quot;,
+                          <FONT COLOR="008000">this</FONT>,
+                          <A HREF = "#Pcsc10CardTerminalFactory:createCardTerminals:i">i</A>));
+           <A HREF = "#Pcsc10CardTerminalFactory::terminalsStatus">terminalsStatus</A>[<A HREF = "#Pcsc10CardTerminalFactory:createCardTerminals:i">i</A>][0] = <A HREF = "#Pcsc10CardTerminalFactory::PORT_USED">PORT_USED</A>;
+ 
+           <FONT COLOR="FF0000">// reserve for future use</FONT>
+           <FONT COLOR="008000">if</FONT> (<A HREF = "#Pcsc10CardTerminalFactory:createCardTerminals:terminalInfo">terminalInfo</A>[2].equals(&quot;<A HREF = "#Pcsc10CardTerminalFactory::SHARED">SHARED</A>&quot;)) {
+               <A HREF = "#Pcsc10CardTerminalFactory::terminalsStatus">terminalsStatus</A>[<A HREF = "#Pcsc10CardTerminalFactory:createCardTerminals:i">i</A>][1] = <A HREF = "#Pcsc10CardTerminalFactory::SHARED">SHARED</A>;
+           } <FONT COLOR="008000">else</FONT> {
+               <A HREF = "#Pcsc10CardTerminalFactory::terminalsStatus">terminalsStatus</A>[<A HREF = "#Pcsc10CardTerminalFactory:createCardTerminals:i">i</A>][1] = <A HREF = "#Pcsc10CardTerminalFactory::EXCLUSIVE">EXCLUSIVE</A>;
+           }
+           } <FONT COLOR="FF0000">// if</FONT>
+       } <FONT COLOR="FF0000">// for</FONT>
+ 
+       <FONT COLOR="008000">if</FONT> (!<A HREF = "#Pcsc10CardTerminalFactory:createCardTerminals:readerRequestedAssigned">readerRequestedAssigned</A>) {
+           <FONT COLOR="008000">throw</FONT> <FONT COLOR="008000">new</FONT> CardTerminalException(&quot;No reader found by PC/SC : &quot;
+                           + <A HREF = "#Pcsc10CardTerminalFactory:createCardTerminals:terminalInfo">terminalInfo</A>[0].toString()
+                           + &quot; &quot;
+                           + <A HREF = "#Pcsc10CardTerminalFactory:createCardTerminals:terminalInfo">terminalInfo</A>[1].toString()
+                           + &quot; &quot;
+                           + <A HREF = "#Pcsc10CardTerminalFactory:createCardTerminals:terminalInfo">terminalInfo</A>[2].toString());
+       }
+ 
+       } <FONT COLOR="FF0000">// if (length == 0)</FONT>
+   }
+ 
+ 
+   <FONT COLOR="FF0000">/** initialize the <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminalFactory:factory:">factory</A></FONT> (setup the PC/SC-driver) */</FONT>
+   <FONT COLOR="008000">public</FONT> <FONT COLOR="008000">void</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminalFactory:open:">open</A></FONT>()
+     throws CardTerminalException {
+ 
+     <FONT COLOR="FF0000">// factory already opened?</FONT>
+     <FONT COLOR="008000">if</FONT> (<A HREF = "#Pcsc10CardTerminalFactory::pcsc">pcsc</A> == <FONT COLOR="008000">null</FONT>) {
+       <FONT COLOR="008000">try</FONT> {
+         <A HREF = "#Pcsc10CardTerminalFactory::itracer">itracer</A>.<METHODCALL><UNKNOWNCALL>debug</UNKNOWNCALL></METHODCALL>(&quot;Pcsc10CardTerminalFactory&quot;, &quot;connect to PCSC 1.0 resource manager&quot;);
+         OCFPCSC1.loadLib();
+         <A HREF = "#Pcsc10CardTerminalFactory::pcsc">pcsc</A> = <FONT COLOR="008000">new</FONT> OCFPCSC1();
+         <A HREF = "#Pcsc10CardTerminalFactory::itracer">itracer</A>.<METHODCALL><UNKNOWNCALL>debug</UNKNOWNCALL></METHODCALL>(&quot;Pcsc10CardTerminalFactory&quot;, &quot;Driver initialized&quot;);
+       } <FONT COLOR="008000">catch</FONT> (<A HREF = "PcscException.html#PcscException::">PcscException</A> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminalFactory:open:e">e</A></FONT>) {
+         <FONT COLOR="008000">throw</FONT> <FONT COLOR="008000">new</FONT> CardTerminalException(&quot;Pcsc10CardTerminalFactory: &quot; + <A HREF = "#Pcsc10CardTerminalFactory:open:e">e</A>.getMessage());
+       }
+     }
+   }
+ 
+     <FONT COLOR="FF0000">/** deinitialize the PC/SC-driver */</FONT>
+     <FONT COLOR="008000">public</FONT> <FONT COLOR="008000">void</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminalFactory:close:">close</A></FONT>()
+     throws CardTerminalException {
+ 
+     <FONT COLOR="008000">for</FONT> (<FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminalFactory:close:i">i</A></FONT> = 0; <A HREF = "#Pcsc10CardTerminalFactory:close:i">i</A> &lt; <A HREF = "#Pcsc10CardTerminalFactory::terminalsStatus">terminalsStatus</A>.<UNKNOWNCALL>length</UNKNOWNCALL>; <A HREF = "#Pcsc10CardTerminalFactory:close:i">i</A>++) {
+         <A HREF = "#Pcsc10CardTerminalFactory::terminalsStatus">terminalsStatus</A>[<A HREF = "#Pcsc10CardTerminalFactory:close:i">i</A>][0] = <A HREF = "#Pcsc10CardTerminalFactory::PORT_NOTUSED">PORT_NOTUSED</A>;
+     }
+ 
+     <A HREF = "#Pcsc10CardTerminalFactory::pcsc">pcsc</A> = <FONT COLOR="008000">null</FONT>;
+     }
+ 
+     <FONT COLOR="FF0000">/** deinitialize the specific PC/SC-driver */</FONT>
+     <FONT COLOR="008000">public</FONT> <FONT COLOR="008000">void</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminalFactory:close:">close</A></FONT>(<FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminalFactory:close:port">port</A></FONT>) throws CardTerminalException {
+ 
+     <A HREF = "#Pcsc10CardTerminalFactory::terminalsStatus">terminalsStatus</A>[<A HREF = "#Pcsc10CardTerminalFactory:close:port">port</A>][0] = <A HREF = "#Pcsc10CardTerminalFactory::PORT_NOTUSED">PORT_NOTUSED</A>;
+     <A HREF = "#Pcsc10CardTerminalFactory::pcsc">pcsc</A> = <FONT COLOR="008000">null</FONT>;
+     }
+ 
+   <FONT COLOR="FF0000">/** get the actual PC/SC reader list
+    *
+    *  @exception opencard.core.terminal.CardTerminalException
+    *             thrown when error occured
+    */</FONT>
+   <FONT COLOR="008000">protected</FONT> String[] <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminalFactory:ListReaders:">ListReaders</A></FONT>() throws CardTerminalException
+   {
+     <A HREF = "#Pcsc10CardTerminalFactory::itracer">itracer</A>.<METHODCALL><UNKNOWNCALL>debug</UNKNOWNCALL></METHODCALL>(&quot;Pcsc10CardTerminalFactory&quot;, &quot;get reader list from PC/SC&quot;);
+     <A HREF = "#Pcsc10CardTerminalFactory::String">String</A>[] terminals = <FONT COLOR="008000">null</FONT>;
+     <FONT COLOR="008000">try</FONT> {
+       terminals = <A HREF = "#Pcsc10CardTerminalFactory::pcsc">pcsc</A>.<METHODCALL><A HREF = "OCFPCSC1.html#OCFPCSC1:SCardListReaders:">SCardListReaders</A></METHODCALL>(<FONT COLOR="008000">null</FONT>);
+     } <FONT COLOR="008000">catch</FONT> (<A HREF = "PcscException.html#PcscException::">PcscException</A> <FONT COLOR = "800080"><A NAME = "Pcsc10CardTerminalFactory:ListReaders:e">e</A></FONT>) {
+       <FONT COLOR="008000">throw</FONT> <FONT COLOR="008000">new</FONT> CardTerminalException(&quot;Pcsc10CardTerminalFactory: &quot; + <A HREF = "#Pcsc10CardTerminalFactory:ListReaders:e">e</A>.getMessage());
+     }
+     <FONT COLOR="008000">return</FONT> terminals;
+   }
+ 
+ }
+ 
+ <FONT COLOR="FF0000">// $Log: Pcsc10CardTerminalFactory.java,v $</FONT>
+ <FONT COLOR="FF0000">// Revision 2.0  2001/06/14 13:32:36  root</FONT>
+ <FONT COLOR="FF0000">// Distributed V2 with long APDU support. Added support for &lt;space&gt; in names.</FONT>
+ <FONT COLOR="FF0000">//</FONT>
+ <FONT COLOR="FF0000">// Revision 1.13  1999/10/22 07:31:14  pbendel</FONT>
+ <FONT COLOR="FF0000">// RFC 17-1 Terminal locking mechanism using lock handle</FONT>
+ <FONT COLOR="FF0000">//</FONT>
+ <FONT COLOR="FF0000">// Revision 1.12  1999/04/01 13:11:28  pbendel</FONT>
+ <FONT COLOR="FF0000">// native browser support RFC-0005 (pbendel)</FONT>
+ <FONT COLOR="FF0000">//</FONT>
+ <FONT COLOR="FF0000">// Revision 1.11  1998/08/13 14:39:12  cvsusers</FONT>
+ <FONT COLOR="FF0000">// *** empty log message ***</FONT>
+ <FONT COLOR="FF0000">//</FONT>
+ <FONT COLOR="FF0000">// Revision 1.10  1998/07/09 12:35:40  breid</FONT>
+ <FONT COLOR="FF0000">// PTR117: parameter specification added</FONT>
+ <FONT COLOR="FF0000">//</FONT>
+ <FONT COLOR="FF0000">// Revision 1.9  1998/04/30 14:49:36  breid</FONT>
+ <FONT COLOR="FF0000">// open() modified: now open() creates pcsc-object only at the first call</FONT>
+ <FONT COLOR="FF0000">//</FONT>
+ <FONT COLOR="FF0000">// Revision 1.8  1998/04/22 20:08:30  breid</FONT>
+ <FONT COLOR="FF0000">// support for T0 implemented</FONT>
+ <FONT COLOR="FF0000">//</FONT>
+ <FONT COLOR="FF0000">// Revision 1.7  1998/04/14 16:17:04  breid</FONT>
+ <FONT COLOR="FF0000">// createTerminal() removed</FONT>
+ <FONT COLOR="FF0000">//</FONT>
+ <FONT COLOR="FF0000">// Revision 1.6  1998/04/09 13:40:17  breid</FONT>
+ <FONT COLOR="FF0000">// AutoConfigurationFeature added</FONT>
+ <FONT COLOR="FF0000">//</FONT>
+ <FONT COLOR="FF0000">// Revision 1.5  1998/04/08 17:45:42  breid</FONT>
+ <FONT COLOR="FF0000">// *** empty log message ***</FONT>
+ <FONT COLOR="FF0000">//</FONT>
+ <FONT COLOR="FF0000">// Revision 1.4  1998/04/08 17:21:58  breid</FONT>
+ <FONT COLOR="FF0000">// exceptions modified</FONT>
+ <FONT COLOR="FF0000">//</FONT>
+ <FONT COLOR="FF0000">// Revision 1.3  1998/04/08 16:28:41  breid</FONT>
+ <FONT COLOR="FF0000">// createCardTerminals(), open(), close() added</FONT>
+ <FONT COLOR="FF0000">//</FONT>
+ <FONT COLOR="FF0000">// Revision 1.2  1998/04/08 12:02:15  breid</FONT>
+ <FONT COLOR="FF0000">// tested with StockBroker</FONT>
+ <FONT COLOR="FF0000">//</FONT>
+ <FONT COLOR="FF0000">// Revision 1.1  1998/04/07 12:43:05  breid</FONT>
+ <FONT COLOR="FF0000">// initial version</FONT>
+ <FONT COLOR="FF0000">//</FONT>
+ 
+</PRE></BODY></HTML> 

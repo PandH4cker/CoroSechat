@@ -1,17 +1,16 @@
 package com.github.MrrRaph.corosechat.server.models;
 
-import org.javalite.activejdbc.Model;
-
+import java.security.PublicKey;
 import java.util.Objects;
 
 public class User {
     private String username;
-    private String password;
+    private PublicKey publicKey;
     private UserGroup group;
 
-    public User(final String username, final String password, final UserGroup group) {
+    public User(final String username, final PublicKey publicKey, final UserGroup group) {
         this.username = username;
-        this.password = password;
+        this.publicKey = publicKey;
         this.group = group;
     }
 
@@ -26,12 +25,12 @@ public class User {
         this.username = username;
     }
 
-    public String getPassword() {
-        return password;
+    public PublicKey getPublicKey() {
+        return publicKey;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setPublicKey(PublicKey publicKey) {
+        this.publicKey = publicKey;
     }
 
     public UserGroup getGroup() {
@@ -47,11 +46,11 @@ public class User {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         User user = (User) o;
-        return username.equals(user.username) && password.equals(user.password);
+        return username.equals(user.username) && publicKey.equals(user.publicKey);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(username, password);
+        return Objects.hash(username, publicKey);
     }
 }

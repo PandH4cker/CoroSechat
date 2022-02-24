@@ -1,0 +1,241 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="description" content="Configuring the OpenCard Framework">
+   <meta name="keywords" content="manual">
+   <meta name="resource-type" content="document">
+   <meta name="distribution" content="global">
+   <meta name="GENERATOR" content="Mozilla/4.5 [en] (WinNT; I) [Netscape]">
+   <title>Configuring the the OpenCard Framework</title>
+<!--Converted with LaTeX2HTML 96.1 (Feb 5, 1996) by Nikos Drakos (nikos@cbl.leeds.ac.uk), CBLU, University of Leeds -->
+<link REL=STYLESHEET HREF="manual.css">
+</head>
+<body LANG="EN">
+<a NAME="_top_"></a><a NAME="TOP"></a>
+<center><pre><a href="README-BaseOCF.html#_top_">Base OCF</a> <a href="README-Reference-Impl.html#_top_">Reference Implementation</a>&nbsp; <a href="Changes.html#Changes">Changes for OCF version 1.1</a> <a href="Changes.html#Changes2">Changes for OCF version 1.1.1
+
+</a>&nbsp; <a href="Changes.html#OCF1.2Changes">Changes for OCF version 1.2</a> <a href="README-configuration.html#_top_">Configuration</a>&nbsp; <a href="http://www.opencard.org">OpenCard Home</a></pre></center>
+
+<hr>
+<center><img SRC="oc10.JPG" ALT="OCF Banner" >
+<br>Please read the&nbsp; <a href="LICENSE-Reference-Impl">License!</a></center>
+
+<h1>
+Configuring the Framework</h1>
+The OPENCARD FRAMEWORK reference implementation obtains configuration information
+via the JAVA <i>system properties</i>. JAVA system properties are a platform-independent
+mechanism to make operating system and run-time environment variables available
+to programs. The JAVA run-time environment defines a set of default properties
+that are always part of the system properties. Applications can extend
+this set of properties by <i>loading</i> additional properties and merging
+them with the system properties. OPENCARD FRAMEWORK configuration parameters
+are added in this way to the system properties.
+<br>&nbsp;
+<p>
+<hr>
+<ul>
+<li>
+<a href="#SECTION1">Loading properties from the OPENCARD properties file</a></li>
+
+<li>
+<a href="#SECTION2">Configuring the <tt>Registries</tt></a></li>
+
+<li>
+<a href="#SECTION3">Enabling tracing output</a></li>
+
+<li>
+<a href="#SECTION4">Loading properties with your own mechanism</a></li>
+</ul>
+
+<hr>
+<h2>
+<a NAME="SECTION1"></a>Loading properties from the OPENCARD properties
+file</h2>
+The OPENCARD ARCHITECTURE does not define the mechanism by which the system
+properties are extended because there is no single mechanism that is guaranteed
+to be available on all platforms on which the OPENCARD FRAMEWORK reference
+implementation will run. However, the OPENCARD FRAMEWORK reference implementation
+does provide a utility class <tt>opencard.opt.util.OpenCardPropertyFileLoader</tt>
+to load properties from a file. This file based properties loading mechanism
+is the default used to extend the system properties. You can change this
+mechanism and we show you how do that in the section <a href="#SECTION4">Loading
+properties with your own mechanism</a> below.
+<p>Let's now look at how the default properties loader works. The <tt>OpenCardPropertyFileLoader</tt>
+looks in the following places for property files (in the order given):
+<ol>
+<li>
+<tt>[java.home]</tt>/lib/opencard.properties</li>
+
+<li>
+<tt>[user.home]</tt>/.opencard.properties</li>
+
+<li>
+<tt>[user.dir]</tt>/opencard.properties</li>
+
+<li>
+<tt>[user.dir]</tt>/.opencard.properties</li>
+</ol>
+where <tt>[xxx.xxx]</tt> are the respective path variables as defined in
+the default system properties. It loads the properties from each of these
+files in turn merging them with the system properties. In the situation,
+where the properties file being read contains a property name that is already
+defined in the properties set, the new definition will be ignored by default.
+<p>In case you wish to override a property that is already defined in the
+properties set you can do that by defining the property name <i>name</i>
+anew and adding an additional property with the name <i>name</i>.<tt>override</tt>
+that has the value <tt>true</tt> to your property file.
+<p>The following example will set the property <tt>OpenCard.property</tt>
+to the value <tt>new_value</tt> no matter what its value was before:
+<pre># Overriding a possibly already defined OpenCard property&nbsp;
+# with a new value&nbsp;
+&nbsp;&nbsp; OpenCard.property = new_value
+&nbsp;&nbsp; OpenCard.property.override = true</pre>
+Using the same properties strings as in the examples above, your properties
+file might look like this:
+<pre># Configuring the CardServiceRegistry
+OpenCard.services = com.ibm.opencard.service.MFCCardServiceFactory
+
+# Configuring the CardTerminalRegistry
+# The parameters after the class name are:&nbsp;
+#&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; name, type, and address of the card terminal
+OpenCard.terminals = \
+&nbsp; com.ibm.opencard.terminal.ibm5948.IBMCardTerminalFactory|IBM5948-1|IBM5948-B02|1 \
+&nbsp; com.ibm.opencard.terminal.pcsc10.Pcsc10CardTerminalFactory
+
+# Configuring Tracing
+OpenCard.trace = opencard.core:6 opencard.opt:0 com.ibm.opencard:3 \
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; com.ibm.opencard.terminal.ibm5948.IBM5948CardTerminal:8
+
+# Overriding OpenCard.property
+OpenCard.property = new_value
+OpenCard.property.override = true</pre>
+back to <a href="#TOP">top of page</a>
+<br>
+<hr>
+<h2>
+<a NAME="SECTION2"></a>Configuring the <tt>Registries</tt></h2>
+The system-wide <tt>CardTerminalRegistry</tt> and <tt>CardServiceRegistry</tt>
+keep track of <tt>CardTerminal</tt>s and <tt>CardServiceFactory</tt>s,
+respectively. In order for the OPENCARD FRAMEWORK reference implementation
+to work properly, the <tt>CardTerminalRegistry</tt> must know at least
+one terminal. When the framework starts up, the <tt>Card[Terminal|Service]Registry</tt>s
+are initialized by the system based on properties that the user defined
+and added to the system properties.
+<p>You can configure the <tt>CardTerminalRegistry</tt> via the <tt>OpenCard.terminals</tt>
+property and the <tt>CardServiceRegistry</tt> via the <tt>OpenCard.services</tt>
+property.
+<p>The syntax of the property string for either property is as follows:
+<pre>&nbsp;&nbsp; &lt;record-0> &lt;record-1> ... &lt;record-N></pre>
+where records are separated by white-space and each record consists of
+a class name and optional string parameters separated by a ``|'', i.e.,
+<pre>&nbsp;&nbsp; class-name|param-1|param-2| ... |param-N</pre>
+The following example illustrates how the property strings might look like:
+<pre>&nbsp; Property name:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Property string:
+&nbsp; OpenCard.services&nbsp;&nbsp; com.ibm.opencard.service.MFCCardServiceFactory
+&nbsp; OpenCard.terminals&nbsp; com.ibm.opencard.terminal.ibm5948.IBMCardTerminalFactory|IBM5948-1|IBM5948-B02|1 \
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; com.ibm.opencard.terminal.pcsc10.Pcsc10CardTerminalFactory</pre>
+back to <a href="#TOP">top of page</a>
+<br>
+<hr>
+<h2>
+<a NAME="SECTION3"></a>Enabling tracing output</h2>
+The OPENCARD FRAMEWORK reference implementation is comprehensively instrumented
+to produce detailed tracing information at run-time. This provides valuable
+feedback about the operation of the FRAMEWORK and helps to locate problems
+should they occur. You can flexibly adjust the amount of tracing information
+produced by setting the <tt>OpenCard.trace</tt> system property.
+<p>The utility class <tt>opencard.core.util.Tracer</tt> distinguishes the
+following trace levels:
+<dl >
+<dt>
+<b>EMERGENCY</b></dt>
+
+<dd>
+System is unusable; numeric value is 0</dd>
+
+<dt>
+<b>ALERT</b></dt>
+
+<dd>
+Action must be taken immediately; numeric value is 1</dd>
+
+<dt>
+<b>CRITICAL</b></dt>
+
+<dd>
+Critical condition; numeric value is 2</dd>
+
+<dt>
+<b>ERROR</b></dt>
+
+<dd>
+Error condition; numeric value is 3</dd>
+
+<dt>
+<b>WARNING</b></dt>
+
+<dd>
+Warning condition; numeric value is 4</dd>
+
+<dt>
+<b>NOTICE</b></dt>
+
+<dd>
+Normal but significant condition; numeric value is 5</dd>
+
+<dt>
+<b>INFO</b></dt>
+
+<dd>
+Informational; numeric value is 6</dd>
+
+<dt>
+<b>DEBUG</b></dt>
+
+<dd>
+Debugging information; numeric value is 7</dd>
+
+<dt>
+<b>LOWEST</b></dt>
+
+<dd>
+Even more details; numeric value is 8</dd>
+</dl>
+The syntax of the property string is as follows:
+<pre>&nbsp; package-prefix:trace-level</pre>
+where <tt>package-prefix</tt> specifies the <i>prefix</i> of a package
+or class name and <tt>level</tt> specifies a number between 0 and 8 corresponding
+to the desired trace-level.
+<p>Example:
+<pre>&nbsp; opencard.core:6 opencard.opt:0 com.ibm.opencard:3 \
+&nbsp;&nbsp;&nbsp; com.ibm.opencard.terminal.ibm5948.IBM5948CardTerminal:8</pre>
+back to <a href="#TOP">top of page</a>
+<br>
+<hr>
+<h2>
+<a NAME="SECTION4"></a>Loading properties with your own mechanism</h2>
+The default property loading mechanism, implemented by the class <tt>opencard.opt.util.OpenCardPropertyFileLoader</tt>,
+may not be adequate in all environments. For instance, it cannot be used
+on platforms that do not have a file system.
+<p>You can implement a different property loading mechanism that fits your
+purpose or platform better and have it replace the default mechanism. In
+order for your property loader to integrate with the FRAMEWORK, it must
+implement the interface
+<p><tt>opencard.core.util.OpenCardConfigurationProvider</tt>.
+<p>You must tell the FRAMEWORK to use your class instead of the default
+loader. You do that via the following system property:
+<p><tt>OpenCard.loaderClassName=</tt> <i>fully-qualified_class_name</i>
+<p><b>NOTE:</b> Obviously, you must set this property <i>prior</i> to the
+OPENCARD properties loading mechanism being invoked, for instance via a
+command line flag of the JAVA interpreter or, if applicable, in the system-wide
+<tt>.properties</tt>
+file.
+<p>back to <a href="#TOP">top of page</a>
+<br>
+<hr>
+<address>
+<i>Reto Hermann and Lothr Merk</i></address>
+
+</body>
+</html>

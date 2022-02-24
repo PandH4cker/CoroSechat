@@ -1,0 +1,233 @@
+BODY {
+  margin: 1em 1em 2em 1em;
+  font-family: sans-serif;
+  color: black;
+  background-color: white ! important; 
+  background-position: top left;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}
+
+A:link {color: #cc0000} /* between red3 and red4.. */
+A:visited {color: #551a8b } /* purple4 */
+A:active {color: #ff3300}
+A {
+  font-family: times;
+  font-weight: bold;
+  /*text-decoration: none;*/
+}
+
+A.file {
+  color: #8b814c; /* light goldenrod4 */
+  font-family: times;
+  font-weight: bold;
+}
+
+TH, TD { /* ns 4 */
+  font-family: sans-serif;
+}
+
+H1 {
+  margin-top: 2em;
+  margin-bottom: 2em;
+  text-align: center;
+  font-family: sans-serif;
+  font-weight: bold;
+  color: #0050B2;
+}
+
+H2 {
+  border: solid; 
+  border-width: 2;
+  border-color: #0050B2;
+  text-align: left;
+  font-family: sans-serif;
+  font-weight: normal;
+  color: #0050B2;
+}
+
+H2.appendix {
+  border: none;
+  text-align: center;
+  font-family: sans-serif;
+  font-weight: normal;
+  color: #0050B2;
+}
+
+H3 {
+  text-align: left;
+  font-family: sans-serif;
+  font-weight: normal;
+  color: #0050B2; 
+}
+
+TT {
+  font-family: monospace;
+  font-weight: normal;
+}
+
+B, STRONG {
+  color:#006699;
+}
+
+SPAN.ocf {
+  color: #556b2f; /* dark olive green */
+}
+
+SPAN.stabilo {
+  background: yellow;
+  background: #e7ff00; /* ~= yellow2 */
+}
+
+SPAN.under {
+  text-decoration: underline;
+}
+
+P.banner {
+  align="right";
+  margin-top: 1em;
+}
+
+P {
+  text-indent: 1.5em; 
+  text-align: justify;
+}
+
+P.noindent {
+  text-indent: 0em; 
+  text-align: justify;
+}
+
+P.asciinote {    /* Hidden on screen, shown in ASCII (txt) version */
+  position : absolute ;
+  width : 0cm ;
+  height : 0cm ;
+  left : 1cm ;
+  top : 1cm ;
+  margin-top: 1em;
+  overflow : hidden ; 
+}
+
+P.warning {
+  text-indent: 0em; 
+  color : black;
+  border: solid;
+  border-color: #ff6347; /* tomato */
+  border-width: 3;
+  text-align: justify;
+}
+
+P.example {
+  text-indent: 0em; 
+  color : black;
+  border: solid;
+  border-color: #0050B2;
+  border-width: 2;
+}
+
+P.changed {
+  padding-left: 0.2em;
+  border-left: solid;
+  border-right: none;
+  border-top: none;
+  border-bottom: none;
+  border-left-width: 2;
+  border-color: #ff6347; /* tomato */
+}
+
+OL.romanlo  {
+  display: list-item;
+  list-style: lower-roman outside;
+}
+
+UL.toc { list-style: disc }
+
+UL.disco {
+  display: list-item;
+  list-style: disc outside;
+}
+
+DIV.abstract {
+  text-align: justify;
+  text-align: left;
+  color: black; 
+  margin-left: 10%;
+  width: 80%;
+}
+
+DT { 
+  margin-top: 0; /* opera 3.50 */
+  margin-bottom: 0;
+}
+
+DD {
+  margin-top: 0; /* opera 3.50 */
+  margin-bottom: 0;
+}
+
+A.references {
+  font-family: times;
+  font-weight: bold;
+  color: #006699;
+  background: #f0f0f0;
+  text-align:left;
+}
+
+EM.references {
+  font-style:italic;
+}
+
+CITE {
+  font-family: times;
+  font-weight: bold;
+  font-style: normal;
+  text-decoration: none;
+}
+
+.pullquote {
+  width: 8em;
+  padding: .25em;
+/*  font-style:italic;*/
+  font-weight: bold;
+  font-family:sans-serif;
+  float:left;
+/*  color:#cc3333;*/
+  color:#006699;
+  background:#f0f0f0;
+  text-align:left;
+}
+
+P.pull {
+  margin-left: 1em;
+  margin-right: 3em;
+}
+
+.hide { display: none }
+
+DIV.head { margin-bottom: 1em }
+DIV.head H1 { margin-top: 2em; clear: both }
+DIV.head TABLE { margin-left: 2em; margin-top: 2em }
+DIV.head IMG { color: white; border: none } /* remove border from top image */
+
+P.copyright { font-size: smaller }
+
+@media screen {  /* hide from IE3 */
+A:hover { background: #FFA } 
+}
+
+PRE { 
+  margin-left: 2em
+  color: blue;
+}
+
+PRE { font-family: monospace }        /* navigator 4 requires this */
+
+/*@media aural {  
+  H1, H2, H3 { stress: 20; richness: 90 }
+  .hide { speak: none }
+  P.copyright { volume: x-soft; speech-rate: x-fast }
+  DT { pause-before: 20% }
+  PRE { speak-punctuation: code } 
+}
+
+*/

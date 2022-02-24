@@ -1,0 +1,138 @@
+<HTML> <body bgcolor = "FFFFFF"> <PRE>
+<FONT COLOR="FF0000">/*
+  * Copyright © 2000 Gemplus
+  * Av. du Pic de Bertagne - Parc d'Activités de Gémenos
+  * BP 100 - 13881 Gémenos CEDEX
+  * 
+  * &quot;Code derived from the original OpenCard Framework&quot;.
+  * 
+  * Everyone is allowed to redistribute and use this source  (source
+  * code)  and binary (object code),  with or  without modification,
+  * under some conditions:
+  * 
+  *  - Everyone  must  retain  and/or  reproduce the above copyright
+  *    notice,  and the below  disclaimer of warranty and limitation
+  *    of liability  for redistribution and use of these source code
+  *    and object code.
+  * 
+  *  - Everyone  must  ask a  specific prior written permission from
+  *    Gemplus to use the name of Gemplus.
+  * 
+  * DISCLAIMER OF WARRANTY
+  * 
+  * THIS CODE IS PROVIDED &quot;AS IS&quot;,  WITHOUT ANY WARRANTY OF ANY KIND
+  * (INCLUDING,  BUT  NOT  LIMITED  TO,  THE IMPLIED  WARRANTIES  OF
+  * MERCHANTABILITY  AND FITNESS FOR  A  PARTICULAR PURPOSE)  EITHER
+  * EXPRESS OR IMPLIED.  GEMPLUS DOES NOT WARRANT THAT THE FUNCTIONS
+  * CONTAINED  IN THIS SOFTWARE WILL MEET THE USER'S REQUIREMENTS OR
+  * THAT THE OPERATION OF IT WILL BE UNINTERRUPTED OR ERROR-FREE. NO
+  * USE  OF  ANY  CODE  IS  AUTHORIZED  HEREUNDER EXCEPT UNDER  THIS
+  * DISCLAIMER.
+  * 
+  * LIMITATION OF LIABILITY
+  * 
+  * GEMPLUS SHALL NOT BE LIABLE FOR INFRINGEMENTS OF  THIRD  PARTIES
+  * RIGHTS. IN NO EVENTS, UNLESS REQUIRED BY APPLICABLE  LAW,  SHALL
+  * GEMPLUS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+  * EXEMPLARY, OR CONSEQUENTIAL DAMAGES OF ANY CHARACTER  INCLUDING,
+  * WITHOUT LIMITATION, DAMAGES FOR LOSS OF GOODWILL, WORK STOPPAGE,
+  * COMPUTER FAILURE OR MALFUNCTION, OR ANY AND ALL OTHER DAMAGES OR
+  * LOSSES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. ALSO,
+  * GEMPLUS IS  UNDER NO  OBLIGATION TO MAINTAIN,  CORRECT,  UPDATE,
+  * CHANGE, MODIFY, OR OTHERWISE SUPPORT THIS SOFTWARE.
+  */</FONT>
+ 
+ <FONT COLOR="FF0000">//-----------------------------------------------------------------------------</FONT>
+ <FONT COLOR="FF0000">// PACKAGE DEFINITION</FONT>
+ <FONT COLOR="FF0000">//-----------------------------------------------------------------------------</FONT>
+ <FONT COLOR="008000">package</FONT> com.gemplus.opencard.terminal.apduio;
+ 
+ <FONT COLOR="FF0000">//-----------------------------------------------------------------------------</FONT>
+ <FONT COLOR="FF0000">// IMPORTS</FONT>
+ <FONT COLOR="FF0000">//-----------------------------------------------------------------------------</FONT>
+ 
+ <FONT COLOR="008000">import</FONT> opencard.core.terminal.CardTerminalFactory;
+ <FONT COLOR="008000">import</FONT> opencard.core.terminal.CardTerminalException;
+ <FONT COLOR="008000">import</FONT> opencard.core.terminal.TerminalInitException;
+ <FONT COLOR="008000">import</FONT> opencard.core.terminal.CardTerminalRegistry;
+ 
+ <FONT COLOR="008000">import</FONT> opencard.core.util.Tracer;
+ 
+ <FONT COLOR="FF0000">/**
+  * A factory for creating an ApduIOCardTerminal.
+  * 
+  * Configuration parameters must be in the String array passed
+  * to the createTerminal method.
+  * &lt;br&gt;The first element is the friendly name of the terminal.
+  * &lt;br&gt;The second element is the type of terminal (currently only &quot;Socket&quot;
+  * is supported. 
+  * &lt;br&gt;The third element is the address and port to contact the simulator.
+  *
+  * @author Laurent Lagosanto (lago@research.gemplus.com)
+  * @version $Id: ApduIOCardTerminalFactory.java,v 0.1 2001/07/05 08:35:01 root Exp root $
+  */</FONT>
+ <FONT COLOR="008000">public</FONT> <FONT COLOR="008000">class</FONT> <FONT COLOR = "800080"><A NAME = "ApduIOCardTerminalFactory::">ApduIOCardTerminalFactory</A></FONT> 
+     <FONT COLOR="008000">implements</FONT> CardTerminalFactory
+ {
+   <FONT COLOR="FF0000">/**
+    * debug utility
+    */</FONT>
+   <FONT COLOR="008000">static</FONT> Tracer <FONT COLOR = "800080"><A NAME = "ApduIOCardTerminalFactory::ctracer">ctracer</A></FONT> = <FONT COLOR="008000">new</FONT> <CONSTRUCTORCALL>Tracer</CONSTRUCTORCALL>(ApduIOCardTerminal.<FONT COLOR="008000">class</FONT>);
+   
+     <FONT COLOR="FF0000">/**
+      *  Creates and configure an ApduIOCardTerminal.
+      *
+      *  @param ctr the CardTerminalRegistry for registration-process
+      *  @param terminalInfo configuration parameters for the terminal
+      *
+      */</FONT>
+   <FONT COLOR="008000">public</FONT> <FONT COLOR="008000">void</FONT> <FONT COLOR = "800080"><A NAME = "ApduIOCardTerminalFactory:createCardTerminals:">createCardTerminals</A></FONT>( CardTerminalRegistry <FONT COLOR = "800080"><A NAME = "ApduIOCardTerminalFactory:createCardTerminals:ctr">ctr</A></FONT>, <FONT COLOR = "800080"><A NAME = "ApduIOCardTerminalFactory:createCardTerminals:String">String</A></FONT>[] <FONT COLOR = "800080"><A NAME = "ApduIOCardTerminalFactory:createCardTerminals:infos">infos</A></FONT> )
+       throws <FONT COLOR = "800080"><A NAME = "ApduIOCardTerminalFactory:createCardTerminals:CardTerminalException">CardTerminalException</A></FONT>, TerminalInitException
+   {
+     <A HREF = "#ApduIOCardTerminalFactory::ctracer">ctracer</A>.<METHODCALL><UNKNOWNCALL>info</UNKNOWNCALL></METHODCALL>( &quot;createCardTerminals&quot;, &quot;with &quot; + <A HREF = "#ApduIOCardTerminalFactory:createCardTerminals:infos">infos</A>.<UNKNOWNCALL>length</UNKNOWNCALL> + &quot; arguments&quot;);
+     <FONT COLOR="FF0000">// check that it's an APDUIO</FONT>
+     <FONT COLOR="008000">if</FONT> ( <A HREF = "#ApduIOCardTerminalFactory:createCardTerminals:infos">infos</A>[TERMINAL_TYPE_ENTRY].equals( &quot;Socket&quot; ) )
+     {
+       <FONT COLOR="FF0000">// Socket terminal needs one adress parameter</FONT>
+       <FONT COLOR="008000">if</FONT> (<A HREF = "#ApduIOCardTerminalFactory:createCardTerminals:infos">infos</A>.<UNKNOWNCALL>length</UNKNOWNCALL> != 3)
+       {
+           <FONT COLOR="008000">throw</FONT> <FONT COLOR="008000">new</FONT> TerminalInitException(&quot;createCardTerminals needs 3 parameters&quot;);
+       }
+       <FONT COLOR="FF0000">// creates the terminal and registers it</FONT>
+       <A HREF = "#ApduIOCardTerminalFactory:createCardTerminals:ctr">ctr</A>.<METHODCALL><UNKNOWNCALL>add</UNKNOWNCALL></METHODCALL>( <FONT COLOR="008000">new</FONT> ApduIOCardTerminal(
+           <A HREF = "#ApduIOCardTerminalFactory:createCardTerminals:infos">infos</A>[TERMINAL_NAME_ENTRY], 
+         <A HREF = "#ApduIOCardTerminalFactory:createCardTerminals:infos">infos</A>[TERMINAL_TYPE_ENTRY],
+           <A HREF = "#ApduIOCardTerminalFactory:createCardTerminals:infos">infos</A>[TERMINAL_ADDRESS_ENTRY] ) ) ;
+     } 
+     <FONT COLOR="008000">else</FONT>
+     {
+         <FONT COLOR="008000">throw</FONT> <FONT COLOR="008000">new</FONT> TerminalInitException( &quot;Type unknown: &quot; + <A HREF = "#ApduIOCardTerminalFactory:createCardTerminals:infos">infos</A>[TERMINAL_TYPE_ENTRY] ) ;
+     }
+   } <FONT COLOR="FF0000">/**/</FONT>
+ 
+ 
+     <FONT COLOR="FF0000">/**
+    * Initializes the factory.
+      *
+      * @throw CardTerminalException 
+    */</FONT>
+   <FONT COLOR="008000">public</FONT> <FONT COLOR="008000">void</FONT> <FONT COLOR = "800080"><A NAME = "ApduIOCardTerminalFactory:open:">open</A></FONT>() 
+       throws CardTerminalException 
+   {
+         ; 
+   } <FONT COLOR="FF0000">/**/</FONT>
+ 
+ 
+   <FONT COLOR="FF0000">/**
+    * Terminates the factory.
+    *
+    * @throw CardTerminalException 
+    */</FONT>
+   <FONT COLOR="008000">public</FONT> <FONT COLOR="008000">void</FONT> <FONT COLOR = "800080"><A NAME = "ApduIOCardTerminalFactory:close:">close</A></FONT>() 
+       throws CardTerminalException 
+     {
+         ;
+     } <FONT COLOR="FF0000">/**/</FONT>
+ 
+ }
+</PRE></BODY></HTML> 

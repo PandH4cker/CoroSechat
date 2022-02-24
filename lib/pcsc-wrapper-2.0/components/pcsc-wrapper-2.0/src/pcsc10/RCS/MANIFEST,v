@@ -1,0 +1,61 @@
+head	2.0;
+access;
+symbols;
+locks
+	root:2.0; strict;
+comment	@# @;
+
+
+2.0
+date	2001.06.14.13.32.36;	author root;	state Exp;
+branches;
+next	1.99;
+
+1.99
+date	2001.06.14.13.13.36;	author root;	state Exp;
+branches;
+next	1.0;
+
+1.0
+date	2001.06.14.09.12.45;	author root;	state Exp;
+branches;
+next	;
+
+
+desc
+@PC/SC CardTerminal MANIFEST file
+@
+
+
+2.0
+log
+@Distributed V2 with long APDU support. Added support for <space> in names.
+@
+text
+@Name: com/ibm/opencard/terminal/pcsc10
+Specification-Title: "OCF1.2 PC/SC Wrapper CardTerminal" 
+Specification-Version: "1.0"
+Specification-Vendor: "IBM".
+Implementation-Title: "com.ibm.opencard.terminal.pcsc10" 
+Implementation-Version: "1.99"
+Implementation-Vendor: "IBM"
+@
+
+
+1.99
+log
+@Alpha Version with long APDU support and other features. Distributed 20/12/00
+@
+text
+@d6 1
+a6 1
+Implementation-Version: "1.0"
+@
+
+
+1.0
+log
+@Official Version Distributed in OCF 1.2
+@
+text
+@@

@@ -1,0 +1,90 @@
+head	2.0;
+access;
+symbols;
+locks
+	root:2.0; strict;
+comment	@# @;
+
+
+2.0
+date	2001.06.14.13.32.36;	author root;	state Exp;
+branches;
+next	1.99;
+
+1.99
+date	2001.06.14.13.13.36;	author root;	state Exp;
+branches;
+next	1.0;
+
+1.0
+date	2001.06.14.09.12.45;	author root;	state Exp;
+branches;
+next	;
+
+
+desc
+@PC/SC CardTerminal Makefile
+@
+
+
+2.0
+log
+@Distributed V2 with long APDU support. Added support for <space> in names.
+@
+text
+@# ..........................................................................
+include ../../../Makefile
+# ..........................................................................
+
+##################
+### Variables  ###
+##################
+
+#inherited : JAVAC, JFLAGS, JAVA, JAR, JAVA_LIB, PACKAGE_PATH
+
+PACKAGE_NAME := com.ibm.opencard.terminal
+
+CURRENT_VERSION := $(shell grep Implementation-Version MANIFEST | sed 's/.*"\([^"]*\)".*/\1/')
+
+JAR_NAME := pcsc-wrapper-$(CURRENT_VERSION).jar
+
+SOURCES := $(shell find . -name \*.java)
+
+##################
+### Rules      ###
+##################
+
+# Java JAR file creation in ../../../lib
+../../../lib/$(JAR_NAME) :
+	$(JAR) cmf MANIFEST ../../../lib/$(JAR_NAME) $(PACKAGE_PATH)
+
+##################
+### Targets    ###
+##################
+
+#inherited : 'help', 'compile', 'clean', 'version'
+#overloaded : 'compile' (creation of JAR file)
+#added : 'install' (copy of JAR into Java zone)
+
+compile ::
+	$(JAR) cmf MANIFEST ../../../lib/$(JAR_NAME) $(PACKAGE_PATH)
+
+install : ../../../lib/$(JAR_NAME)
+	cp $< $(JAVA_LIB)
+@
+
+
+1.99
+log
+@Alpha Version with long APDU support and other features. Distributed 20/12/00
+@
+text
+@@
+
+
+1.0
+log
+@Official Version Distributed in OCF 1.2
+@
+text
+@@

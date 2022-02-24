@@ -1,0 +1,103 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.5 [en] (WinNT; I) [Netscape]">
+   <title>README file for BaseOCF package</title>
+</head>
+<body>
+<a NAME="_top_"></a>
+<center><pre><a href="README-BaseOCF.html#_top_">Base OCF</a> <a href="README-Reference-Impl.html#_top_">Reference Implementation</a>&nbsp; <a href="Changes.html#Changes">Changes for OCF version 1.1</a> <a href="Changes.html#Changes2">Changes of OCF version 1.1.1
+
+</a>&nbsp; <a href="Changes.html#OCF1.2Changes">Changes of OCF version 1.2</a> <a href="README-configuration.html#_top_">Configuration</a>&nbsp; <a href="http://www.opencard.org">OpenCard Home</a></pre></center>
+
+<center>
+<hr>
+<br><img SRC="oc10.JPG" ALT="OCF Banner" height=87 width=255>
+<br>Please read the&nbsp; <a href="LICENSE-Reference-Impl">License!</a></center>
+
+<h1>
+<a NAME="RefImpl"></a>README for BaseOCF package</h1>
+Since release 1.1 of the OpenCard Framework, the code making up the framework
+is organized in components. Each component is made up of one or more Java
+packages that provide a well-defined functionality to the application developer.
+To aid downloading, the components have been grouped together into installation
+packages.
+<p>In the OCF1.2 release an additional installation package was added:
+The BaseOCF package. This package contains the base-core and base-opt packages,
+which contain the fundamental OCF classes and which are the base that is
+needed in every OCF1.2 installation.
+<br>The contents of the Base OCF installation package is described under
+<a href="README-Reference-Impl.html#Components">Components</a>.
+To learn about the remaining installation packages, read <a href="#Installation">Installation</a>.
+<p>
+<hr WIDTH="100%">
+<h2>
+<a NAME="Components"></a>Components</h2>
+The base OCF package contains source code, API documentation, and a JAR
+file for each component. The source code and API documentation is located
+under the <b>components/&lt;component name> </b>directory, while the JAR
+files are located in the <b>lib</b> subdirectory. The component and corresponding
+JAR file names can be taken from the table below. Clicking on the component
+name will take you to the API documentation.
+<br>&nbsp;
+<table BORDER COLS=2 WIDTH="100%" >
+<tr>
+<td><b>Component Names</b></td>
+
+<td><b>Jar File Name</b></td>
+</tr>
+
+<tr>
+<td><a href="components/base-core/apidocs/index.html">base-core</a></td>
+
+<td>base-core.jar</td>
+</tr>
+
+<tr>
+<td><a href="components/base-opt/apidocs/index.html">base-opt</a></td>
+
+<td>base-opt.jar</td>
+</tr>
+</table>
+
+<hr WIDTH="100%">
+<h2>
+<a NAME="Installation"></a>OCF Installation Packages</h2>
+The installation packages were defined to satisfy the U.S. restrictions
+on export of cryptographic code as well to allow separation of proprietary
+code from the publically available reference implementation.
+<p>The installation packages build on one another to avoid duplicating
+code.
+<ol>
+<li>
+<a href="README-BaseOCF.html#_top_">BaseOCF</a> - contains the exportable
+(according to export restrictions) source and executable code of the OpenCard
+Framework owned by the OpenCard Framework consortium. This package is required
+by all other packages.</li>
+
+<li>
+<a href="README-Reference-Impl.html#_top_">Reference Implementation</a>
+- contains the exportable (according to export restrictions) source and
+executable code. It prerequisites the <a href="README-BaseOCF.html#_top_">BaseOCF</a>
+package. This package is required by all other packages.</li>
+
+<li>
+<a href="README-Reference-Impl-US.html#_top_">Reference Implementation
+U.S. Extension</a> - contains reference implementation functionality that
+cannot be exported outside North America.</li>
+
+<li>
+<a href="README-IBMCardServices.html#_top_">IBM CardService</a> - contains
+the exportable executable code that supports the MFC 4.1 card.</li>
+
+<li>
+<a href="README-IBMCardServices-US.html#_top_">IBM CardService U.S. Extension</a>
+- contains CardService functionality that cannot be exported outside North
+America.</li>
+</ol>
+
+<hr WIDTH="100%">
+<br><i><font size=-1>This page was created by J&uuml;rgen Damke.</font></i>
+</body>
+</html>

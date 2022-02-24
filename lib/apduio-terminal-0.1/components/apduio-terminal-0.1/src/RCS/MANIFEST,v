@@ -1,0 +1,32 @@
+head	0.1;
+access;
+symbols;
+locks
+	root:0.1; strict;
+comment	@# @;
+
+
+0.1
+date	2001.07.05.08.35.01;	author root;	state Exp;
+branches;
+next	;
+
+
+desc
+@MANIFEST for  ApduIO CardTerminal
+@
+
+
+0.1
+log
+@First distributed version
+@
+text
+@Name: com/gemplus/opencard/terminal/apduio
+Specification-Title: "OCF1.2 ApduIO CardTerminal" 
+Specification-Version: "0.1"
+Specification-Vendor: "Gemplus".
+Implementation-Title: "com.gemplus.opencard.terminal.apduio" 
+Implementation-Version: "0.1"
+Implementation-Vendor: "Gemplus"
+@

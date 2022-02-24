@@ -1,0 +1,153 @@
+<HTML> <body bgcolor = "FFFFFF"> <PRE>
+<FONT COLOR="FF0000">/*
+  * Copyright © 1997 - 1999 IBM Corporation.
+  * 
+  * Redistribution and use in source (source code) and binary (object code)
+  * forms, with or without modification, are permitted provided that the
+  * following conditions are met:
+  * 1. Redistributed source code must retain the above copyright notice, this
+  * list of conditions and the disclaimer below.
+  * 2. Redistributed object code must reproduce the above copyright notice,
+  * this list of conditions and the disclaimer below in the documentation
+  * and/or other materials provided with the distribution.
+  * 3. The name of IBM may not be used to endorse or promote products derived
+  * from this software or in any other form without specific prior written
+  * permission from IBM.
+  * 4. Redistribution of any modified code must be labeled &quot;Code derived from
+  * the original OpenCard Framework&quot;.
+  * 
+  * THIS SOFTWARE IS PROVIDED BY IBM &quot;AS IS&quot; FREE OF CHARGE. IBM SHALL NOT BE
+  * LIABLE FOR INFRINGEMENTS OF THIRD PARTIES RIGHTS BASED ON THIS SOFTWARE.  ANY
+  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+  * DISCLAIMED.  IBM DOES NOT WARRANT THAT THE FUNCTIONS CONTAINED IN THIS
+  * SOFTWARE WILL MEET THE USER'S REQUIREMENTS OR THAT THE OPERATION OF IT WILL
+  * BE UNINTERRUPTED OR ERROR-FREE.  IN NO EVENT, UNLESS REQUIRED BY APPLICABLE
+  * LAW, SHALL IBM BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+  * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+  * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+  * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+  * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.  ALSO, IBM IS UNDER NO OBLIGATION
+  * TO MAINTAIN, CORRECT, UPDATE, CHANGE, MODIFY, OR OTHERWISE SUPPORT THIS
+  * SOFTWARE.
+  */</FONT>
+ 
+ <FONT COLOR="008000">package</FONT> com.ibm.opencard.terminal.pcsc10;
+ 
+ <FONT COLOR="008000">import</FONT> opencard.core.util.Tracer;
+ 
+ <FONT COLOR="FF0000">/** &lt;tt&gt;OCFPCSC1&lt;/tt&gt; for PCSC card terminals.
+   *
+   * @author  Stephan Breideneich (sbreiden@de.ibm.com)
+   * @version $Id: OCFPCSC1.java,v 2.0 2001/06/14 13:32:36 root Exp root $
+   */</FONT>
+ 
+ <FONT COLOR="008000">public</FONT> <FONT COLOR="008000">class</FONT> <FONT COLOR = "800080"><A NAME = "OCFPCSC1::">OCFPCSC1</A></FONT> {
+ 
+   <FONT COLOR="008000">private</FONT> Tracer <FONT COLOR = "800080"><A NAME = "OCFPCSC1::iTracer">iTracer</A></FONT> = <FONT COLOR="008000">new</FONT> <CONSTRUCTORCALL>Tracer</CONSTRUCTORCALL>(<FONT COLOR="008000">this</FONT>, OCFPCSC1.<FONT COLOR="008000">class</FONT>);
+ 
+   <FONT COLOR="FF0000">/** Constructor with initialization of the OCF tracing mechanism.
+    *  @exception com.ibm.opencard.terminal.pcsc10.PcscException
+    *         thrown when error occured in PC/SC-Interface
+    */</FONT>
+   <FONT COLOR="008000">public</FONT> <FONT COLOR = "800080"><A NAME = "OCFPCSC1:OCFPCSC1:">OCFPCSC1</A></FONT>() throws PcscException {
+     <A HREF = "OCFPCSC1.html#OCFPCSC1:initTrace:">initTrace</A>();
+   }
+   
+   <FONT COLOR="FF0000">/* load the Wrapper-DLL */</FONT>
+   <FONT COLOR="008000">static</FONT> <FONT COLOR="008000">public</FONT> <FONT COLOR="008000">void</FONT> <FONT COLOR = "800080"><A NAME = "OCFPCSC1:loadLib:">loadLib</A></FONT>() {
+     <FONT COLOR="008000">try</FONT> {
+ 
+       <FONT COLOR="FF0000">//netscape.security.PrivilegeManager.enablePrivilege(&quot;UniversalLinkAccess&quot;);</FONT>
+       <FONT COLOR="FF0000">//System.loadLibrary(&quot;OCFPCSC1&quot;);</FONT>
+       opencard.core.util.SystemAccess.getSystemAccess().loadLibrary(&quot;OCFPCSC1&quot;);
+ 
+     } <FONT COLOR="008000">catch</FONT> (Exception <FONT COLOR = "800080"><A NAME = "OCFPCSC1:loadLib:e">e</A></FONT>) {
+       <A HREF = "#OCFPCSC1:loadLib:e">e</A>.<METHODCALL><UNKNOWNCALL>printStackTrace</UNKNOWNCALL></METHODCALL>();
+     }
+   }
+   <FONT COLOR="FF0000">/**************************************************************/</FONT>
+   <FONT COLOR="FF0000">/*                                */</FONT>
+   <FONT COLOR="FF0000">/* <FONT COLOR="008000">native</FONT> Methods                        */</FONT>
+   <FONT COLOR="FF0000">/*                                */</FONT>
+   <FONT COLOR="FF0000">/**************************************************************/</FONT>
+ 
+   <FONT COLOR="FF0000">/* initialize the <FONT COLOR="008000">native</FONT> tracing mechanism */</FONT>
+   <FONT COLOR="008000">public</FONT> <FONT COLOR="008000">native</FONT> <FONT COLOR="008000">void</FONT> <FONT COLOR = "800080"><A NAME = "OCFPCSC1:initTrace:">initTrace</A></FONT>();
+ 
+   <FONT COLOR="FF0000">/* returns a list of terminals found in the PCSC resource manager */</FONT>
+   <FONT COLOR="008000">public</FONT> <FONT COLOR="008000">native</FONT> <FONT COLOR="008000">synchronized</FONT> <FONT COLOR = "800080"><A NAME = "OCFPCSC1:SCardListReaders:String">String</A></FONT>[] <FONT COLOR = "800080"><A NAME = "OCFPCSC1:SCardListReaders:">SCardListReaders</A></FONT>(String <FONT COLOR = "800080"><A NAME = "OCFPCSC1:SCardListReaders:groups">groups</A></FONT>)
+                   throws <FONT COLOR = "800080"><A NAME = "OCFPCSC1:SCardListReaders:PcscException">PcscException</A></FONT>;
+ 
+   <FONT COLOR="FF0000">/* returns the context */</FONT>
+   <FONT COLOR="008000">public</FONT> <FONT COLOR="008000">native</FONT> <FONT COLOR="008000">synchronized</FONT> <FONT COLOR="008000">int</FONT>  <FONT COLOR = "800080"><A NAME = "OCFPCSC1:SCardEstablishContext:">SCardEstablishContext</A></FONT>(<FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "OCFPCSC1:SCardEstablishContext:scope">scope</A></FONT>)
+                   throws <FONT COLOR = "800080"><A NAME = "OCFPCSC1:SCardEstablishContext:PcscException">PcscException</A></FONT>;
+ 
+   <FONT COLOR="008000">public</FONT> <FONT COLOR="008000">native</FONT> <FONT COLOR="008000">synchronized</FONT> <FONT COLOR="008000">void</FONT> <FONT COLOR = "800080"><A NAME = "OCFPCSC1:SCardReleaseContext:">SCardReleaseContext</A></FONT>(<FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "OCFPCSC1:SCardReleaseContext:context">context</A></FONT>)
+                   throws <FONT COLOR = "800080"><A NAME = "OCFPCSC1:SCardReleaseContext:PcscException">PcscException</A></FONT>;
+ 
+   <FONT COLOR="FF0000">/* returns the SCARDHANDLE */</FONT>
+   <FONT COLOR="008000">public</FONT> <FONT COLOR="008000">native</FONT> <FONT COLOR="008000">synchronized</FONT> <FONT COLOR="008000">int</FONT>  <FONT COLOR = "800080"><A NAME = "OCFPCSC1:SCardConnect:">SCardConnect</A></FONT>(<FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "OCFPCSC1:SCardConnect:context">context</A></FONT>, String <FONT COLOR = "800080"><A NAME = "OCFPCSC1:SCardConnect:reader">reader</A></FONT>,
+                   <FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "OCFPCSC1:SCardConnect:shareMode">shareMode</A></FONT>, <FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "OCFPCSC1:SCardConnect:preferredProtocol">preferredProtocol</A></FONT>, Integer <FONT COLOR = "800080"><A NAME = "OCFPCSC1:SCardConnect:activeProtocol">activeProtocol</A></FONT>)
+                   throws <FONT COLOR = "800080"><A NAME = "OCFPCSC1:SCardConnect:PcscException">PcscException</A></FONT>;
+ 
+   <FONT COLOR="008000">public</FONT> <FONT COLOR="008000">native</FONT> <FONT COLOR="008000">synchronized</FONT> <FONT COLOR="008000">void</FONT> <FONT COLOR = "800080"><A NAME = "OCFPCSC1:SCardReconnect:">SCardReconnect</A></FONT>(<FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "OCFPCSC1:SCardReconnect:card">card</A></FONT>, <FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "OCFPCSC1:SCardReconnect:shareMode">shareMode</A></FONT>,
+                   <FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "OCFPCSC1:SCardReconnect:preferredProtocoll">preferredProtocoll</A></FONT>,  <FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "OCFPCSC1:SCardReconnect:initialization">initialization</A></FONT>, Integer <FONT COLOR = "800080"><A NAME = "OCFPCSC1:SCardReconnect:activeProtocol">activeProtocol</A></FONT>)
+                   throws <FONT COLOR = "800080"><A NAME = "OCFPCSC1:SCardReconnect:PcscException">PcscException</A></FONT>;
+ 
+   <FONT COLOR="008000">public</FONT> <FONT COLOR="008000">native</FONT> <FONT COLOR="008000">synchronized</FONT> <FONT COLOR="008000">void</FONT> <FONT COLOR = "800080"><A NAME = "OCFPCSC1:SCardDisconnect:">SCardDisconnect</A></FONT>(<FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "OCFPCSC1:SCardDisconnect:card">card</A></FONT>, <FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "OCFPCSC1:SCardDisconnect:disposition">disposition</A></FONT>)
+                   throws <FONT COLOR = "800080"><A NAME = "OCFPCSC1:SCardDisconnect:PcscException">PcscException</A></FONT>;
+ 
+   <FONT COLOR="008000">public</FONT> <FONT COLOR="008000">native</FONT> <FONT COLOR="008000">synchronized</FONT> <FONT COLOR="008000">void</FONT> <FONT COLOR = "800080"><A NAME = "OCFPCSC1:SCardGetStatusChange:">SCardGetStatusChange</A></FONT>(<FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "OCFPCSC1:SCardGetStatusChange:context">context</A></FONT>, <FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "OCFPCSC1:SCardGetStatusChange:timeout">timeout</A></FONT>, <FONT COLOR = "800080"><A NAME = "OCFPCSC1:SCardGetStatusChange:PcscReaderState">PcscReaderState</A></FONT>[] <FONT COLOR = "800080"><A NAME = "OCFPCSC1:SCardGetStatusChange:readerState">readerState</A></FONT>)
+                   throws <FONT COLOR = "800080"><A NAME = "OCFPCSC1:SCardGetStatusChange:PcscException">PcscException</A></FONT>;
+ 
+   <FONT COLOR="FF0000">/* returns the AttributeBuffer */</FONT>
+   <FONT COLOR="008000">public</FONT> <FONT COLOR="008000">native</FONT> <FONT COLOR="008000">synchronized</FONT> <FONT COLOR = "800080"><A NAME = "OCFPCSC1:SCardGetAttrib:byte">byte</A></FONT>[] <FONT COLOR = "800080"><A NAME = "OCFPCSC1:SCardGetAttrib:">SCardGetAttrib</A></FONT>(<FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "OCFPCSC1:SCardGetAttrib:card">card</A></FONT>, <FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "OCFPCSC1:SCardGetAttrib:attrId">attrId</A></FONT>)
+                   throws <FONT COLOR = "800080"><A NAME = "OCFPCSC1:SCardGetAttrib:PcscException">PcscException</A></FONT>;
+ 
+   <FONT COLOR="FF0000">/* returns the count of received bytes in OutBuffer */</FONT>
+   <FONT COLOR="008000">public</FONT> <FONT COLOR="008000">native</FONT> <FONT COLOR="008000">synchronized</FONT> <FONT COLOR = "800080"><A NAME = "OCFPCSC1:SCardControl:byte">byte</A></FONT>[] <FONT COLOR = "800080"><A NAME = "OCFPCSC1:SCardControl:">SCardControl</A></FONT>(<FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "OCFPCSC1:SCardControl:card">card</A></FONT>, <FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "OCFPCSC1:SCardControl:controlCode">controlCode</A></FONT>, <FONT COLOR = "800080"><A NAME = "OCFPCSC1:SCardControl:byte">byte</A></FONT>[] <FONT COLOR = "800080"><A NAME = "OCFPCSC1:SCardControl:inBuffer">inBuffer</A></FONT>)
+                   throws <FONT COLOR = "800080"><A NAME = "OCFPCSC1:SCardControl:PcscException">PcscException</A></FONT>;
+ 
+   <FONT COLOR="FF0000">/* returns the receiveBuffer */</FONT>
+   <FONT COLOR="FF0000">/* the DLL has to manage the special behaviour of the T0/T1 protocol */</FONT>
+   <FONT COLOR="008000">public</FONT> <FONT COLOR="008000">native</FONT> <FONT COLOR="008000">synchronized</FONT> <FONT COLOR = "800080"><A NAME = "OCFPCSC1:SCardTransmit:byte">byte</A></FONT>[] <FONT COLOR = "800080"><A NAME = "OCFPCSC1:SCardTransmit:">SCardTransmit</A></FONT>(<FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "OCFPCSC1:SCardTransmit:card">card</A></FONT>, <FONT COLOR = "800080"><A NAME = "OCFPCSC1:SCardTransmit:byte">byte</A></FONT>[] <FONT COLOR = "800080"><A NAME = "OCFPCSC1:SCardTransmit:sendBuffer">sendBuffer</A></FONT>)
+                   throws <FONT COLOR = "800080"><A NAME = "OCFPCSC1:SCardTransmit:PcscException">PcscException</A></FONT>;
+ 
+   <FONT COLOR="FF0000">/* is called by the <FONT COLOR="008000">native</FONT> methods to trace via OCF trace mechanism */</FONT>
+   <FONT COLOR="008000">protected</FONT> <FONT COLOR="008000">void</FONT> <FONT COLOR = "800080"><A NAME = "OCFPCSC1:msg:">msg</A></FONT>(<FONT COLOR="008000">int</FONT> <FONT COLOR = "800080"><A NAME = "OCFPCSC1:msg:level">level</A></FONT>, String <FONT COLOR = "800080"><A NAME = "OCFPCSC1:msg:methodName">methodName</A></FONT>, String <FONT COLOR = "800080"><A NAME = "OCFPCSC1:msg:aLine">aLine</A></FONT>) {
+     <A HREF = "#OCFPCSC1::iTracer">iTracer</A>.<METHODCALL><UNKNOWNCALL>error</UNKNOWNCALL></METHODCALL>(&quot;OCFPCSC1.&quot; + <A HREF = "#OCFPCSC1:msg:methodName">methodName</A>, <A HREF = "#OCFPCSC1:msg:aLine">aLine</A>);
+   }
+ }
+ 
+ <FONT COLOR="FF0000">// $Log: OCFPCSC1.java,v $</FONT>
+ <FONT COLOR="FF0000">// Revision 2.0  2001/06/14 13:32:36  root</FONT>
+ <FONT COLOR="FF0000">// Distributed V2 with long APDU support. Added support for &lt;space&gt; in names.</FONT>
+ <FONT COLOR="FF0000">//</FONT>
+ <FONT COLOR="FF0000">// Revision 1.99  2001/06/14 13:13:36  root</FONT>
+ <FONT COLOR="FF0000">// Alpha Version with long APDU support and other features. Distributed 20/12/00</FONT>
+ <FONT COLOR="FF0000">//</FONT>
+ <FONT COLOR="FF0000">// Revision 1.0  2001/06/14 09:12:45  root</FONT>
+ <FONT COLOR="FF0000">// Official Version Distributed in OCF 1.2</FONT>
+ <FONT COLOR="FF0000">//</FONT>
+ <FONT COLOR="FF0000">// Revision 1.6  1999/04/07 15:20:31  breid</FONT>
+ <FONT COLOR="FF0000">// load library fixed for native browser support</FONT>
+ <FONT COLOR="FF0000">//</FONT>
+ <FONT COLOR="FF0000">// Revision 1.5  1999/04/01 13:11:27  pbendel</FONT>
+ <FONT COLOR="FF0000">// native browser support RFC-0005 (pbendel)</FONT>
+ <FONT COLOR="FF0000">//</FONT>
+ <FONT COLOR="FF0000">// Revision 1.4  1998/04/22 20:08:29  breid</FONT>
+ <FONT COLOR="FF0000">// support for T0 implemented</FONT>
+ <FONT COLOR="FF0000">//</FONT>
+ <FONT COLOR="FF0000">// Revision 1.3  1998/04/14 16:16:46  breid</FONT>
+ <FONT COLOR="FF0000">// htmldoc exception modified</FONT>
+ <FONT COLOR="FF0000">//</FONT>
+ <FONT COLOR="FF0000">// Revision 1.2  1998/04/09 13:40:53  breid</FONT>
+ <FONT COLOR="FF0000">// *** empty log message ***</FONT>
+ <FONT COLOR="FF0000">//</FONT>
+ <FONT COLOR="FF0000">// Revision 1.1  1998/04/07 13:56:45  breid</FONT>
+ <FONT COLOR="FF0000">// initial version</FONT>
+ <FONT COLOR="FF0000">//</FONT>
+</PRE></BODY></HTML> 

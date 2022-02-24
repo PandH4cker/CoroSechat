@@ -1,0 +1,179 @@
+<HTML> <body bgcolor = "FFFFFF"> <PRE>
+<FONT COLOR="FF0000">/*
+  * Copyright © 2000 Gemplus
+  * Av. du Pic de Bertagne - Parc d'Activités de Gémenos
+  * BP 100 - 13881 Gémenos CEDEX
+  *
+  * &quot;Code derived from the original OpenCard Framework&quot;.
+  *
+  * Everyone is allowed to redistribute and use this source  (source
+  * code)  and binary (object code),  with or  without modification,
+  * under some conditions:
+  *
+  *  - Everyone  must  retain  and/or  reproduce the above copyright
+  *    notice,  and the below  disclaimer of warranty and limitation
+  *    of liability  for redistribution and use of these source code
+  *    and object code.
+  *
+  *  - Everyone  must  ask a  specific prior written permission from
+  *    Gemplus to use the name of Gemplus.
+  *
+  * DISCLAIMER OF WARRANTY
+  *
+  * THIS CODE IS PROVIDED &quot;AS IS&quot;,  WITHOUT ANY WARRANTY OF ANY KIND
+  * (INCLUDING,  BUT  NOT  LIMITED  TO,  THE IMPLIED  WARRANTIES  OF
+  * MERCHANTABILITY  AND FITNESS FOR  A  PARTICULAR PURPOSE)  EITHER
+  * EXPRESS OR IMPLIED.  GEMPLUS DOES NOT WARRANT THAT THE FUNCTIONS
+  * CONTAINED  IN THIS SOFTWARE WILL MEET THE USER'S REQUIREMENTS OR
+  * THAT THE OPERATION OF IT WILL BE UNINTERRUPTED OR ERROR-FREE. NO
+  * USE  OF  ANY  CODE  IS  AUTHORIZED  HEREUNDER EXCEPT UNDER  THIS
+  * DISCLAIMER.
+  *
+  * LIMITATION OF LIABILITY
+  *
+  * GEMPLUS SHALL NOT BE LIABLE FOR INFRINGEMENTS OF  THIRD  PARTIES
+  * RIGHTS. IN NO EVENTS, UNLESS REQUIRED BY APPLICABLE  LAW,  SHALL
+  * GEMPLUS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+  * EXEMPLARY, OR CONSEQUENTIAL DAMAGES OF ANY CHARACTER  INCLUDING,
+  * WITHOUT LIMITATION, DAMAGES FOR LOSS OF GOODWILL, WORK STOPPAGE,
+  * COMPUTER FAILURE OR MALFUNCTION, OR ANY AND ALL OTHER DAMAGES OR
+  * LOSSES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. ALSO,
+  * GEMPLUS IS  UNDER NO  OBLIGATION TO MAINTAIN,  CORRECT,  UPDATE,
+  * CHANGE, MODIFY, OR OTHERWISE SUPPORT THIS SOFTWARE.
+  */</FONT>
+ 
+ <FONT COLOR="FF0000">//-----------------------------------------------------------------------------</FONT>
+ <FONT COLOR="FF0000">// PACKAGE DEFINITION</FONT>
+ <FONT COLOR="FF0000">//-----------------------------------------------------------------------------</FONT>
+ <FONT COLOR="008000">package</FONT> com.gemplus.opencard.terminal.apduio.test;
+ 
+ <FONT COLOR="FF0000">//-----------------------------------------------------------------------------</FONT>
+ <FONT COLOR="FF0000">// IMPORTS</FONT>
+ <FONT COLOR="FF0000">//-----------------------------------------------------------------------------</FONT>
+ <FONT COLOR="008000">import</FONT> opencard.core.service.SmartCard;
+ <FONT COLOR="008000">import</FONT> opencard.core.service.CardRequest;
+ <FONT COLOR="008000">import</FONT> opencard.core.event.CardTerminalEvent;
+ <FONT COLOR="008000">import</FONT> opencard.core.event.CTListener;
+ <FONT COLOR="008000">import</FONT> opencard.core.event.EventGenerator;
+ 
+ <FONT COLOR="008000">import</FONT> opencard.core.terminal.CommandAPDU;
+ <FONT COLOR="008000">import</FONT> opencard.core.terminal.ResponseAPDU;
+ <FONT COLOR="008000">import</FONT> opencard.core.terminal.CardTerminalException;
+ 
+ <FONT COLOR="008000">import</FONT> opencard.opt.util.PassThruCardService;
+ 
+ <FONT COLOR="008000">import</FONT> opencard.core.util.HexString;
+ 
+ <FONT COLOR="FF0000">/**
+  * Test class for the ApduIOCardTerminal
+  *
+  * @author Laurent Lagosanto (lago@research.gemplus.com)
+  * @version $Id: Test.java,v 0.1 2001/07/05 08:35:01 root Exp root $
+  */</FONT>
+ <FONT COLOR="008000">public</FONT> <FONT COLOR="008000">class</FONT> <FONT COLOR = "800080"><A NAME = "Test::">Test</A></FONT> <FONT COLOR="008000">implements</FONT> CTListener
+ {
+   <FONT COLOR="008000">private</FONT> PassThruCardService <FONT COLOR = "800080"><A NAME = "Test::ptcs">ptcs</A></FONT>;
+ 
+   <FONT COLOR="008000">public</FONT> <FONT COLOR = "800080"><A NAME = "Test:Test:">Test</A></FONT>()
+   {
+   }
+ 
+   <FONT COLOR="008000">public</FONT> <FONT COLOR="008000">static</FONT> <FONT COLOR="008000">void</FONT> <FONT COLOR = "800080"><A NAME = "Test:main:">main</A></FONT>(String[] args)
+   {
+     <FONT COLOR="008000">try</FONT>
+     {
+       <A HREF = "Test.html#Test::">Test</A> <FONT COLOR = "800080"><A NAME = "Test:main:test">test</A></FONT> = <FONT COLOR="008000">new</FONT> <A HREF = "Test.html#Test:Test:">Test</A>();
+       SmartCard.start();
+       EventGenerator.getGenerator().addCTListener(<A HREF = "#Test:main:test">test</A>);
+       Thread.currentThread().join();
+     }
+     <FONT COLOR="008000">catch</FONT> (Exception <FONT COLOR = "800080"><A NAME = "Test:main:ex">ex</A></FONT>)
+     {
+       <A HREF = "#Test:main:ex">ex</A>.<METHODCALL><UNKNOWNCALL>printStackTrace</UNKNOWNCALL></METHODCALL>();
+     }
+   }
+ 
+   <FONT COLOR="008000">public</FONT> <FONT COLOR="008000">void</FONT> <FONT COLOR = "800080"><A NAME = "Test:cardInserted:">cardInserted</A></FONT>(CardTerminalEvent <FONT COLOR = "800080"><A NAME = "Test:cardInserted:ctEvent">ctEvent</A></FONT>) throws CardTerminalException
+   {
+     System.out.println(&quot;Card Inserted&quot;);
+     SmartCard <FONT COLOR = "800080"><A NAME = "Test:cardInserted:card">card</A></FONT> = SmartCard.getSmartCard(<A HREF = "#Test:cardInserted:ctEvent">ctEvent</A>,
+       <FONT COLOR="008000">new</FONT> CardRequest( CardRequest.ANYCARD, <A HREF = "#Test:cardInserted:ctEvent">ctEvent</A>.<METHODCALL><UNKNOWNCALL>getCardTerminal</UNKNOWNCALL></METHODCALL>(), <FONT COLOR="008000">null</FONT>));
+ 
+     <FONT COLOR="008000">if</FONT> (<A HREF = "#Test:cardInserted:card">card</A> != <FONT COLOR="008000">null</FONT>)
+     {
+       <FONT COLOR="008000">try</FONT>
+       {
+         <A HREF = "#Test::ptcs">ptcs</A> = (PassThruCardService)<A HREF = "#Test:cardInserted:card">card</A>.<METHODCALL><UNKNOWNCALL>getCardService</UNKNOWNCALL></METHODCALL>(PassThruCardService.<FONT COLOR="008000">class</FONT>, <FONT COLOR="008000">true</FONT>);
+ 
+         <A HREF = "Test.html#Test:select:">select</A>();
+         System.out.println(&quot;Balance = &quot; + <A HREF = "Test.html#Test:getBalance:">getBalance</A>());
+         <A HREF = "Test.html#Test:verifyPIN:">verifyPIN</A>(<FONT COLOR="008000">new</FONT> <FONT COLOR="008000">byte</FONT>[] {(<FONT COLOR="008000">byte</FONT>)0x01, (<FONT COLOR="008000">byte</FONT>)0x02, (<FONT COLOR="008000">byte</FONT>)0x03, (<FONT COLOR="008000">byte</FONT>)0x04, (<FONT COLOR="008000">byte</FONT>)0x05} );
+         <A HREF = "Test.html#Test:debit:">debit</A>((<FONT COLOR="008000">byte</FONT>)16);
+         System.out.println(&quot;Balance = &quot; + <A HREF = "Test.html#Test:getBalance:">getBalance</A>());
+       }
+       <FONT COLOR="008000">catch</FONT> (Exception <FONT COLOR = "800080"><A NAME = "Test:cardInserted:ex">ex</A></FONT>)
+       {
+         <A HREF = "#Test:cardInserted:ex">ex</A>.<METHODCALL><UNKNOWNCALL>printStackTrace</UNKNOWNCALL></METHODCALL>();
+       }
+     }
+   }
+ 
+   <FONT COLOR="008000">public</FONT> <FONT COLOR="008000">void</FONT> <FONT COLOR = "800080"><A NAME = "Test:cardRemoved:">cardRemoved</A></FONT>(CardTerminalEvent <FONT COLOR = "800080"><A NAME = "Test:cardRemoved:ctEvent">ctEvent</A></FONT>) throws CardTerminalException
+   {
+     System.out.println(&quot;Card Removed&quot;);
+     System.exit(0);
+   }
+ 
+   <FONT COLOR="FF0000">/**
+    * select the applet
+    */</FONT>
+   <FONT COLOR="008000">public</FONT> <FONT COLOR="008000">void</FONT> <FONT COLOR = "800080"><A NAME = "Test:select:">select</A></FONT>() throws CardTerminalException
+   {
+     <FONT COLOR = "800080"><A NAME = "Test:sendAndCheck:">sendAndCheck</A></FONT>(<FONT COLOR="008000">new</FONT> <FONT COLOR="008000">byte</FONT>[] { (<FONT COLOR="008000">byte</FONT>)0x00, (<FONT COLOR="008000">byte</FONT>)0xA4, (<FONT COLOR="008000">byte</FONT>)0x04, (<FONT COLOR="008000">byte</FONT>)0x00, (<FONT COLOR="008000">byte</FONT>)0x0a, (<FONT COLOR="008000">byte</FONT>)0xa0, (<FONT COLOR="008000">byte</FONT>)0x0, (<FONT COLOR="008000">byte</FONT>)0x0, (<FONT COLOR="008000">byte</FONT>)0x0, (<FONT COLOR="008000">byte</FONT>)0x62, (<FONT COLOR="008000">byte</FONT>)0x3, (<FONT COLOR="008000">byte</FONT>)0x1, (<FONT COLOR="008000">byte</FONT>)0xc, (<FONT COLOR="008000">byte</FONT>)0x6, (<FONT COLOR="008000">byte</FONT>)0x1, (<FONT COLOR="008000">byte</FONT>)0x7F} );
+   }
+ 
+   <FONT COLOR="FF0000">/**
+    * query the balance from the applet
+    */</FONT>
+   <FONT COLOR="008000">public</FONT> String <FONT COLOR = "800080"><A NAME = "Test:getBalance:">getBalance</A></FONT>() throws CardTerminalException
+   {
+     <FONT COLOR="008000">byte</FONT>[] balance = <A HREF = "Test.html#Test:sendAndCheck:">sendAndCheck</A>( <FONT COLOR="008000">new</FONT> <FONT COLOR="008000">byte</FONT>[] { (<FONT COLOR="008000">byte</FONT>)0xB0, (<FONT COLOR="008000">byte</FONT>)0x50, (<FONT COLOR="008000">byte</FONT>)0x00, (<FONT COLOR="008000">byte</FONT>)0x00, (<FONT COLOR="008000">byte</FONT>)0x00, (<FONT COLOR="008000">byte</FONT>)0x02} );
+     <FONT COLOR="008000">return</FONT> &quot;0x&quot; + HexString.hexifyShort(<A HREF = "#Test::balance">balance</A>[0], <A HREF = "#Test::balance">balance</A>[1]);
+   }
+ 
+   <FONT COLOR="FF0000">/**
+    * present the PIN to the applet
+    */</FONT>
+   <FONT COLOR="008000">public</FONT> <FONT COLOR="008000">void</FONT> <FONT COLOR = "800080"><A NAME = "Test:verifyPIN:">verifyPIN</A></FONT>(byte[] pin) throws CardTerminalException
+   {
+     <FONT COLOR="008000">byte</FONT>[] cmd = <FONT COLOR="008000">new</FONT> <FONT COLOR="008000">byte</FONT>[] { (<FONT COLOR="008000">byte</FONT>)0xB0, (<FONT COLOR="008000">byte</FONT>)0x20, (<FONT COLOR="008000">byte</FONT>)0x00, (<FONT COLOR="008000">byte</FONT>)0x00, (<FONT COLOR="008000">byte</FONT>)pin.length, (<FONT COLOR="008000">byte</FONT>)0x00, (<FONT COLOR="008000">byte</FONT>)0x00, (<FONT COLOR="008000">byte</FONT>)0x00, (<FONT COLOR="008000">byte</FONT>)0x00, (<FONT COLOR="008000">byte</FONT>)0x00, (<FONT COLOR="008000">byte</FONT>)0x7F};
+     System.arraycopy(pin, 0, cmd, 5, pin.length);
+     <A HREF = "Test.html#Test:sendAndCheck:">sendAndCheck</A>(cmd);
+   }
+ 
+   <FONT COLOR="FF0000">/**
+    * send a debit cmd
+    */</FONT>
+   <FONT COLOR="008000">public</FONT> <FONT COLOR="008000">void</FONT> <FONT COLOR = "800080"><A NAME = "Test:debit:">debit</A></FONT>(<FONT COLOR="008000">byte</FONT> <FONT COLOR = "800080"><A NAME = "Test:debit:amount">amount</A></FONT>) throws CardTerminalException
+   {
+     <FONT COLOR="FF0000">// debit $16</FONT>
+     <FONT COLOR = "800080"><A NAME = "Test:sendAndCheck:">sendAndCheck</A></FONT>(<FONT COLOR="008000">new</FONT> <FONT COLOR="008000">byte</FONT>[] { (<FONT COLOR="008000">byte</FONT>)0xB0, (<FONT COLOR="008000">byte</FONT>)0x40, (<FONT COLOR="008000">byte</FONT>)0x00, (<FONT COLOR="008000">byte</FONT>)0x00, (<FONT COLOR="008000">byte</FONT>)0x01, <A HREF = "#Test:sendAndCheck:amount">amount</A>, (<FONT COLOR="008000">byte</FONT>)0x7F} );
+   }
+ 
+   <FONT COLOR="FF0000">/**
+    * send a cmd APDU to the applet
+    */</FONT>
+     <FONT COLOR="008000">private</FONT> byte[] <FONT COLOR = "800080"><A NAME = "Test:sendAndCheck:">sendAndCheck</A></FONT>(byte[] cmd) throws CardTerminalException
+     {
+       CommandAPDU <FONT COLOR = "800080"><A NAME = "Test:sendAndCheck:apdu">apdu</A></FONT>;
+       ResponseAPDU <FONT COLOR = "800080"><A NAME = "Test:sendAndCheck:res">res</A></FONT>;
+       <A HREF = "#Test:sendAndCheck:apdu">apdu</A> = <FONT COLOR="008000">new</FONT> CommandAPDU(cmd);
+       <A HREF = "#Test:sendAndCheck:res">res</A> = <A HREF = "#Test::ptcs">ptcs</A>.<METHODCALL><UNKNOWNCALL>sendCommandAPDU</UNKNOWNCALL></METHODCALL>(<A HREF = "#Test:sendAndCheck:apdu">apdu</A>);
+     <FONT COLOR="008000">if</FONT> (<A HREF = "#Test:sendAndCheck:res">res</A>.<METHODCALL><UNKNOWNCALL>sw</UNKNOWNCALL></METHODCALL>() != 0x9000)
+     {
+       <FONT COLOR="008000">throw</FONT> <FONT COLOR="008000">new</FONT> CardTerminalException(&quot;SW = 0x&quot; + Integer.toHexString(<A HREF = "#Test:sendAndCheck:res">res</A>.<METHODCALL><UNKNOWNCALL>sw</UNKNOWNCALL></METHODCALL>()));
+     }
+     <FONT COLOR="008000">return</FONT> <A HREF = "#Test:sendAndCheck:res">res</A>.<METHODCALL><UNKNOWNCALL>data</UNKNOWNCALL></METHODCALL>();
+     }
+ }
+</PRE></BODY></HTML> 

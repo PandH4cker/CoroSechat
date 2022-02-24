@@ -1,0 +1,1777 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Author" content="Frank Seliger, Roland Weber">
+   <meta name="GENERATOR" content="Mozilla/4.5 [en] (WinNT; I) [Netscape]">
+   <meta name="keywords" content="OpenCard, OCF, Framework, Smartcard, Changes, Codesize Reduction, Performance Tuning, Exceptions">
+   <title>OCF 1.1 News</title>
+</head>
+<body>
+
+<center><pre><a href="README-BaseOCF.html#_top_">Base OCF</a> <a href="README-Reference-Impl.html#_top_">Reference Implementation</a>&nbsp; <a href="#Changes">Changes for OCF version 1.1</a> <a href="#Changes2">Changes for OCF version 1.1.1</a></pre></center>
+
+<center><pre>&nbsp; <a href="README-configuration.html#_top_">Configuration</a>&nbsp; <a href="http://www.opencard.org">OpenCard Home</a></pre></center>
+
+<center>
+<h1>
+
+<hr><img SRC="oc10.JPG" ALT="OCF Banner" BORDER=0 height=87 width=255></h1></center>
+
+<center>Please read the&nbsp; <a href="LICENSE-BaseOCF">License!</a></center>
+
+<h1>
+<a NAME="OCF1.2Changes"></a>News and Changes in OCF 1.2</h1>
+&nbsp;
+<h3>
+Changes</h3>
+This section gives an overview of the changes OCF has undergone from version
+1.1.1 to 1.2. The changes that have been implemented are mostly changes
+which result from Requests for Comments (RFC) elaborated by the members
+of the OpenCard Consortium.
+<h4>
+Changes Visible for Application Developers</h4>
+<a href="#Installer">OCF Installer</a>
+<br><a href="#Application Management">Application Management</a>
+<br><a href="#Authentication">Internal and External Authentication</a>
+<br><a href="#CHV">Card Holder Verification</a>
+<br><a href="#OCF for embedded">OCF for Embeded Devices</a>
+<br><a href="#JC Support">OCF Support for Java Cards</a>
+<br><a href="#API Streamlining">API Streamlining</a>
+<br><a href="#Bug Fixes">Bug Fixes</a>
+<p><b>Changes Visible for CardService Developers</b>
+<br><a href="#BugFix_CS">Bug Fixes</a>
+<p><b>Changes Visible for CardTerminal Developers</b>
+<p><a href="#Terminal Locking">Terminal Locking</a>
+<br><a href="#BugFix_CT">Bug Fixes</a>
+<p>
+<hr>
+<h3>
+Change Details</h3>
+<a NAME="Installer"></a>
+<br><b>OCF Installer</b>
+<p>OCF 1.2 provides an easy to use OCF Installer package that provides
+developers with a quick way to get started with OpenCard development. This
+package consists of a single Java class file that contains all OCF components
+that were previously provided in the Convenience.zip file plus the full
+OpenCard API documentation and the OCF Programer's Guide. A graphical installation
+process guides the user through the configuration of the OpenCard Framework
+according to the installed hard- and software. On Microsoft Windows 9x/NT
+an OpenCard folder is added to the startup menu that contains links to
+available documentation and a few demo programs. To&nbsp; use the OpenCard
+Framework a working installation of CardTerminal classes provided by the
+card reader manufacturer and Sun's Java Communications API need to be installed.
+The OCF Installer package has been tested on Microsoft Windows 95/98/NT.
+To run it you need JDK version 1.1 or higher.
+<h4>
+<a NAME="Application Management"></a><br>
+Application Management</h4>
+The Application and Card Management Card Service has been entirely changed
+and enhanced for OCF 1.2.
+<p>The base classes for describing and managing applets are moved from
+the pacakage <tt>opencard.opt.management</tt> to the package <tt>opencard.opt.applet</tt>.
+<p>The term "applet" as we use it in this documentation can be either a
+program, which is executed on the card itself (like a typical Java Card
+applet). Or it can be an application specific set of files and directory
+structures (as we will find on ISO compliant file system oriented cards).
+In both cases an <tt>AppletID</tt> is used to identify the applet in a
+world-wide unique way. There are standards which define how each smart
+card should hold a directory of <tt>AppletID</tt>s, allowing any card-external
+application to decide, if it supports a particular card or not. Card-resident
+applets are described by meta-information encapsulated in <tt>AppletInfo</tt>
+objects.
+<br>This meta-information includes
+<ul>
+<li>
+the user-friendly <tt>label</tt>,</li>
+
+<li>
+the <tt>AppletID</tt> and</li>
+
+<li>
+the <tt>SecurityDomain</tt> to which the applet belongs.</li>
+</ul>
+You can obtain the <tt>AppletInfo</tt>s from your SmartCard object using
+the <tt>AppletAccessCardService</tt>'s list method. <tt>AppletID</tt> is
+a subclass of <tt>ID</tt> and has been formely named as <tt>ApplicationID</tt>.
+In OCF 1.1.1, the <tt>AppletInfo</tt> has been named as <tt>ApplicationTemplate</tt>class.
+The <tt>ID</tt> class can be used as superclass for any other kind of identification
+(such as a GUID).
+<p>In the package opencard.opt.applet a very primitive CardService named
+<tt>BasicAppletCardService</tt>
+is introduced, which is only able to select a specific applet on a card.
+<p>The two Application and Card Management Card Service known from OCF
+1.1.1 are renamed in OCF 1.2 as <tt>AppletAccessCardService</tt> and <tt>AppletManagerCardService</tt>.
+Both are defined in the package <tt>opencard.opt.applet.mgmt</tt>. Their
+functionality has been changed slightly:
+<br>The <tt>AppletAccessCardService</tt> includes the methods
+<ul>
+<li>
+<tt>list()</tt>,</li>
+
+<li>
+<tt>exists()</tt> and</li>
+
+<li>
+<tt>getInfo()</tt>.</li>
+</ul>
+The <tt>AppletManagerCardService</tt> provides the methods
+<ul>
+<li>
+<tt>installApplet()</tt>,</li>
+
+<li>
+<tt>registerApplet()</tt> and</li>
+
+<li>
+<tt>removeApplet()</tt>.</li>
+</ul>
+Implementations of these Card Services will be added to OCF as soon as
+they will get available. They will be placed in specific domain sub-packages
+like <tt>opencard.opt.javacard.mgmt</tt> or <tt>opencard.opt.emv.mgmt</tt>
+instead of being placed in the same <tt>opencard.opt.mgmt</tt> package.
+<p>It is intended that the <tt>AppletInfo</tt> class can be extended and
+that new features/types of information can be added for specific domains
+(e.g. <tt>JavaCardAppletInfo</tt>, placed in the package <tt>opencard.opt.javacard.mgmt</tt>).
+<p>A new abstract class named <tt>AppletCode</tt> is introduced. This class
+models the actual code of a card applet to be installed in the card. It
+can be constructed either by specifying a file name that is supposed to
+contain the code, or giving all bytes of the code in parameter. This class
+is the generic type that is passed as parameter to an install method. As
+in the previous case, it is intended that subclasses can be defined, with
+new features and/or different ways of reading a file to get the actual
+applet code.
+<h4>
+<br>
+Internal and External Authentication</h4>
+In OCF version 1.1, the general assumption about access conditions that&nbsp;
+have to be satisfied is that an application should not have to worry about.
+The implementation of the <tt>FileAccessCardService</tt> for IBM's MFC
+smartcards, for example, deals with external authentication transparently,
+provided that the application passed appropriate credentials to the service
+before using it.
+<p>One drawback of this approach is that an application has no control
+about the access conditions that are satisfied. Internal authentication
+is not supported at all, since it is not an access condition enforced by
+the smartcard. The credentials that have been provided to a service are
+used at the service's discretion, and the application has little or no
+control of what the service does with them.
+<p>There may be applications that require more control of the security
+features as is provided in OCF 1.1.1. These applications should be given
+a way to perform external and internal authentication explicitly. Also,
+applications should be able to undo an achieved external authentication.
+By defining a card service for this purpose, applications can take control
+of the security features using this service. Applications that do not need
+this control may still rely on the transparent mechanism.
+<ul>
+<li>
+Key Referencing</li>
+
+<br>ISO 7816-4 specifies two commands for authentication, INTERNAL AUTHENTICATE
+and EXTERNAL AUTHENTICATE. The latter is used to satisfy access conditions
+that may be imposed by the smartcard, it therefore authenticates the external
+world to the card. The other one is the reverse operation, it authenticates
+the card to the external world.
+<br>In both cases, authentication is based on the knowledge of a secret.
+This can be either a secret key, using a symmetric cryptographic algorithm,
+or a private key in the case of an asymmetric algorithm. The authenticating
+party (challenger) has to know either the same secret key or the matching
+public key.
+<br>The party to be authenticated receives a random challenge, encrypts
+it with the secret and sends the result back to the challenger. The challenger
+uses the same key (in the case of a symmetric algorithm) or the matching
+public key (in the case of an asymmetric algorithm) to verify that the
+secret is know to it's partner.
+<br>For external authentication, the smartcard needs information about
+the key (secret or public) to be used for verifying the outside world's
+knowledge of the secret. For internal authentication, the smartcard needs
+information about the secret for which to prove the knowledge. In OCF 1.1
+CardService interfaces, only the CardServices in <tt>opencard.opt.signature</tt>
+explicitly reference keys, using interfaces defined in <tt>opencard.opt.security</tt>.
+The CardServices in <tt>opencard.opt.signature</tt> deal with asymmetric
+cryptography, and the key referencing interfaces cover only public and
+private keys. No provisions are made for referencing symmetric, secret
+keys.
+<br>For the sake of consistency, an interface for authentication should
+use a key referencing mechanism similar to that used in <tt>opencard.opt.signature</tt>.
+To allow for referencing secret keys, a new interface <tt>SecretKeyRef</tt>
+has to be introduced in <tt>opencard.opt.security</tt>. To allow the definition
+of a single interface for authentication, regardless of the symmetricity
+of the underlying cryptographic algorithm, a common base interface for
+all three kinds of keys has to be introduced, resulting in the following
+inheritance tree:
+<p><tt>&nbsp; KeyRef (new)</tt>
+<br><tt>&nbsp;&nbsp; |</tt>
+<br><tt>&nbsp;&nbsp; +--- PublicKeyRef (exists)</tt>
+<br><tt>&nbsp;&nbsp; |</tt>
+<br><tt>&nbsp;&nbsp; +--- PrivateKeyRef (exists)</tt>
+<br><tt>&nbsp;&nbsp; |</tt>
+<br><tt>&nbsp;&nbsp; +--- SecretKeyRef (new)</tt>
+<br>&nbsp;
+<p>This relationship can be duplicated in the default implementations of&nbsp;
+the interfaces, also provided by OCF 1.1 in <tt>opencard.opt.security</tt>.
+This requires introduction of new classes <tt>KeyFile</tt> and <tt>SecretKeyFile</tt>,
+as well as changes to the existing classes <tt>PublicKeyFile</tt> and <tt>PrivateKeyFile</tt>.
+These changes can be implemented in a compatible way.
+<br>&nbsp;
+<li>
+Interface Details</li>
+
+<br>For external authentication, a challenge has to be obtained from the
+card and sent back encrypted. The result is checked by the card. The secret
+can be easily encapsulated by the existing interface <tt>SignCredential</tt>
+in the package <tt>opencard.opt.security</tt>, although the descriptive
+comments have to be adapted to asymmetric algorithms, where the length
+of the random challenge does not have to match the block size of the key.
+In addition to the credential, a reference to the respective key on the
+smartcard has to be passed.
+<br>For internal authentication, a challenge has to be given to the smartcard.
+The encrypted challenge has to be checked, either in software or by using
+a Secure Access Module (SAM) or backend host system. The result of the
+internal authentication is a boolean value that specifies whether the card
+is in posession of the secret in question or not. Using a credential here
+is not appropriate, since the interpretation of the smartcard's response
+cannot be the responsibility of the CardService. Internal authentication
+is performed to verify that the smartcard can be trusted. The implementation
+of the CardService for internal authentication has been selected by OCF
+to match the inserted card, so it cannot yet be trusted either. The application
+has to be sure that the final, boolean result has not been forged by an
+entity associated with the yet untrusted card.
+<br>When passing a credential, the application would have to query from
+the credential whether the internal authentication was successful. This
+means that the credential is used as a callback mechanism by the CardService
+as well as directly by the application. This complex usage pattern neutralizes
+the ease of use achieved by credentials in other places.
+<br>Instead, this RFC proposes a lower level interface for internal authentication,
+where the random challenge is passed in as a byte array, and the encrypted
+response is returned as another byte array. The application may still use
+a credential for obtaining the challenge and verifying the response, but
+the role as a mediator between the SAM or backend and the card becomes
+more obvious.
+<br>There is the question of the length of the random challenge. For symmetric
+algorithms, the block size is usually 8 bytes. For asymmetric algorithms,
+challenges of various, larger sizes may be acceptable, since these algorithms
+use larger block sizes and the challenge will be padded to the appropriate
+length. Security can be improved by providing a challenge that is larger
+than 8 byte. A method to query the required length for the challenge is
+needed anyway, in case an algorithm does not accept an 8 byte challenge,
+or a SAM enforces a larger challenge. That method has to return the block
+size in the case of a symmetric algorithm, and should return the maximum
+allowed length of the challenge for an asymmetric one. In both cases, the
+application can be sure that the smartcard will be able to handle a challenge
+of the length returned by that method.
+<br>External authentication, like Card Holder Verification, is used to
+satisfy access conditions imposed by the smartcard. In consequence, an
+application will also want to reset these access conditions when it is
+finished. The respective method will have to reset external authentications,
+but may as well reset Card Holder Verifications and other access conditions.
+Since it will typically be called by an application when the smartcard
+is no longer needed, this behavior will not cause problems. However, the
+name of the method should not mention authentication or keys, to avoid
+confusion with&nbsp; the application programmers, and to avoid implementations
+of the same functionality under different names with CardService implementors.</ul>
+
+<h4>
+<a NAME="CHV"></a><br>
+Card Holder Verification</h4>
+In OCF version 1.1, the general assumption about access conditions that
+have to be satisfied is that an application should not have to worry about.
+The implementation of the FileAccessCardService for IBM's MFC smartcards,
+for example, deals with Card Holder Verification without any involvement
+of the applications using it.
+<br>One drawback of this approach is that an application has no control
+about which Card Holder Verifications are performed at what time. For example,
+it is generally not possible to check whether the user has already been
+prompted for a password. Also, it is not possible to simply enforce card
+holder verification at application startup, or to reset the card holder
+verification when the application is done with the card. There may be applications
+that require more control of the Card Holder Verification as is currently
+provided. These applications should be given a way to perform card holder
+verification explicitly. Also, applications should be able to undo a successful
+card holder verification.
+<br>By defining a card service for this purpose, applications can take
+control of the card holder verification. Applications that do not need
+this control may still rely on the transparent mechanism, as long as the
+CardService to be used supports it.
+<br>The transparent mechanism for Card Holder Verification may still be
+useful. However, it's use is severly restricted by the definition of the
+interface <tt>opencard.core.service.CHVDialog</tt>, which returns a String
+holding the password or PIN. The card channel that evaluates this String
+can only apply a default conversion and paste the resulting byte array
+into a prepared command APDU. This is appropriate only for alphanumeric
+passwords in the locale of the Java environment in which the OpenCard Framework
+is running. It also assumes that the password has to be presented in plain
+format, not with secure messaging.
+<br>Performing Card Holder Verification is a complex task with multiple
+dependencies. Requesting the password from the card holder depends on the
+hardware that is available. For example, a screen dialog may be popped
+up, or an attached card reader's display and pinpad can be used. The command
+or commands to verify the password depend on the card OS. Length, encoding,
+padding, and the range of valid characters depend on the application and
+on the card layout. When specifying a CardService for Card Holder Verification,
+it has to be decided which of these dependencies shall be handled by the
+CardService, and which will have to be dealt with by the applications.
+There is no one, perfect solution to this problem.
+<p>Specifying a CardService at this level of abstraction does not rule
+outthe specification of other CardServices, performing the same task at
+a higher level of abstraction. There may still be CardServices for Card
+Holder Verification that do convert a string presented by an application
+to an encoding appropriate for the card.
+<p>A CardService for Card Holder Verification obviously needs a method
+that performs Card Holder Verification with the smartcard. Typical file
+system based SmartCards, like the German GeldKarte, support different passwords
+for subtrees of the file system, and also multiple passwords within the
+same subtree. On JavaCards, each applet may specify it's own set of passwords,
+too. Parameters to the verification method have to indicate the subtree
+or applet as well as the password within that subtree.
+<br>To specify the subtree on a file system card or the applet on a JavaCard,
+the tag interface <tt>opencard.opt.security.SecurityDomain</tt> can be
+used. It is implemented by class <tt>opencard.opt.iso.fs.CardFilePath</tt>,
+and may in the future be implemented by classes that identify security
+domains in other cards.
+<br>To specify the password within a security domain, a simple integer
+should be sufficient. The GeldKarte, already mentioned above as an example,
+supports passwords 0 and 1, IBM's MFC smartcards passwords 1 and 2, Gemplus'
+GPK cards passwords 0 to 7. Although all these are file system based cards,
+it seems likely that an integer allows to distinguish the passwords on
+other cards, too.
+<br>The third argument to the password verification method is the password
+itself. It should be passed as a byte array, giving the application full
+control of the encoding of the password. To use a protected PIN path, in
+which the application does not get to know the password at all, null can
+be passed instead. In this case, it is the service's responsibility to
+query the password, to encode it, and to prepare an appropriate APDU to
+send to the smartcard. If the terminal supports it, this responsibility
+may be delegated to it. Using a protected PIN path prevents the application
+from specifying an encoding for the password, but that problem is inherent
+in the concept of a protected PIN path. If the password has to be presented
+to the card using secure messaging, it is the service's responsibility
+to perform the required cryptographic operations. The return value for
+performing Card Holder Verification is a boolean that indicates whether
+the password was correct or not. Since the return value is generated by
+the CardService, it can only be trusted if the CardService is trusted.
+<br>Passing the password as a byte array leaves the question of the length
+of the byte array. File system based, ISO 7816-4 compliant smartcards have
+a password length of 8 byte. However, considering JavaCard and the flexibility
+of applets, other password lengths may also occur. To allow the application
+to prepare a byte array of appropriate length, there should be a method
+to query the required length. For ISO cards, this method can simply be
+implemented to return a constant 8, causing minimal overhead.
+<br>Other properties of the password, for example the encoding and padding
+rules, can be rather complex and may depend on application data that is
+not accessible to the CardService.
+<br>If the application is able to perform Card Holder Verification explicitly,
+thereby satisfying access conditions for data on the card, it should also
+be able to reset those access conditions. On file system based smartcards,
+this can typically be done by a SELECT operation that leaves the directory
+on the smartcard. Even if this is not possible, a reset of the smartcard
+can clear access conditions. Either way, all access conditions for the
+respective subtree of the file system or, in general, the security domain,
+are invalidated at once. The method does therefore not require a password
+number as an argument, the security domain is sufficient.
+<ul>
+<li>
+Change in Interface <tt>opencard.core.service.CHVDialog</tt></li>
+
+<br>OpenCard Framework implements features for a protected PIN path, in
+which neither the terminal or host application nor the CardService get
+to know the PIN. If a CardTerminal implements this feature, that implementation
+is used. Otherwise, a default replacement in <tt>opencard.core.service</tt>
+gets invoked. The default replacement uses a GUI dialog to query for the
+password, then converts the string to a byte array, and pastes it into
+an APDU that has been prepared by a CardService. The GUI dialog can be
+replaced by the application, which may be used to inform the user of the
+security domain for which the password is required.
+<br>There are several steps in processing a PIN. The string entered by
+the user must be encoded into a byte array, padded to the appropriate length,
+packed into a command APDU and finally sent to the card, which may involve
+secure messaging. In the default implementation, the encoding is done in
+a predefined way in opencard.core.service, the padding is implicitly done
+by the CardService that prepares the APDU, and secure messaging is not
+supported at all. The flexibility of this approach can be considerably
+enhanced by encoding the PIN within the GUI dialog and returning a byte
+array instead of the string. The default GUI can be implemented to achieve
+the same behavior as before, but the applications would be free to implement
+replacement GUIs that use other kinds of encoding, for example BCD. The
+fact that the application thereby gets access to the PIN that is entered
+does not weaken the security, since the currently supported application-defined
+GUIs can do the same.
+<br>While the responsibility for encoding and padding are transferred to
+the application by this change, secure messaging is still not supported.
+There is no need to overload the OpenCard Framework with support for features
+that are rarely used.
+<br>To implement this change, the method defined in interface CHVDialog
+was changed from
+<p><tt>public String getCHV(int chvNumber);</tt>
+<p>to
+<p><tt>public byte[] getPassword(int chvNumber, int length);</tt></ul>
+
+<h4>
+<a NAME="JC Support"></a><br>
+Java Card/Multi Application Card support</h4>
+OpenCard Framework 1.1 only defined interfaces and access methods for file
+system oriented cards. The only support for JavaCards in OCF1.1 was an
+interface named JavaCardCardService in the package opencard.opt.javacard.
+This interface only declared a method that sends a given APDU to a given
+applet.
+<p>OCF 1.2 offers classes that provide basic functions like sending a particular
+APDU to a particular applet on the card. Furthermore, they support the
+programmer of proxy classes for applets in applet state handling. The same
+classes may also be used for multi application cards that allow application
+selection by application identifier.Therefore, in this section we use the
+term "applet" in a generic sense, for referring to JavaCard applets as
+well as applications on multi application cards.
+<p>The following classes and interfaces are added to the package <tt>opencard.opt.applet</tt>:
+<ul>
+<li>
+<tt>BasicAppletCardService</tt> - This class implements the basic functionality
+needed to communicate with applets. It provides send-methods in three versions:
+The first sends a given command APDU to a given applet on the card, the
+second sends a given command APDU to a given applet on the card using a
+preallocated card channel provided by the calling method of the derived
+class, and the third sends a verify CHV command APDU to the card after
+filling in the password obtained from the CHV dialog associated with the
+<tt>BasicAppletCardService.</tt></li>
+
+<li>
+<tt>CardState</tt> - This class represents the state of the JavaCard or
+Multi Application Card, i.e. the currently selected applet. The state information
+allows the <tt>BasicAppletCardService</tt> to send select-APDUs only when
+necessary, i.e. only when an APDU shall be sent to an applet other than
+the currently selected applet.</li>
+
+<li>
+<tt>AppletProxy</tt> - This class is derived from the class <tt>BasicAppletCardService</tt>.
+It adds an attribute that holds the application identifier of the applet
+to which the applet proxy is associated. It provides methods similar to
+those of the base class, but does not require the application identifier
+parameter because every <tt>AppletProxy</tt> implicitly knows the application
+identifier of the associated applet.</li>
+
+<li>
+<tt>AppletState</tt> - This class is an abstract base class from which
+concrete implementations for particular applets can be derived. It declares
+an abstract method named <tt>appletDeselected()</tt> that can be called
+from the <tt>BasicAppletCardService</tt> when selecting another applet.
+The purpose of this method is to reset parts of the state that become invalid
+as a result of applet deselection.</li>
+
+<li>
+<font face="Courier New,Courier">AppletSelector</font> - This is an interface
+that defines a method that selects an applet with a given name.</li>
+
+<li>
+<font face="Courier New,Courier">ISOAppletSelector</font> - This class
+that implements the <font face="Courier New,Courier">AppletSelector</font>
+interface for ISO compliant cards and is used by the <font face="Courier New,Courier">BasicAppletCardService</font>
+as a default.</li>
+
+<br>&nbsp;</ul>
+
+<h4>
+<a NAME="Terminal Locking"></a><br>
+Terminal Locking</h4>
+OCF 1.1 provides no means for locking a terminal or individual slots. These
+features are added to OCF 1.2 without changing the basic design of OCF
+and without breaking any existing code. Entire CardTerminal objects as
+well as individual slots can be locked and unlocked. Consistent behavior
+of the card service layer is assured. The right to use a locked terminal
+is bound to the thread that has locked the terminal
+<p>The Terminal Locking mechanism is based on four requirements we see
+for a card terminal and slot locking mechanism:
+<ul>
+<li>
+When no locking is required, the behavior of OCF shall be unchanged. OCF
+Programs that need no locking shall run without change.</li>
+
+<li>
+When a card terminal or slot is locked, only the owner of the lock shall
+be able to use the terminal or slot.</li>
+
+<li>
+The service layer must respect the locking mechanism, i.e.when a slot is
+locked, SmartCard objects may only be created for the owner of the lock.</li>
+
+<li>
+The locking methods should not be a mandatory part of the CardTerminal
+interface, but form a separate, optional interface to be implemented by
+lockable card terminals.</li>
+</ul>
+We expect this interface to be implemented by CardTerminal implementations
+for use with PCs, NCs etc, where we have multi-application/multi-thread
+scenarios. The locking interface will probably not be implemented by CardTerminals
+implementations to be used on dedicated, single-application devices.
+<ul>
+<li>
+API Modifications</li>
+
+<br>The OpenCard API has been augmented as follows:
+<p><u>Additional Interface:</u> <tt>opencard.opt.terminal.Lockable</tt>
+<p><tt>public java.lang.Thread lock() throws CardTerminalException</tt>
+<br>Locks the entire card terminal, including all slots as well as pin
+pad and display if available, returns a reference to the new lock owner
+on success, else throws a TerminalLockedException.
+<br>Alternative: <tt>public boolean lock()</tt>
+<br>Returns true if successfull, false if already locked
+<p><tt>public java.lang.Thread lockSlot(int) throws CardTerminalException</tt>
+<br>Locks the slot with the given slot number, returns a reference to the
+new slot owner on success, else throws a <tt>TerminalLockedException</tt>.
+<p><tt>public void unlockSlot(int) throws CardTerminalException</tt>
+<br>Unlocks the slot with the given slot number.
+<p><tt>public void unlock() throws CardTerminalException</tt>
+<br>Unlocks the entire card terminal, including all slots as well as pin
+pad and display if available.
+<p><u>Additional method</u> for the class <tt>SlotChannel</tt>:
+<p><tt>public Object getSlotOwner()</tt>
+<br>Gets the current slot owner of the associated slot. Required by the
+<tt>CardServiceRegistry</tt>
+to determine whether a given thread may obtain a <tt>SmartCard</tt> object
+for the card in the associated slot or not. The type of the slot owner
+is Object instead of Thread to avoid a dependence of the <tt>opencard.core.terminal</tt>
+package on threads.
+<p>Additional exception: <tt>opencard.opt.terminal.TerminalLockedException
+extends opencard.core.terminal.CardTerminalException</tt>
+<p><u>Change constructor of SlotChannel</u>:
+<p>in addition to <tt>public SlotChannel(CardTerminal terminal, int slotID)</tt>
+<p><tt>SlotChannel(CardTerminal terminal, int slotID, Object slotLockOwner)</tt>
+<br>&nbsp;
+<li>
+Implementation</li>
+
+<br>A thread can call <tt>CardTerminal.lock()</tt> to lock a card terminal
+and all of its slots and <tt>CardTerminal.unlock()</tt> to return ownership
+of the lock. The <tt>lock()</tt> method can only be called successfully
+when the card terminal has no slot channels open and no other thread has
+locked a slot. The <tt>lock()</tt> call also prevents other threads from
+using the pin pad and display of the card terminal and from sending terminal
+commands.
+<br>A thread can call <tt>CardTerminal.lockSlot()</tt> to lock a particular
+slot and <tt>CardTerminal.unlockSlot()</tt> to return ownership of the
+lock. The <tt>lockSlot()</tt> method can only be called successfully when
+there is no open <tt>SlotChannel</tt> for the slot to be locked.
+<br>The <tt>CardTerminal</tt> class has a reference to the thread that
+currently has the lock (<tt>lockOwner</tt>). If this reference is not null,
+it is locked. If the reference <tt>lockOwner</tt> is null, the terminal
+is free.
+<br>In addition, for each slot number, the <tt>CardTerminal</tt> holds
+a reference to the thread that currently owns the terminal's slot. If the
+reference is not null, slot i is locked. If the reference is null, the
+slot is free.
+<br><tt>CardTerminal</tt> objects give out <tt>SlotChannels</tt> to arbitrary
+threads only if lockOwner is null and the relevant <tt>slotOwner</tt> entry
+is null. While these references refer to a thread, <tt>SlotChannels</tt>
+are only given to that thread.
+<br>Note that this does not prevent a lock owner from deliberately or accidentially
+passing the <tt>SlotChannel</tt> reference to another thread.
+<br>The <tt>SlotChannel</tt> class has <tt>slotOwner</tt> reference that
+identifies the owner. This reference is set at creation of a <tt>SlotChannel</tt>
+object and does not change within its lifetime. The reference <tt>slotOwner</tt>
+is null if the associated slot has not been locked or refers to the owner
+if the associated slot has been locked.
+<br>When the CardTerminal's <tt>unlock()</tt> method is called, all open
+<tt>SlotChannels</tt>
+are closed.
+<br>The <tt>CardServiceRegistry</tt> singleton returns a <tt>SmartCard</tt>
+object for a smart card in a slot associated with a particular <tt>SlotChannel</tt>
+to arbitrary threads only if the <tt>slotOwner</tt> reference of the associated
+<tt>SlotChannel</tt>
+object is null. If there is a lock owner, the <tt>CardServiceRegistry</tt>
+creates <tt>SmartCard</tt> objects only for the lock owner. Thus, only
+the thread that called <tt>CardTerminal.lock()</tt> can obtain a <tt>SmartCard</tt>
+object for a card in a locked reader.
+<br>If a multithreaded application needs access to a locked terminal from
+multiple threads the <tt>SmartCard</tt> object can be passed from the thread
+that has locked the terminal to the other threads. Thus the <tt>SmartCard</tt>
+object plays the role of a gate object at the card service layer as the
+<tt>SlotChannel</tt>
+plays the role of the gate object at the card terminal layer
+<br>The OCF 1.1 implementation of <tt>SmartCard.waitForCard()</tt> used&nbsp;
+the <tt>CardWaiter</tt> to wait for a card. The <tt>CardWaiter</tt> is
+a <tt>CardTerminal</tt> event listener which creates a <tt>SmartCard</tt>
+instance in the <tt>CardTerminalRegistry</tt> polling thread. Since the
+polling thread is not allowed to allocate a <tt>SlotChannel</tt> on a locked
+terminal this code has been changed as follows:
+<br>When a card inserted event is received by the card waiter it must notify
+the waiting thread and the waiting thread must then try to obtain the <tt>SmartCard</tt>
+object. If the card inserted does not match the card request the <tt>CardWaiter</tt>
+must then continue to wait for card insertion events. Thus the call to
+allocate the <tt>SlotChannel</tt> is moved from the polling thread to the
+thread actually waiting for the card, which has the right to access the
+locked terminal.
+<br>&nbsp;
+<li>
+Convenience class <tt>AbstractLockableTerminal</tt></li>
+
+<br>The implementation details described above are security sensitive.
+To avoid that each card terminal implementor has to deal with the complexity
+of security implications a new class <tt>opencard.opt.AbstractLockableTerminal</tt>
+is introduced which handles most of the locking specific processing.
+<p>Implementers of lockable Terminals would then subclass <tt>AbstractLockableTerminal</tt>
+and implement the methods
+<ul>
+<li>
+<tt>internalLock(), internalLockSlot(slotid) internalUnlock(), internalUnlockSlot(slotid)</tt></li>
+
+<li>
+<tt>lockableOpenSlotChannel() instead of internalOpenSlotChannel</tt></li>
+
+<br>&nbsp;</ul>
+</ul>
+
+<h4>
+<a NAME="API Streamlining"></a><br>
+API Streamlining</h4>
+The changes for the API Steamlining bring a number of minor changes to
+the OpenCard Framework which are meant to make the API simpler, and implementations
+smaller.
+<ul>
+<li>
+Removal of Deprecated Features:</li>
+
+<br>A number of features are already deprecated in OCF 1.1.1. Some of these
+are removed for OCF 1.2. Here is a list of the deprecated features:
+<p><tt>opencard.core.event.CardTerminalEvent</tt>:
+<br>Supports events that indicate addition and removal of card terminals.
+This was required in OCF in pre-1.0 releases, when listener for card terminal
+events were registered directly at all card terminals. The listeners had
+to be aware of the fact that a new card terminal was added, so they could
+register for the new terminal's events. In the meantime, listeners for
+card terminal events, that is for events that indicate card insertion or
+removal, are tracked in the card terminal registry. Events are no longer
+broadcasted directly by the card terminals, but given to the card terminal
+registry, which distributes them to the registered listeners. A listener
+will now get the events from newly added card terminals automatically.
+The events that indicate changes in the set of card terminals are therefore
+obsolete and should be moved. The <tt>CardTerminalEvent</tt> class contains
+some more deprecated methods that are related to the the int/Slot duality
+addressed below. These methods can not be removed, but must be un-deprecated
+instead.
+<p><tt>opencard.core.event.CTRListener</tt>
+<br>Interface for listeners to events that indicate added or removed card
+terminals. As pointed out before, the events for added and removed card
+terminals are obsolete.
+<p><tt>opencard.core.terminal.CardTerminal</tt>
+<br>Contains methods for adding and removing listeners at the terminal.
+The events listened to indicate card insertion and removal. As pointed
+out before, these events are now distributed via the card terminal registry,
+and filtering for events from particular card terminals is easy. Direct
+registering at a card terminal is therefore obsolete, the respective methods
+are removed.
+<p><tt>opencard.core.terminal.CardTerminalRegistry</tt>
+<br>Contains methods for broadcasting events that indicate added and removed
+card terminals, and for registering listeners to these events. As pointed
+out before, this feature is obsolete and the respective methods are removed.
+<p><tt>opencard.core.service.SmartCard</tt>
+<br>Contains methods for registering listeners to events that indicate
+card insertion and removal. These are convenience methods that are identical
+to the respective ones in the card terminal registry. They are removed.
+<p><tt>opencard.opt.signature.SignatureCardService</tt>
+<br>Contains the methods from the anachronistic version of this interface.
+Every implementor of the <tt>SignatureCardService</tt> currently has to
+implement these methods as dummies that throw an exception. They are also
+removed.
+<br>&nbsp;
+<li>
+Removal of Dual APIs</li>
+
+<br>In the packages <tt>opencard.core.terminal</tt> and <tt>opencard.core.event</tt>,
+there is a duality in the usage of int values and Slot objects, respectively,
+to identify a card terminal's slots. In implementations of card terminals,
+only int values are used. Slot objects are mapped to int values in the
+base class. This duality is an anachronistic feature left over from pre-1.0
+versions of OCF. Originally, the Slot class provided features for example
+to communicate with that card. All these features have been moved to the
+class <tt>SlotChannel</tt>, leaving the Slot class basically meaningless.
+Apart from the internal operation of the OCF core, it is used only in events
+that indicate card insertion and removal to specify the source of the event.
+Replacing the Slot objects in these events by an int value is simple, since
+the card terminal for which the slot number is valid is stored explicitly
+in the event, anyway. The class <tt>opencard.core.terminal.Slot</tt> is
+deprecated, and removed in a future release of OCF. Likewise, all methods
+that relate to Slot objects, especially in the class <tt>opencard.core.terminal</tt>.CardTerminal,
+are deprecated and later on removed, since the dual methods using int values
+can be used instead. The class <tt>opencard.core.event.CardTerminalEvent</tt>
+is extended by a method that returns the originating slot as an int value,
+and the methods and constructors referring to Slot objects are deprecated.
+Any other methods that relate to Slot objects in OCF are deprecated. If
+required, methods that accept int values can be added as replacements.</ul>
+
+<ul>
+<li>
+Removal of Convenience Methods</li>
+
+<br><tt>opencard.core.service.SmartCard.getSmartCard(CardTerminalEvent)</tt>
+<br>This method is obsolete. There is a method with the same name, taking
+a <tt>CardTerminalEvent</tt> and a <tt>CardRequest</tt> argument. Invoking
+that method with null for the <tt>CardRequest</tt> results in the same
+behavior as invoking the single-argument method. This method therefore
+is deprecated, and removed in a future OCF release.
+<p><tt>opencard.core.service.CardRequest</tt>
+<br>This class is basically a collection of attributes, which can be used
+to specify a filter for cards an application is interested in. Besides
+these attributes, it offers an overwhelming number of constructors that
+accept various subsets of the attributes as parameters, and set/get methods
+for the attributes. Interestingly, the constructor that would have been
+used most often in IBM code samples (package <tt>demos.samples</tt>), that
+is one that takes NEWCARD/ANYCARD as it's single argument, is not available
+since it's method signature would be the same as the one taking a timeout
+argument.
+<br>Most of the currently provided constructors and setXXX-methods are
+deprecated. Instead, only the following new constructor and setXXX-methods
+are provided:
+<ul>
+<li>
+constructor with wait behavior (NEWCARD or ANYCARD), a CardTerminal, and
+a CardService as arguments. For the terminal and service arguments, null
+can be passed as a "don't care" value.</li>
+
+<li>
+setTimeout, which allows to disable timeout handling without defining a
+magic number for this purpose</li>
+
+<li>
+setFilter, since filtering is a rarely used feature that should not be
+reflected as a required argument of the only remaining constructor</li>
+</ul>
+</ul>
+
+<ul>
+<li>
+Removal of Obsolete Features</li>
+
+<br>The class <tt>opencard.core.service</tt>.<tt>CardServiceScheduler</tt>
+supports customized card channels, that can be provided by a card service
+factory. This feature was probably used only by the IBM MFC card services
+and is obsolete, since the problems solved with it can now be solved using
+the default card channel's setState/getState methods. The support for customized
+card channels in the scheduler, that is methods <tt>setCustomChannel</tt>,
+<tt>useDefaultChannel</tt>,
+and <tt>isCustomized</tt> should be deprecated and removed in a future
+release of OCF.
+<p>The class <tt>opencard.core.terminal.CardTerminal </tt>defines an abstract
+method named <tt>internalFeatures</tt>. In most implementations, this method
+just returns it's argument. Instead of requiring every card terminal implementation
+to define this method empty, this should be the default implementation
+in the base class. Card terminals that specify internal features can still
+override the methods, others can ignore it.</ul>
+
+<ul>
+<li>
+Removal of Unimplemented Features</li>
+
+<br>The class <tt>opencard.core.terminal.CardTerminal</tt> provides several
+methods that take a timeout as an argument, either required or optional.
+Timeout handling, however, has never been implemented in a satisfactory
+way. Actually, PC/SC does not provide means to change timeout values, so
+the PC/SC wrapper terminal implementation has no chance to implement timeout
+handling. In consequence, timeouts should be removed from the terminal
+layer API. The API of the service layer is not affected by this change,
+since it does not support terminal layer timeouts. In the terminal layer,
+the classes <tt>Slot</tt>, <tt>SlotChannel</tt>, <tt>CardTerminal</tt>,
+and the interface <tt>VerifiedAPDUInterface</tt> are affected. In the classes
+<tt>Slot</tt>
+and <tt>SlotChannel</tt>, the methods <tt>getCardID</tt> and <tt>sendAPDU</tt>
+with timeout argument are simply deprecated. In <tt>VerifiedAPDUInterface</tt>,
+the method <tt>sendVerifiedAPDU</tt> with timeout argument is deprecated,
+and a default implementation calling the method without timeout is added
+to class <tt>CardTerminal</tt>, so implementing that interface does not
+require to implement a deprecated method. In class <tt>CardTerminal</tt>,
+the following methods are affected:</ul>
+
+<center><table BORDER COLS=4 WIDTH="72%" >
+<tr>
+<td>Method</td>
+
+<td>abstract</td>
+
+<td>with timeout</td>
+
+<td>w/o timeout</td>
+</tr>
+
+<tr>
+<td><tt>getCardID</tt></td>
+
+<td>yes</td>
+
+<td>yes</td>
+
+<td>yes</td>
+</tr>
+
+<tr>
+<td><tt>internalReset</tt></td>
+
+<td>yes</td>
+
+<td>yes</td>
+
+<td>no</td>
+</tr>
+
+<tr>
+<td><tt>internalSendAPDU</tt></td>
+
+<td>yes</td>
+
+<td>yes</td>
+
+<td>no</td>
+</tr>
+
+<tr>
+<td><tt>reset</tt></td>
+
+<td>no</td>
+
+<td>yes</td>
+
+<td>no</td>
+</tr>
+</table></center>
+
+<blockquote>Of these methods, only <tt>getCardID</tt> and <tt>reset</tt>
+are publicly visible. To minimize the changes for existing card terminal
+implementations, the following changes are made:
+<ul>
+<ul>
+<li>
+<tt>getCardID</tt> with timeout argument was deprecated, and a default
+implementation that invokes <tt>getCardID</tt> without timeout was provided.
+The default implementation is required so that new card terminal implementations
+need not define a deprecated method.</li>
+
+<li>
+the <tt>reset</tt> method with timeout argument was deprecated. A <tt>reset</tt>
+method without timeout argument was provided instead.</li>
+</ul>
+</ul>
+That way, the API to be implemented by new terminals is a subset of the
+API that currently has to be implemented. Existing card terminal implementations
+can still be used, provided they are able to deal with the default timeout
+values that are substituted for the actual arguments. By deprecating the
+timeout features of the public terminal API, application programmers are
+aware of the fact that timeouts are not supported. The deprecated methods
+will be removed in a future release of OCF.
+<br>&nbsp;
+<li>
+Changes for Reduced Package Dependencies</li>
+
+<br>In OCF1.1.1, the packages <tt>opencard.core.terminal</tt> and <tt>opencard.core.event</tt>
+are recursively dependent on each other. The classes in the terminal package
+deal with event handling, and therefore depend on the event package. On
+the other hand, the class <tt>CardTerminalEvent</tt> in the event package
+stores the event source, that is a reference to a card terminal, and therefore
+depends on the terminal package. As the name suggests, the package <tt>opencard.core.event</tt>
+should deal with events in OpenCard. To achieve this, a variety of changes
+are required. All changes are made in a way such that current implementations
+of card terminals can still be used with deprecated methods. The recursive
+dependency between the packages, however, will remain until the deprecated
+methods are removed in a future release of OCF.</blockquote>
+
+<ul>The primary action to move the event handling to the event package
+was to introduce a class <tt>opencard.core.event.EventGenerator</tt> which
+takes the following responsibilities from the <tt>CardTerminalRegistry</tt>:
+<ul>
+<li>
+track the pollable terminals</li>
+
+<li>
+define the polling thread</li>
+
+<li>
+generate the detected events</li>
+
+<li>
+track the event listeners</li>
+
+<li>
+distribute the generated events</li>
+</ul>
+As a result, a listener for card terminal events must be registered at
+the new <tt>EventGenerator</tt>, not at the <tt>CardTerminalRegistry</tt>.
+This can be hidden by deprecating the respective methods in the registry
+and redirecting them to the event generator. To avoid changing existing
+card terminals or card terminal factories, there was a need to invoke the
+<tt>EventGenerator</tt>
+from the <tt>CardTerminalRegistry</tt>. Unlike with registering event listeners,
+this feature is not deprecated, so the invocation cannot be direct. Instead,
+an interface Observer is defined in <tt>opencard.core.terminal</tt>, which
+defines the two invocations required:
+<ul>
+<li>
+<tt>updateCards(terminal, slot, inout)</tt></li>
+
+<br>Invoked when a card is inserted or removed. The terminal and slot argu
+ments specify the event source, the inout boolean value indicates insertion
+or removal.
+<li>
+<tt>updateTerminals(terminal, addrem)</tt></li>
+
+<br>Invoked when a card terminal is added or removed. The terminal argument
+indicates the terminal affected, the addrem boolean value indicates that
+the terminal has been added or removed, respectively. Unfortunately, it
+is not possible to deal with event listeners in the same way. The interface
+<tt>CTListener</tt>
+is defined in the event package, so all references to it was removed from
+the terminal package.</ul>
+The interface <tt>opencard.core.terminal.Observer</tt> is implemented by
+the class <tt>opencard.core.event.EventGenerator</tt>. The <tt>CardTerminalRegistry</tt>
+is extended by a method to install an instance of <tt>Observer</tt>. This
+method will be invoked by the <tt>EventGenerator</tt> on initialization.
+<br>&nbsp;
+<li>
+Changes to the Behavior</li>
+
+<br>The class <tt>opencard.core.service.CardServiceScheduler</tt> implemented
+it's own queueing mechanism, which required two inner classes for a queue
+and it's elements. By relying on the respective JVM's queueing mechanism,
+which is accessible through the methods <tt>java.lang.Object</tt>.{wait|notify},
+the complexity and size of <tt>CardServiceScheduler</tt> is dramatically
+reduced.
+<br>&nbsp;
+<li>
+Extension for Versioning</li>
+
+<br>It has been discussed several times to have an OCF feature to obtain
+version information. Since Java 2, with it's builtin versioning via the
+class <tt>java.lang.Package</tt>, does not seem to gain acceptance as fast
+as expected, it seemed still reasonable to introduce a simple version information
+in OCF. In the class <tt>opencard.core.service.SmartCard</tt>, the method
+<tt>public
+static String getVersion()</tt> was introduced. It returns a string of
+the form "OCF1.2;IBM Reference Implementation, Build Hudson, 21-May-1999".
+The first part indicates the API. It always starts with "OCF", followed
+by an API version number, and terminates by a semicolon. Currently, this
+API version number is simply the OCF release number. When a formal OCF
+specification becomes available, it would refer to the version of that
+specification it implements. After the semicolon, vendor specific information
+is included. The format of the vendor specific information is not specified.</ul>
+
+<h4>
+<a NAME="Bug Fixes"></a><br>
+Bug Fixes</h4>
+
+<ul>
+<li>
+New <tt>CardID</tt> constructor:</li>
+
+<br>The <tt>CardID</tt> constructor so far assumed that the TCK byte in
+the ATR was always present. The last byte is not a historical byte, but
+the check character TCK as defined in ISO 7816-3 6.4 and 6.4.3.
+<p>"The value of TCK shall be such that the exclusive-oring of all bytes
+from T0 to TCK included is null"
+<br>...
+<br>"If only T=0 is indicated, TCK shall not be sent. In all other cases,
+TCK shall be sent".
+<p><tt>opencard.core.CardID</tt> did not correctly respect this. It always
+assumed the presence of byte TCK. The right way to do this is to parse
+the ATR from the beginning (counting which interface characters are present)
+instead of counting from the back end.</ul>
+
+<ul>
+<li>
+Problem in <tt>CardHolderVerificationGui</tt></li>
+
+<br>We removed the following variable which was never used
+<p><tt>private static String BACKGROUND = System.getProperty(OpenCardConstants.OPENCARD_PROPERTY
++ "UserInteraction.image", "ZueriLab.gif");</tt>
+<p>and did not work correctly in native browser support.</ul>
+
+<ul>
+<li>
+Additional constructor in <tt>RSAPrivateKey</tt></li>
+
+<br><tt>opencard.opt.security.RSAPrivateKey </tt>only had a constructor
+from byte arrays but not from <tt>java.math.BigInteger</tt> which was inconvenient
+in many cases.
+<p>The following constructor was added:
+<br><tt>public RSAPrivateKey(BigInteger e, BigInteger m)</tt></ul>
+
+<ul>
+<li>
+Bug fix in constructor of <tt>opencard.opt.security.DESKey</tt>:</li>
+
+<br>The <tt>DESKey</tt> constructor did not copy the byte array passed
+as argument. If the caller changed/reused her byte array the <tt>DESKey</tt>
+got affected.
+<p><a NAME="BugFix_CS"></a>
+<li>
+Typo in <tt>OCF11CardServiceFactory</tt>:</li>
+
+<br>We had a bug in <tt>opencard.opt.service.OCF11CardServiceFactory</tt>.
+We changed the class definition FROM
+<p><tt>public abstract class OCF11CardServiceFactory extends CardServiceFactory
+{</tt>
+<br><tt>private Tracer ctracer = new Tracer(CardServiceFactory.class);</tt>
+<p>TO
+<p><tt>public abstract class OCF11CardServiceFactory extends CardServiceFactory
+{</tt>
+<br><tt>private Tracer ctracer = new Tracer(OCF11CardServiceFactory.class);</tt>
+<p><a NAME="BugFix_CT"></a>
+<li>
+Bug with long APDUs in <tt>opencard.opt.terminal.protocol</tt>:</li>
+
+<br>The <tt>opencard.opt.terminal.protocol.T1Block</tt> class had a LEN
+field of type byte. This lead to the problem that response APDUs of longer
+than 127 bytes caused a timeout exception because the LEN field had a numeric
+overflow and got negative.</ul>
+
+<h4>
+<a NAME="OCF for embedded"></a><br>
+OCF for Embedded Devices</h4>
+OCF for embedded devices defines a subset of OCF that is suitable for embedded
+devices with only one card reader, potentially with several slots. This
+subset is implementable on&nbsp; Embedded Java Virtual Machines efficiently
+and with small footprint.
+<p>OCF for embedded devices has the following properties:
+<ul>
+<li>
+As compatibile with OCF as possible - Meanwhile, there are several standards
+and standard proposals that refer to OCF and assume stability of OCF. When
+additions are made to the OCF API which are also advantageous for OCF for
+embedded devices, these additions may also be made to OCF for embedded
+devices.</li>
+
+<br>&nbsp;
+<li>
+No redundant APIs - In OCF, there are redundant APIs: Many methods are
+available in several versions with different parameter lists. On embedded
+devices, small footprint is more important than convenience. Therefore,
+OCF for Embedded Devices defines an API that provides no convenience methods,
+there is always exactly one method to handle a particular task.</li>
+
+<br>&nbsp;
+<li>
+CardTerminalRegistry: When running on PCs, OCF must potentially handle
+several readers. Embedded devices have only one reader, potentially with
+several slots. Therefore, OCF for Embedded uses a CardTerminal singleton
+representing the single card reader, so that no CardTerminalRegistry is
+needed for that purpose. The event handling functionality of CardTerminalRegistry
+is moved to a new class opencard.core.event.EventGenerator.</li>
+
+<br>&nbsp;
+<li>
+The CardTerminalRegistry is moved to the event package in OCF for embedded
+devices, since after the removal of the registration function, it is only
+an event generator and multicaster. This makes the terminal layer independent
+from the event layer. Renaming from "CardTerminalRegistry" to "EventGenerator"
+makes the semantic of the class clearer and avoids confusion with the still
+existing CardTerminalRegistry in OCF 1.x.</li>
+
+<br>&nbsp;
+<li>
+No Slot class: In the terminal layer of OCF there is a duality between
+Slot objects and integers. At the end, each method that takes a Slot object
+gets the slot number from the Slot object and calls the appropriate method
+which takes an integer argument instead of a Slot object. OCF for Embedded
+avoids the integer/Slot duality in OCF for embedded devices by omitting
+the Slot class.</li>
+
+<br>&nbsp;
+<li>
+No waitForCard() mechanism: In OCF, there are two possibilities for obtaining
+a SmartCard object: using the event-mechanism or using the waitForCard()-mechanism.
+The waitForCard()-mechanism is implemented based on the event mechanism
+and adds considerable footprint. In an event driven program it is never
+needed and if it should be desired, it could be provided by a utility class
+that does not need to be part of the core classes. OCF for Embedded devices
+will not provide the redundant waitForCard()-mechanism.</li>
+
+<br>&nbsp;
+<li>
+No secure PIN path: OCF provides a mechanism that allows to transmit an
+incomplete VERIFY_PIN command to a reader with a display and PIN pad and
+let the reader add a PIN entered on its PIN pad by the user. When OCF runs
+in an embedded device, this functionality is not required, because readers
+in embedded devices do usually not have their own dedicated display and
+PIN pad. OCF for Embedded Devices will not provide&nbsp; the classes and
+interfaces for implementing a protected PIN path.</li>
+
+<br>&nbsp;
+<li>
+No start/shutdown mechanism with automatic registration of CardServiceFactories
+and CardTerminalFactories listed in a property file: Inside of an embedded
+device, there is not necessarily a file system. We assume that inside of
+an embedded device, there is some kind of bootstrap code that is started
+when the terminal is switched on and this bootstrap code registers the
+required CardServices explicitly with the CardServiceRegistry. Additional
+CardServices can be registered by applications when needed.OCF for Embedded
+Devices does not provide methods for starting and automatically registring
+services nor for shutting down.</li>
+
+<br>&nbsp;
+<li>
+Independency of card terminal layer: Even though the OCF for Embedded Devices
+API subset is implemented in very small footprint, there may be applications
+and devices where it may be useful to use the card terminal layer without
+the event and service layers. Therefore, OCF for Embedded Devices avoids
+all dependencies of the card terminal layers to event and card service
+layers.</li>
+
+<br>&nbsp;</ul>
+
+<hr>
+<h1>
+<a NAME="Changes2"></a>News and Changes in OCF 1.1.1</h1>
+This section gives an overview of the changes OCF has undergone from version
+1.1 to 1.1.1 The changes that have been implemented are mostly bug fixes
+and streamlining of code, but include also some minor design changes which
+result from Requests for Comments (RFC) elaborated by the members of the
+OpenCard Consortium.
+<br>&nbsp;
+<br>&nbsp;
+<h3>
+Changes</h3>
+We assume that there are basically three kinds of developers that use OCF:
+Application developers, CardService developers, and CardTerminal developers.
+Below, there are three lists with the major changes that affect each kind
+of developer. The hyperlinks will lead you to the detailed descriptions
+of those changes in the next section.&nbsp;<!-- ---------------------------------------------------------------------- -->
+<p><a NAME="Changes-Application2"></a>
+<h4>
+Changes Visible for Application Developers</h4>
+
+<ul>
+<li>
+<a href="#waitForCard">changed behaviour of SmartCard.waitForCard()</a></li>
+
+<li>
+<a href="#native">native browser support</a></li>
+</ul>
+<!-- ---------------------------------------------------------------------- -->
+<p><a NAME="Changes-CardService2"></a>
+<h4>
+Changes Visible for CardService Developers</h4>
+
+<ul>
+<li>
+<a href="#FactoryInterface">Changed CardServiceFactory interface.</a></li>
+</ul>
+<!-- ---------------------------------------------------------------------- -->
+<p><a NAME="Changes-CardTerminal2"></a>
+<h4>
+Changes Visible for CardTerminal Developers</h4>
+<!-- ====================================================================== -->
+<hr><a NAME="Details2"></a>
+<h3>
+Change Details</h3>
+<!-- ---------------------------------------------------------------------- -->
+<p><a NAME="native"></a>
+<h4>
+Native Browser support</h4>
+Deploying OCF in a web browser environment has so far been limited to Sun's
+java plug-in (also called Activator). OCF 1.1.1 introduces support for
+the native Java Virtual machines and security concepts of potentially any
+browser with specific support for Microsoft Explorer and Netscape Navigator.
+Please see the OCF Programming Guide for instructions how to code/package
+applets to run under these browsers.
+<p>The changes introduced for native browser support do not change existing
+interfaces and are only relevant for developers who want to deploy OCF
+from an applet running under those browser's JVM.
+<p><!-- ---------------------------------------------------------------------- -->
+<br><a NAME="FactoryInterface"></a>
+<h4>
+Changed CardServiceFactory interface</h4>
+Card service factories can now communicate with the card to determine whether
+they can instantiate the requested card service. In OCF 1.1 card service
+factories could only use the CardID (ATR) to determine the type of card.
+But often the ATR was insufficent to determine whether the card could be
+supported.
+<br>New card service factories (subclasses of opencard.core.service.CardServiceFactory)
+should implement the getCardType() and getClasses() methods.
+<br>Existing factories that implement the knows() and cardServiceClasses()
+methods must now be derived from opencard.opt.service.OCF11CardServiceFactory
+to compile without errors.
+<p><!-- ---------------------------------------------------------------------- -->
+<p><a NAME="waitForCard"></a>
+<h4>
+Changed behaviour of SmartCard.waitForCard()</h4>
+SmartCard.waitForCard() does now block the caller until a card matching
+the card request is found or until the timeout expires.
+<br>In OCF 1.1 waitForCard() returned whenever a new card was inserted,
+regardless whether the card inserted matched the card request. The method
+returned null when the card did not match the request.
+<p><!-- ---------------------------------------------------------------------- -->
+<br>
+<hr>
+<br>&nbsp;
+<h1>
+<a NAME="Changes"></a>News and Changes in OCF 1.1</h1>
+This section gives an overview of the changes OCF has undergone from version
+1.0 to 1.1. The changes that have been implemented are not restricted to
+bug fixes, but include a considerable number of design changes.
+<br>The <a href="#Rationale">Rationale</a> tells you why we decided to
+change the OpenCard API. In <a href="#Changes">Changes</a>, you will find
+lists of the changes that affect applications, CardServices, and CardTerminals
+written for OCF 1.0. Detailed descriptions of the major changes are presented
+in the <a href="#Details">Details</a> section.&nbsp;<!-- ====================================================================== -->
+<p>
+<hr><a NAME="Rationale"></a>
+<h3>
+Rationale</h3>
+Changing a published API in a way that breaks code written against it causes
+trouble. It does not only require a considerable effort from our side to
+adapt the reference services and terminals. It also requires effort from
+your side to adapt your programs to the new API. However, we had good reasons
+for changing the OCF API. This section is meant to give you an overview
+on some of these reasons and motivate you to upgrade from OCF 1.0 to 1.1.
+(We promise not to do it again -&nbsp;<!-- until the next release ;-) -->unless
+the consortium members have overwhelming reasons.) The changes we implemented
+have been guided by the following objectives:
+<ul>
+<li>
+<a href="#Rationale-Codesize">Codesize Reduction</a></li>
+
+<li>
+<a href="#Rationale-Performance">Performance Tuning</a></li>
+
+<li>
+<a href="#Rationale-Exceptions">Error Handling</a></li>
+
+<li>
+<a href="#Rationale-Documentation">Documentation Enhancements</a></li>
+</ul>
+<!-- ---------------------------------------------------------------------- -->
+<p><a NAME="Rationale-Codesize"></a>
+<h4>
+Codesize Reduction</h4>
+Several functions of OCF have been reduced to save code size.&nbsp; The
+changes were discussed and agreed by the Core Workgroup and the CardService
+Workgroup of the OpenCard consortium.&nbsp; The policy was to save code
+that is rarely used and not essential while keeping incompatibility to
+version 1.0 at a minimum.&nbsp; Version 1.1 of OCF allows to use the terminal
+layer without the Service layer, which is an option for small systems with
+memory limitations.&nbsp; In this case the size of the terminal layer (with
+tracces removed and using the Jikes compiler) is 32 KBytes.
+<p>We have simplified and split some of the CardService interfaces. This
+provides a chance for implementing smaller CardServices with support for
+the most frequently needed functionality of a smartcard. There is an improved
+layering between other parts of OCF, too. This allows for downsizing by
+using only the lower layers. Additionally, it simplifies the task of getting
+started with OCF. A developer can now start by looking at smaller parts
+of OCF and move to the more complex APIs later.
+<p><!-- ---------------------------------------------------------------------- -->
+<p><a NAME="Rationale-Performance"></a>
+<h4>
+Performance Tuning</h4>
+In general, we have modified internal functions and parts of the structure
+to allow for faster execution and reduced garbage collection overhead.
+<p>In the CardService area we have introduced a layering for the <tt>opt.iso.fs</tt>
+package, where you can chose between highest abstraction and ease of programming
+or highest execution efficiency. For example, the time we measured for
+reading the 64 bytes card holder data in the Stockbroker demo was 0.65
+seconds using OCF's <tt>java.io</tt> specializations, 0.52 seconds using
+<tt>CardFile</tt>
+and the file service directly, and 0.46 seconds using
+<tt>CardFilePath</tt>
+and the file service.
+<p>We have reduced the tracing information generated.&nbsp; The tracing
+output was always composed before the tracer decided if the tracelevels
+required to output it or not.&nbsp; This involved overhead in some functions
+even if the trace was not used.&nbsp; This overhead was reduced.&nbsp;
+In addition, the traces can be removed from the code completely using a
+simple perl script.
+<p>We have allowed the reuse of exising objects instead of create/delete
+cycles.&nbsp; This puts a small additional burdon on the programmer writing
+a CardService implementation, but is transparent to application programmers.
+The performance could be improved significantly.&nbsp; For example, by
+making <tt>CardChannel</tt> objects reusable, the time for reading data
+records has been reduced by 69% in one of our test programs, without breaking
+any code.
+<p>We have replaced the <tt>OCFEventMulticaster</tt> by an implementation
+that is dramtically faster for a small number of events, like typical OCF
+setups have. <font size=-1><a href="#Details-Events">Details</a></font>
+<p><!-- ---------------------------------------------------------------------- -->
+<p><a NAME="Rationale-Exceptions"></a>
+<h4>
+Error Handling</h4>
+OCF exceptions were not checked in 1.0.&nbsp; This made programming errors
+possible, where severe errors at runtime were not handled appropriately
+by the application code.&nbsp; OCF 1.1 has moved to and enforces a stricter
+control of exception handling, which is more consistent with other Java
+frameworks.&nbsp; Unfortunately, this change will break existing code that
+failed to handle OCF exceptions. <font size=-1><a href="#Details-Exceptions">Details</a></font>
+<p><!-- ---------------------------------------------------------------------- -->
+<p><a NAME="Rationale-Documentation"></a>
+<h4>
+Documentation Enhancements</h4>
+The API documentation has been greatly enhanced to provide more information.
+Especially the CardService interfaces for file access and signature generation
+have been documented in detail.
+<p>The <i>Programmer's Guide</i> to OCF has been reworked to reflect all
+changes implemented in OCF 1.1. The code examples have been reviewed, simplified,
+and explained in more detail.&nbsp;<!-- ====================================================================== -->
+<p>
+<hr>
+<h3>
+Changes</h3>
+We assume that there are basically three kinds of developers that use OCF:
+Application developers, CardService developers, and CardTerminal developers.
+Below, there are three lists with the major changes that affect each kind
+of developer. The hyperlinks will lead you to the detailed descriptions
+of those changes in the next section.&nbsp;<!-- ---------------------------------------------------------------------- -->
+<p><a NAME="Changes-Application"></a>
+<h4>
+Changes Visible for Application Developers</h4>
+
+<ul>
+<li>
+<a href="#Details-Exceptions">Exceptions are checked.</a></li>
+
+<li>
+<a href="#Details-CardID">CardIDs are simpler.</a></li>
+
+<li>
+<a href="#Details-Events">Event handling is simpler.</a></li>
+
+<li>
+<a href="#Details-ISOfs">CardFiles are simpler.</a></li>
+
+<li>
+<a href="#Details-FileService">FileSystemCardService is split.</a></li>
+
+<li>
+<a href="#Details-Signature">SignatureCardService is split.</a></li>
+
+<li>
+<a href="#Details-Keys">Key handling is modified.</a></li>
+</ul>
+<!-- ---------------------------------------------------------------------- -->
+<p><a NAME="Changes-CardService"></a>
+<h4>
+Changes Visible for CardService Developers</h4>
+
+<ul>
+<li>
+<a href="#Details-Exceptions">Exceptions are checked.</a></li>
+
+<li>
+<a href="#Details-CardID">CardIDs are simpler.</a>&nbsp;&nbsp; This affects
+CardServiceFactories.</li>
+
+<li>
+<a href="#Details-APDUs">CommandAPDUs are reusable.</a></li>
+
+<li>
+<a href="#Details-CardService">CardService instantiation is simpler.</a></li>
+
+<li>
+<a href="#Details-FileService">FileSystemCardService is modified.</a></li>
+
+<li>
+<a href="#Details-Signature">SignatureCardService is modified.</a></li>
+
+<li>
+<a href="#Details-Keys">Key handling is modified.</a></li>
+</ul>
+<!-- ---------------------------------------------------------------------- -->
+<p><a NAME="Changes-CardTerminal"></a>
+<h4>
+Changes Visible for CardTerminal Developers</h4>
+
+<ul>
+<li>
+<a href="#Details-Exceptions">Exceptions are checked.</a></li>
+
+<li>
+<a href="#Details-APDUs">CommandAPDUs are reusable.</a></li>
+</ul>
+<!-- ====================================================================== -->
+<p>
+<hr><a NAME="Details"></a>
+<h3>
+Change Details</h3>
+<!-- ---------------------------------------------------------------------- -->
+<p><a NAME="Details-Exceptions"></a>
+<h4>
+Checked Exceptions</h4>
+The exception hierarchy defined in OCF 1.0 has been reviewed and changed.
+Some obsolete exceptions have been removed, others have been renamed. Finally,
+seven exceptions have been moved from <tt>opencard.core.service</tt> to
+<tt>opencard.opt.service</tt>.
+<br>To help programmers in developing error handling code, <tt>OpenCardException</tt>
+and all exceptions derived from it are checked now. These exceptions must
+be caught or declared in the <tt>throws</tt> clause of method declarations.
+<tt>OpenCardException</tt>
+is a subclass of <tt>java.io.IOException</tt>, so applications that use
+the OCF specializations of the <tt>java.io</tt> package will require only
+few changes.
+<p><!-- ---------------------------------------------------------------------- -->
+<p><a NAME="Details-CardID"></a>
+<h4>
+CardID</h4>
+In OCF 1.0, the class <tt>opencard.core.terminal.CardID</tt> served a dual
+purpose. It represented a smartcard's ATR, and it could be used as a template
+for matching a set of ATRs. In order to do this, it included methods that
+tried to determine the card OS from the ATR. This functionality relied
+on a particular structure of the ATR, which was not fully specified. It
+also lead to a lot of confusion about OpenCard compliant ATRs and OpenCard
+compliant smartcards.
+<p>In OCF 1.1, the <tt>CardID</tt> class simply represents a smartcard's
+ATR, optionally along with the terminal and slot in which the card has
+been inserted. Interpreting the ATR is the responsibility of the available
+CardServiceFactories. The notion of OpenCard compliance has been removed
+completely. There is no requirement that makes an ATR, or a smartcard,
+OpenCard compliant. If there is a CardServiceFactory that recognizes the
+ATR, OCF can deal with the smartcard.
+<br>For selecting particular ATRs in a <tt>CardRequest</tt>, the interface
+<tt>CardIDFilter</tt>
+has been introduced. It can be implemented by an application in any appropriate
+fashion. The template functionality of <tt>CardID</tt> in OCF 1.0 did not
+provide this flexibility.
+<p><!-- ---------------------------------------------------------------------- -->
+<p><a NAME="Details-Events"></a>
+<h4>
+Event Handling</h4>
+The event handling in <tt>opencard.core.terminal</tt> has been simplified.
+All terminal events are now broadcasted via the <tt>CardTerminalRegistry</tt>.
+Registering as listener at a CardTerminal is still supported, but deprecated.
+<br>The registry events that notified applications about CardTerminals
+that have been dynamically added or removed are no longer available. Since
+an application gets the events of all CardTerminals via the <tt>CardTerminalRegistry</tt>,
+there is no need for them anymore.
+<br>The event broadcast is done in a simple loop over a vector of listeners.
+The class <tt>OCFEventMulticaster</tt> has been removed. Registering or
+unregistering listeners at an event multicaster caused considerable overhead,
+which is now avoided.
+<p><!-- ---------------------------------------------------------------------- -->
+<p><a NAME="Details-APDUs"></a>
+<h4>
+APDU classes</h4>
+The classes <tt>APDU</tt>, <tt>CommandAPDU</tt>, and <tt>ResponseAPDU</tt>
+have been changed to allow reuse of APDUs. For <tt>ResponseAPDU</tt>, the
+majority of the changes is transparent. On the other hand, <tt>CommandAPDU</tt>
+has changed considerably. Instead of the various constructors for different
+ISO cases, there are only constructors to initialize a buffer. The actual
+APDU is composed by invoking append methods that add bytes or byte arrays
+to the buffered APDU. Optionally, an APDU can be prepared in a byte array
+and passed to one of the constructors of <tt>CommandAPDU</tt>. This change
+will affect all existing CardServices. Here is an example of reusing an
+existing CommandAPDU object:
+<p><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; apdu.setLength(0);</tt>
+<p><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; apdu.append(cla);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; apdu.append(ins);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; apdu.append(p1);</tt>
+<br><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; apdu.append(p2);</tt>
+<p>The new class <tt>ISOCommandAPDU</tt> in <tt>opencard.opt.terminal</tt>
+provides the constructors formerly found in <tt>CommandAPDU</tt>, along
+with the extended diagnostic output in <tt>toString</tt>. It is meant as
+a help for debugging, but should not be used in production code.
+<br>For consistency of method names, <tt>pduLength</tt> and <tt>pduBytes</tt>
+have been renamed to <tt>getLength</tt> and <tt>getBytes</tt>, respectively.
+This will require minor changes in existing CardTerminal implementations.
+<p><!-- ---------------------------------------------------------------------- -->
+<p><a NAME="Details-CardService"></a>
+<h4>
+CardService Instantiation</h4>
+In OCF 1.0, CardService instantiation used the <tt>java.lang.reflect</tt>
+package. The dependency on the reflections package is a major drawback,
+since OCF should support embedded devices with small memory resources,
+too. To overcome this problem, a CardService for OCF 1.1 has to provide
+a default constructor without arguments.
+<br>If the constructor with three arguments, as required for OCF 1.0, did
+nothing but invoke the base class constructor, just define an empty public
+default constructor. If the constructor performed initializations that
+depend on those arguments, the method <tt>CardService.initialize</tt> has
+to be overwritten. In this case, don't forget to invoke the base class
+implementation of that method.
+<p>For sake of method name consistency, <tt>chvDialog</tt> has been renamed
+to <tt>getCHVDialog</tt>. Also, the documentation of <tt>CardService</tt>
+and it's methods has been extended.
+<p><!-- ---------------------------------------------------------------------- -->
+<p><a NAME="Details-ISOfs"></a>
+<h4>
+IO classes</h4>
+The <tt>java.io</tt> specializations provided by OCF in the <tt>opencard.opt.iso.fs</tt>
+package have been reworked. The API offered some features that have never
+been implemented, or refer to non-ISO functionality that can not be expected
+of a file system based smartcard. Some of the changes are also related
+to the <a href="#Details-FileService">revised File Services</a>. In particular,
+the following changes have been implemented:
+<dl>
+<dt>
+Class <tt>CardFileOpenMode</tt> has been removed.</dt>
+
+<dd>
+The class was an anachronism related to concepts that have been dropped
+for OCF 1.0. Whether card access is blocking or not is specified at the
+time a CardService is created. When creating an instance of <tt>CardFile</tt>,
+it is already fixed and cannot be overridden. Removing this class resulted
+in changes to the constructors of <tt>CardFile</tt>.</dd>
+
+<br><a NAME="Details-ISOfs-fileinfo"></a>
+<dt>
+Class <tt>CardFileInfo</tt> has been replaced by an interface.</dt>
+
+<dd>
+The class <tt>CardFileInfo</tt> imposed a fixed structure on the implementation
+of a file service. For example, it required the service to cache whether
+a PIN has been entered for accessing a file. And, obviously, the class
+used by a service to represent file info had to be derived of <tt>CardFileInfo</tt>.</dd>
+
+<br>This situation has been relaxed by replacing the class by an interface.
+The interface defines some methods to query standard information, for example
+whether it is a directory or a data file. The amount of data that can be
+queried has been reduced to what is needed for file access. For example,
+there is no method to query access conditions since it is up to the file
+service to deal with them.
+<dt>
+Class <tt>CardFileType</tt> has been removed.</dt>
+
+<dd>
+The class <tt>CardFileType</tt>, which indicated whether a file is a directory
+or a data file with a particular structure, has been replaced by a set
+of query methods in <tt>CardFileInfo</tt> (see <a href="#Details-ISOfs-fileinfo">above</a>).
+Instead of asking the file info for the file type and comparing the type
+to a predefined constant, the file info can be asked directly whether it
+is a directory, a cyclic file, and so on. This seems more natural in an
+object-oriented environment and reduces the code size of the framework.</dd>
+
+<dt>
+Class <tt>CardAccess</tt> has been removed.</dt>
+
+<dd>
+Class <tt>CardAccess</tt> was meant to represent access conditions to files
+on the smartcard. Unfortunately, not all kind of access conditions could
+be represented by that class or a specialization of it. For example, disjunctions
+of conditions, like "CHV <b>or</b> external authentication" could not be
+dealt with. Apart from that, the class was needed only at two places: the
+class <tt>CardFileInfo</tt> from which it has been removed (see <a href="#Details-ISOfs-fileinfo">above</a>)
+and when creating files, which is not part of the ISO 7816-4 functionality
+(see <a href="#Details-FileService">below</a>).</dd>
+
+<br>&nbsp;
+<p>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<p>Implementing a request of the CardService workgroup, the class <tt>CardAccess</tt>
+has therefore been removed. A file service implementation can represent
+access conditions as part of the file info in any way suitable for the
+particular smartcard. Applications should not have to deal with access
+conditions at all, since it is the responsibility of the card service to
+satisfy them.
+<dt>
+Class <tt>CardFile</tt> has been revised.</dt>
+
+<dd>
+The class <tt>CardFile</tt> in OCF 1.0 was modelled closely after the class
+<tt>java.io.File</tt>.
+This resulted in some methods that are hard or impossible to map to smartcards,
+like <tt>list</tt> or <tt>readable</tt>. These have been removed, along
+with some attributes that are not really needed, like
+<tt>fileSeparator</tt>.</dd>
+
+<br>The references to the removed classes mentioned above had to be removed.
+This implied changing all constructors to remove the reference to <tt>CardFileOpenMode</tt>.
+The <tt>create</tt> method has been changed to the new <tt>FileSystemCardService</tt>
+interface (see <a href="#Details-FileService">below</a>). <tt>mkdir</tt>
+has been removed completely, since it would have been identical to the
+new <tt>create</tt>.
+<br>Some methods have been renamed for consistency. For example, <tt>path</tt>
+is now <tt>getPath</tt>, <tt>length</tt> is now <tt>length</tt>, and <tt>fileInfo</tt>
+became <tt>getFileInfo</tt>. Duplicate methods that accepted a string instead
+of a <tt>CardFilePath</tt> have been removed, to minimize the number of
+temporary objects that are created.
+<br>For convenience, <tt>CardFile</tt> implements the <tt>CardFileInfo</tt>
+(see <a href="#Details-ISOfs-fileinfo">above</a>). All methods are mapped
+to invocations of the file info object returned by the underlying file
+service. The advantage is that methods like <tt>isDirectory</tt> can be
+invoked directly on the <tt>CardFile</tt> object instead of getting the
+info first.
+<dt>
+The key handling has been revised and moved.</dt>
+
+<dd>
+The classes <tt>KeyStore</tt> and <tt>KeyBag</tt> defined a key handling
+mechanism required for satisfying access conditions that involve cryptography.
+This functionality is not specific to file system accesses, or even file
+system based smartcards. The key handling has therefore been revised and
+moved to the package <tt>opencard.opt.security</tt>. <font size=-1><a href="#Details-Keys">(Details)</a></font></dd>
+</dl>
+<!-- ---------------------------------------------------------------------- -->
+<p><a NAME="Details-FileService"></a>
+<h4>
+File Services</h4>
+The interface <tt>FileSystemCardService</tt> as defined in OCF 1.0 suffered
+from several drawbacks. First of all, it required support for functionality
+that is not defined in ISO 7816-4, like creating files. Second, it introduced
+dependencies on many of the classes defined in the <tt>opencard.opt.iso.fs</tt>
+package. Third, it defined key handling functionality that is not specific
+to the file system, but could also be required for signature generation
+or other operations supported by a smartcard. To overcome these drawbacks,
+several changes have been implemented.
+<p>The key handling functionality has been moved from <tt>opencard.opt.iso.fs</tt>
+to <tt>opencard.opt.security</tt> (see <a href="#Details-Keys">below</a>).
+The ISO functionality has been moved to a new, simpler interface named
+<tt>FileAccessCardService</tt>.
+The name has been chosen since ISO specifies only commands for accessing
+files and their contents, but not the creation, deletion or comparable
+operations typically found in a file system. The
+<tt>FileSystemCardService</tt>
+extends the file access interface by methods to do exactly that. It is
+up to the developers of file services whether one or both interfaces are
+implemented. Applications should use only the file access interface to
+be independent of a particular smartcard.
+<br>To reduce the dependencies on other classes and interfaces in the <tt>iso.fs</tt>
+package, the signatures of the methods in both service interfaces have
+been changed. The dependencies are now restricted to the class <tt>CardFilePath</tt>
+and the interface <tt>CardFileInfo</tt>. Dependencies on <tt>CardFileOpenMode</tt>,
+<tt>CardFile</tt>,
+<tt>CardFileType</tt>,
+<tt>CardAccess</tt>,
+<tt>CardRecord</tt>
+(and maybe some more) have been removed. Unfortunately, this requires changes
+in existing implementations of the file system service. Applications will
+need some minor changes, too.
+<p>Here are the highlights of the changes in the file service interfaces:
+<ul>
+<li>
+The target files are specified by <tt>CardFilePath</tt> arguments rather
+than <tt>CardFile</tt> arguments.</li>
+
+<li>
+The <tt>mount</tt> methods have been removed. To obtain a <tt>CardFile</tt>
+object for the master file, just pass the file service to the constructor
+of that class. To refer to a file with an absolute path, the constructor
+gets the file service and the path.</li>
+
+<li>
+A method named <tt>getRoot</tt> has been introduced. It is meant to return
+the path to the master file of the smartcard. That way, it is possible
+to implement file services for cards with a master file id that is different
+from the ISO-specified 0x3f00. (Yes, there are such cards.)</li>
+
+<li>
+A method named <tt>readRecords</tt> has been introduced in the new <tt>FileAccessCardService</tt>.
+It is meant for reading cyclic files. Along with a magic number, it can
+also be used to read all records of a structured file. This is the only
+way to read a linear variable file completely without having to catch an
+exception at the end of the file.</li>
+
+<li>
+The <tt>create</tt> method in <tt>FileSystemCardService</tt> has a new
+interface. It expects a card-specific data block that describes the file
+to be created, including file type and access conditions. Even with the
+old interface, it was not really possible to create a file in a card-independent
+way, but now it is obvious.</li>
+
+<br>The new interface is intended for scenarios in which a card application
+has to be loaded from a host to a smartcard. We assumed that the host is
+able to prepare the card-specific data block and sends it to the OCF program
+that invokes <tt>create</tt>. Besides, developers still have a chance to
+create files on particular cards for testing purposes.
+<li>
+The API documentation of both file service interfaces has been greatly
+enhanced. It should now be precise enough to implement and use the interfaces
+conveniently.</li>
+</ul>
+<!-- ---------------------------------------------------------------------- -->
+<p><a NAME="Details-Signature"></a>
+<h4>
+Signature Services</h4>
+The interface <tt>SignatureCardService</tt> as defined in OCF 1.1 suffered
+from several drawbacks. First, it merged the functionality of generating
+and verifying signatures with that of importing keys to the smartcard.
+Second, the support was restricted to the RSA algorithm. DSA, or other
+algorithms that may become important in the future could not be integrated.
+Third, there was no interface for generating key pairs on the smartcard
+itself, which is supported by some cards. Fourth, using the smartcards
+for signatures may require satisfying access conditions similar to those
+for file access (see <a href="#Details-FileService">File Services</a> above),
+but there was no way to pass authentication keys to the service. Last but
+not least, the <tt>SignatureCardService</tt> in OCF 1.0 used <tt>CardFilePath</tt>
+to refer to keys. The interface could therefore only be used for file system
+based smartcards, but not for JavaCards.
+<p>To overcome these problems, the interface <tt>SignatureCardService</tt>
+has been split, the method signatures have been changed to support various
+public key algorithms, and a new interface for key generation on the card
+has been defined. All interfaces extend <tt>SecureService</tt> (see <a href="#Details-Keys">Key
+Handling</a> below) so authentication keys can be provided. Of course,
+the documentation of the methods has been enhanced.
+<br>Here are the three interfaces in <tt>opencard.opt.signature</tt> and
+a short description of the functionality they define:
+<dl>
+<dt>
+<tt>SignatureCardService</tt></dt>
+
+<dd>
+Provides methods to sign and to verify signatures on data or hashs on data.
+References to the keys on the smartcard are generic and can be specialized
+to paths or cardlets. The algorithm for signature generation or verification
+can be specified by strings. The algorithm names are those defined by the
+<i>Java
+Cryptography Architecture (JCA)</i>. Optionally, the padding algorithm
+can be specified in the same way.</dd>
+
+<br>The OCF 1.0 methods to generate and verify signatures are still defined
+in the interface, but deprecated. These methods introduce a dependency
+on the <tt>opencard.opt.iso.fs</tt> package. They are likely to be removed
+in future versions of OCF, for example for embedded devices.
+<dt>
+<tt>KeyImportCardService</tt></dt>
+
+<dd>
+This extension of the <tt>SignatureCardService</tt> defines methods to
+import private or public keys to a smartcard. Import can be done with plain
+keys, or with keys that have a signature attached to them which will be
+checked by the card. Generic references are used to specify the place to
+put the key.</dd>
+
+<br>Generic key representations are used to pass the key data. A particular
+implementation of this CardService interface will convert the generic representation
+to a card specific one. In OCF 1.0, the key had to be passed in a card
+specific representation.
+<dt>
+<tt>KeyGenerationCardService</tt></dt>
+
+<dd>
+This extension of the <tt>SignatureCardService</tt> defines a method to
+generate a key pair, that is a private key and matching public key, on
+the card. A second method is defined to read the generated public key from
+the card. The private key will never leave the card, which ensures a high
+level of privacy.</dd>
+</dl>
+<!-- ---------------------------------------------------------------------- -->
+<p><a NAME="Details-Keys"></a>
+<h4>
+Key Handling</h4>
+In OCF 1.0, the <tt>FileSystemCardService</tt> interface was the only one
+that defined support for secret keys. Such keys are used to satisfy access
+conditions that involve cryptography. The concept for key handling was
+that an application provides the keys, while the service contains the cryptographic
+code to satisfy the access conditions. For OCF 1.1, several changes regarding
+key handling have been implemented:
+<ul>
+<li>
+The key handling has been moved from <tt>opencard.opt.iso.fs</tt> to <tt>opencard.opt.security</tt>.
+The interface <tt>SecureService</tt> in that package can be extended by
+any CardService interface. Standard interfaces that do so are <tt>FileAccessCardService</tt>
+(see <a href="#Details-FileService">File Services</a>) and <tt>SignatureCardService</tt>
+(see <a href="#Details-Signature">Signature Services</a>). The interface
+of <tt>SecureService</tt> uses generic identifiers for security domains,
+instead of <tt>CardFile</tt> as in OCF 1.0. That way, the interface is
+appropriate for JavaCards, too.</li>
+
+<li>
+Keys have been replaced by <i>credentials</i>, in the concept as well as
+in class names. Unlike a key, a credential may include cryptographic code
+as well as the key material. Instead of using a key with it's own cryptographic
+code, a CardService may use methods defined in a credential's interface
+to encrypt, decrypt, compute a MAC, or generate a cryptographically strong
+random number. This is a prerequisite for supporting a <i>Secure Access
+Module (SAM)</i> that performs such operations without revealing the keys
+stored in it.</li>
+</ul>
+<!-- ====================================================================== -->
+<p>
+<hr><i><font size=-1>This page was created by Frank Seliger, Roland Weber
+and Lothar Merk.</font></i>
+</body>
+</html>

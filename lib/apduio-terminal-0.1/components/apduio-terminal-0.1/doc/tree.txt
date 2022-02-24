@@ -1,0 +1,69 @@
+apduio-terminal-0.1
+|-- doc
+|   |-- LICENSE-GemplusApduio.txt
+|   |-- MANIFEST
+|   |-- Makefile
+|   |-- RCS
+|   |   |-- LICENSE-GemplusApduio.txt,v
+|   |   |-- MANIFEST,v
+|   |   |-- Makefile,v
+|   |   `-- README-GemplusApduio.html,v
+|   |-- README-GemplusApduio.html
+|   |-- README-GemplusApduio.txt
+|   |-- allclasses-frame.html
+|   |-- com
+|   |   `-- gemplus
+|   |       `-- opencard
+|   |           `-- terminal
+|   |               `-- apduio
+|   |                   |-- ApduIOCardTerminal.html
+|   |                   |-- ApduIOCardTerminalFactory.html
+|   |                   |-- package-frame.html
+|   |                   |-- package-summary.html
+|   |                   `-- package-tree.html
+|   |-- deprecated-list.html
+|   |-- help-doc.html
+|   |-- index-all.html
+|   |-- index.html
+|   |-- make_javadocs.sh
+|   |-- make_tree.sh
+|   |-- opencard.css
+|   |-- overview-summary.html
+|   |-- overview-tree.html
+|   |-- overview.html
+|   |-- package-list
+|   |-- packages.html
+|   |-- serialized-form.html
+|   |-- sources
+|   |   |-- ApduIOCardTerminal.html
+|   |   |-- ApduIOCardTerminalFactory.html
+|   |   |-- Test.html
+|   |   |-- file.gif
+|   |   |-- index.html
+|   |   `-- java2html.state
+|   |-- stylesheet.css
+|   `-- tree.txt
+|-- download.html
+`-- src
+    |-- MANIFEST
+    |-- Makefile
+    |-- RCS
+    |   |-- ApduIOCardTerminal.java,v
+    |   |-- ApduIOCardTerminalFactory.java,v
+    |   |-- MANIFEST,v
+    |   |-- Makefile,v
+    |   `-- Test.java,v
+    |-- com
+    |   `-- gemplus
+    |       `-- opencard
+    |           `-- terminal
+    |               `-- apduio
+    |                   |-- ApduIOCardTerminal.java
+    |                   |-- ApduIOCardTerminalFactory.java
+    |                   |-- RCS -> ../../../../../RCS
+    |                   `-- test
+    |                       |-- RCS -> ../../../../../../RCS
+    |                       `-- Test.java
+    `-- opencard.properties
+
+18 directories, 48 files

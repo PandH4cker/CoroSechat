@@ -1,0 +1,210 @@
+<!-- ----------------------------------------------------------------- -->
+
+
+<!doctype html public "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html lang=en-us>
+
+
+<!-- ----------------------------------------------------------------- -->
+<head>
+
+<!-- TITLE ------------------------- -->
+<title>PC/SC CardTerminal Download Page</title>
+
+<!-- STYLE ------------------------- -->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="Stylesheet" type="text/css" href="../../doc/opencard.css">
+<!-- ------------------------------- -->
+
+<!-- MISC. META/LINK INFO ---------- -->
+<link rev="Made" href="mailto:Christophe.Muller@research.gemplus.com">
+<meta name="Author" content="Christophe Muller">
+<meta name="RCS-Id" content="$Id: $">
+<!-- ------------------------------- -->
+
+</head>
+<!-- ----------------------------------------------------------------- -->
+
+
+<!-- ----------------------------------------------------------------- -->
+<body>
+
+<!-- PAGE HEADER (H1 TITLE) -------- -->
+<!--
+<p class="banner">
+<a href="http://www.gemplus.com/developers">
+<img src="../../images/developers.jpg" alt="Gemplus Developers" align="left"
+border="0" hspace="7"></a>
+<a href="http://www.opencard.org/">
+<img src="../../images/ocf_logo.jpg" alt="OpenCard Framework" align="right"
+border="0" hspace="7"></a>
+<br></p>
+-->
+
+<p><center> <!--...for old browsers...-->
+<h1>PC/SC CardTerminal Download Page</h1>
+</center>
+<!-- ------------------------------- -->
+
+<!-- ABSTRACT ---------------------- -->
+<p><a name="abstract"><br></a>
+<div class="abstract">
+
+<p>
+This page describes how to <a href="#Distribution">download</a>, and
+<a href="#Installation">install</a> the PC/SC CardTerminal component
+that allows accessing Smart Cards through a PC/SC resource manager
+(a PC/SC driver must have been installed for your card reader!).
+
+<p>
+See also the
+<a href="doc/README-GemplusService.html">Generic&nbsp;CardServices&nbsp;Home-Page</a>
+for a complete on-line documentation set about this component.
+
+<p>
+This is a first version and is provided <em>AS-IS</em>. See the
+<a href="#warning">Important Note</a> section below.
+</div>
+<!-- ------------------------------- -->
+
+<!-- WARNING ----------------------- -->
+<p><a name="warning"><hr></a>
+<p class="warning">
+<strong>IMPORTANT NOTE:</strong> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+The presented Java software code
+<span class="stabilo">
+is&nbsp;an&nbsp;alpha-version&nbsp;for&nbsp;developers</span>
+and <em>IS PROVIDED AS-IS</em> by Gemplus. Please see the
+<a href="doc/LICENSE-GemplusService">LICENSE file</a> for more details.
+Therefore, this code has not been tested by many people yet; it may contain
+bugs or even semantic misbehaviour; and it has not been reviewed
+as a supported Gemplus product; so <span class="stabilo">comments,
+suggestions, problem reports, or even enhancements
+<a href="doc/README-GemplusService.html#contact">are highly welcome</a>.</span>
+</p>
+<!-- ------------------------------- -->
+
+
+<p>
+<a name="Distribution">&nbsp;</a>
+<!-- ------------------------------- -->
+<table cellspacing="0" cellpadding="10" border="0"><tr><td>
+
+   <h2>Distribution</h2>
+
+</td></tr><tr><td>
+<img src="../../images/Box.gif" alt="Components"></td><td>
+<img src="../../images/FileTarGz.gif" alt="tar.gz for Unix platforms"></td><td>
+or</td><td>
+<img src="../../images/FileZip.gif" alt="zip for Win32 platforms">
+</td></tr></table>
+<!-- ------------------------------- -->
+
+<p>
+Two distribution files are available: one in <a class="file">"tar.gz"</a>
+format, and one in <a class="file">"zip"</a> format. Select the one
+corresponding to your platform and/or available unpacking tools, e.g.,
+
+<ul>
+   <p>
+   <li> if you are under Unix, download:
+"<a class="file"><a href="../../download/gemplus-service-0.2.tar.gz">gemplus-service-0.2.tar.gz</a></a>"
+   <p>
+   <li> if you are under Windows, download:
+"<a class="file"><a href="../../download/gemplus-service-0.2.zip">gemplus-service-0.2.zip</a></a>"
+</ul>
+
+<p>
+Note that the "<a class="file">tar.gz</a>" file is significantly
+smaller (30% smaller), so if you have the right WINZIP plugin for
+"<a class="file">tar.gz</a>" files, it is advised to choose this one.
+
+
+<p>
+<a name="Installation">&nbsp;</a>
+<!-- ------------------------------- -->
+<table cellspacing="0" cellpadding="0" border="0"><tr><td>
+
+   <h2>Installation</h2>
+
+</td></tr><tr><td>
+<img src="../../images/Install.gif" alt="Install" align="middle">
+</td></tr></table>
+<!-- ------------------------------- -->
+
+<p>
+Note that if you are not using the <span class="ocf">CardTable</span>
+platform, there are some <a href="../../doc/prerequisites.html">prerequisites</a>
+before being able to use OpenCard components. See the prerequisites page
+for more details.
+
+<p>
+For installing the Gemplus Generic CardServices component:
+
+<ol>
+   <p>
+   <li> first, download <a class="file">"gemplus-service-0.2.zip"</a> or
+        <a class="file">"gemplus-service.tar-0.2.gz"</a> (see above),
+
+   <p>
+   <li> unpack the distribution <strong>in the directory containing
+        OCF</strong>, this should provide new files and directories
+	among which: <a class="file">"lib/gemplus-service-0.2.jar"</a>,
+
+   <p>
+   <li> insert <a class="file">"lib/gemplus-service-0.2.jar"</a> into your
+        <tt><strong>CLASSPATH</strong></tt> environment variable (JDK 1.x)
+        or copy this JAR file into your <a class="file">"jre/lib/ext/"</a>
+        directory (JDK 1.2 or 1.3).
+
+   <p>
+   <li> develop your own CardService that leverage this library.
+
+</ol>
+
+<p>
+More information on how to use this component is available,
+see below.
+
+<p>
+<a name="Component Documentation">&nbsp;</a>
+<!-- ------------------------------- -->
+<table cellspacing="0" cellpadding="0" border="0"><tr><td>
+
+   <h2>Component Documentation</h2>
+
+</td></tr><tr><td>
+<img src="../../images/SuitcaseLibraries.gif" alt="Component Doc" align="middle">
+</td></tr></table>
+<!-- ------------------------------- -->
+
+<p>
+More detailed information on the Generic CardServices component
+(e.g., functionality, javadocs, etc.) is given in the
+<a href="doc/README-GemplusService.html">Generic&nbsp;CardServices&nbsp;Home-Page</a>.
+
+<p>
+
+<!-- ADDRESS ----------------------- -->
+<hr>
+<span class="stabilo">Please&nbsp;send&nbsp;any&nbsp;comments,</span>
+enhancements suggestions, or problem reports
+<span class="stabilo">to&nbsp;the
+<a href="mailto:developers@gemplus.com?subject=[Generic Download Page] Comment/Suggestion">
+webmaster</a></span>
+who will take your comment into account or dispatch it to the right person.
+<!-- ------------------------------- -->
+
+
+<!--
+<hr>
+<p class="noindent">
+Copyright&nbsp;&copy;&nbsp;1999&nbsp;Gemplus -
+<a href="http://www.gemplus.com">About</a> -
+Last changes: Thu Jan 27 2000<br>
+-->
+
+</body>
+<!-- ----------------------------------------------------------------- -->
+
+</html>

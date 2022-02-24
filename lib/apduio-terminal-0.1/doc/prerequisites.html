@@ -1,0 +1,269 @@
+<!-- ----------------------------------------------------------------- -->
+<!-- Author: Christophe Muller -->
+<!-- RCS-Id: $Id: prerequisites.html,v 0.1 2001/06/07 18:29:54 root Exp root $ -->
+<!-- ----------------------------------------------------------------- -->
+
+
+<!-- ----------------------------------------------------------------- -->
+
+
+<!doctype html public "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html lang=en-us>
+
+
+<!-- ----------------------------------------------------------------- -->
+<head>
+
+<!-- TITLE ------------------------- -->
+<title>Prerequisites for OpenCard Components</title>
+
+<!-- STYLE ------------------------- -->
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="Stylesheet" type="text/css" href="opencard.css">
+<link rel="Stylesheet" type="text/css" href="../faqs/faqs.css">
+<!-- ------------------------------- -->
+
+<!-- MISC. META/LINK INFO ---------- -->
+<link rev="Made" href="mailto:Christophe.Muller@research.gemplus.com">
+<meta name="Author" content="Christophe Muller">
+<meta name="RCS-Id" content="$Id: prerequisites.html,v 0.1 2001/06/07 18:29:54 root Exp root $">
+<!-- ------------------------------- -->
+
+</head>
+<!-- ----------------------------------------------------------------- -->
+
+
+<!-- ----------------------------------------------------------------- -->
+<body>
+
+<!-- PAGE HEADER (H1 TITLE) -------- -->
+<!--
+<p class="banner">
+<a href="http://www.gemplus.com/developers">
+<img src="../images/developers.jpg" alt="Gemplus Developers" align="left"
+border="0" hspace="7"></a>
+<a href="http://www.opencard.org/">
+<img src="../images/ocf_logo.jpg" alt="OpenCard Framework" align="right"
+border="0" hspace="7"></a>
+<br></p>
+-->
+
+<p><center> <!--...for old browsers...-->
+<h1 class="faq">Prerequisites for OpenCard Components</h1>
+</center>
+<!-- ------------------------------- -->
+
+
+<!-- ABSTRACT ---------------------- -->
+<p><a name="abstract"></a>
+<div class="abstract">
+<table bgcolor="#eeeedd" align="center" width="80%" cellpadding="8"><tr><td>
+<img src="../images/Prerequisites.gif" alt="Checking Required Platform"
+     border="0" hspace="16" vspace="2" align="left">
+<p>
+This page is intended for developers that are not using the
+<span class="ocf">CardTable</span> platform. If you want to
+use the OpenCard components you can either:
+
+<ul>
+   <p class="noindent">
+   <li> download and install the <span class="ocf">CardTable</span> platform
+        (soon to be released) that includes all necessary software to work
+        with Smart Cards (including Java), or
+   <p class="noindent">
+   <li> download and install necessary software layers: see below.
+</ul>
+</td></tr></table>
+</div>
+<!-- ------------------------------- -->
+
+
+<!-- PREREQUISITES ----------------- -->
+<p>
+<a name="prerequisites">&nbsp;</a>
+<!-- ------------------------------- -->
+   <h2 class="faq">Required Platform</h2>
+<!-- ------------------------------- -->
+
+<table bgcolor="#eeeedd" align="center" cellpadding="5"><tr><td>
+<img src="../images/Prerequisites.gif" alt="Prerequisites"
+     border="0" hspace="16" vspace="2" align="left">
+<p>
+The CardServices components are a part of a Java framework named
+<span class="ocf">OpenCard Framework</span> which goal is
+to provide high level components for applications that
+make use of smart cards. 
+
+<p>
+In order to be able to use them, a number of other software
+packages have to be previously downloaded and installed.
+The next sections describe the architecture of an
+OpenCard-based application and explains how to set-up
+the mandatory software platform.
+</td></tr></table>
+
+<h3 class="faq">Architecture</h3>
+
+<p>
+First, we describe how a Java application can access smart cards
+through layers of software, the workstation Parallel/Serial ports
+(using the "Comm API").
+
+Then, a section provides URLs for the necessary distributions,
+environment setting up information, and at last indications
+are given on how to perform some tests to check that everything
+is working ok (it is then advised to have a SIM card available,
+otherwise any ISO7816-3 compliant card will allow to at least
+run the OpenCard ATR printing test).
+
+<p>
+The <a href="#Fig1">Fig 1.</a> picture below summarizes how a Java application
+(here "Login") can use a pure Java way to communicate with
+a smartcard.
+
+<p>
+We can distinguish the following software layers, starting from
+the application:
+
+<ol>
+   <p class="noindent">
+   <li> the Application, (e.g., "Login.java")
+   <p class="noindent">
+   <li> the <span class="ocf">OpenCard Framework</span>,
+   <p class="noindent">
+   <li> a CardService dedicated to the currently used smart card,
+   (e.g., here GPK CardService),
+   <p class="noindent">
+   <li> a pure-java CardTerminal driver, (e.g., the Gemplus CardTerminal
+   for GemPC410, GemSelf500, GemSelf700...),
+   <p class="noindent">
+   <li> the Comm API and its implementation on a given OS, and
+   <p class="noindent">
+   <li> low-level serial/parallel I/O communications routines
+   from the OS (Note: in Linux, the RXTX library is required).
+</ul>
+
+
+<p><a name="Fig1"></a></p>
+<div align="center">
+<table bgcolor="#eeeedd" align="center" cellpadding="1"><tr>
+<td>
+<img src="../images/arch.gif" alt="OpenCard Framework Architecture" vspace="2" bgcolor="#eeeedd">
+</td>
+<tr><td align="center" bgcolor="white">
+Fig 1: An OpenCard-based application.</td></tr>
+</tr></table>
+</div>
+
+<br>
+
+<p>
+Note that non-pure Java CardTerminals can be used too, such as
+wrappers to the PC/SC resource manager (see the PC/SC page in
+the Gemplus Developers Technology section).
+
+<p>
+As a consequence of this architecture, a number of software
+packages are required. The list is detailed below.
+
+<h3 class="faq">Required platform</h3>
+
+<p>
+Necessary components are:
+
+<ol class="romanlo">
+   <p class="noindent">
+   <li> A <strong>JRE</strong> (i.e., <strong>J</strong>ava
+        <strong>R</strong>untime <strong>E</strong>nvironment)
+	or <strong>JDK</strong> (i.e., <strong>J</strong>ava
+        <strong>D</strong>evelopment <strong>K</strong>it)
+	for your platform (version 1.2 or 1.3 is advised):
+   <ul>
+      <p class="noindent">
+      <li> for Solaris and Windows 95/98/NT, see the
+      <a href="http://java.sun.com/products/jdk/1.2/jre/index.html">
+      Java Web Site</a> for distributions,
+      <p class="noindent">
+      <li> for Linux, see the
+      <a href="http://www.blackdown.org/java-linux.html">
+      Blackdown Web Site</a>,
+      <p class="noindent">
+      <li> for other Operating Systems (e.g., Apple, AIX, HP-UX, IRIX,
+      OpenVMS, Tru64), see the Java Web Site
+      <a href="http://java.sun.com/cgi-bin/java-ports.cgi">
+      Java Platform Ports Home-Page</a>.
+   </ul>
+
+   <p class="noindent">
+   <li> A <strong>Comm API</strong> implementation (Serial and Parallel
+   communication API for the JDK):
+   <ul>
+      <p class="noindent">
+      <li> for Solaris and Windows 95/98/NT, see the
+      <a href="http://java.sun.com/products/javacomm/index.html">
+      Comm API Home-Page</a> for distributions,
+      <p class="noindent">
+      <li> for Linux, see the
+      <a href="http://www.rxtx.org/">
+      RXTX web site</a>.
+      <p class="noindent">
+      <li> for AIX, see the <a href="http://www-106.ibm.com/developerworks/java/jdk/aix/">
+      IBM web site</a> for "AIX" JDK distribution.
+      <p class="noindent">
+      <li> for OS/2 Warp, see the <a href="http://techsupport.services.ibm.com/asd-bin/doc/en_us/javac13/f-tech.htm">
+      IBM support web site</a>.
+      <p class="noindent">
+      <li> for other Operating Systems (e.g., Apple MacOS 9 and X, FreeBSD,
+      HP-UX, IRIX, True64, Netware5, Windows CE, and EPOC32), see the
+      <a href="http://www.serialio.com/products/serialport/serialport.htm">
+      Serialio.com Products Page</a>.
+   </ul>
+
+   <p class="noindent">
+   <li> finally, the <strong>Opencard Framework</strong>
+        core and optional parts that can be easily downloaded and installed
+	from the official
+	<a href="http://www.opencard.org/index-downloads.html">
+        Opencard Web Site</a>.
+
+   <p class="noindent">
+   <li> You may also find ready-to-use drivers for your
+        cards (or applets) and card readers. There is a list of
+	<a href="http://www.opencard.org/index-devices.shtml">
+	Supported Readers/Terminals</a> at the Opencard Web Site
+	which is maintained by the
+	<a href="mailto:opencard-info@opencard.org">OpenCard Consortium</a>.
+	Please contact the consortium whenever you find a driver that is not
+	on the list, or an URL that must be fixed.
+</ol>
+
+
+<p>
+
+<!-- ADDRESS ----------------------- -->
+<hr>
+<span class="stabilo">Please&nbsp;post&nbsp;any&nbsp;comments,</span>
+suggestions, problem reports, or enhancements for this page to the Gemplus
+<a href="http://www.gemplus.fr/developers/passwd_protected/discus/index.html">
+Developer's Site Forum</a> (in the topic named <strong>"OCF"</strong>),
+<span class="stabilo">or&nbsp;send&nbsp;an&nbsp;email</span> to the
+<a href="mailto:developers@gemplus.com?subject=[OCF Prerequisites] Comment,Suggestion,PR">
+Developer's Webmaster</a> who will dispatch your comment to
+the right person.
+<!-- ------------------------------- -->
+
+
+<!--
+<hr>
+<p class="noindent">
+Copyright&nbsp;&copy;&nbsp;2000&nbsp;Gemplus -
+<a href="http://www.gemplus.com">About</a> -
+Last changes: Wed Feb  9 2000<br>
+-->
+
+
+</body>
+<!-- ----------------------------------------------------------------- -->
+
+
+</html>

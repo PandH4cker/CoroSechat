@@ -1,0 +1,361 @@
+/* opencard.css CSS1 Style Sheets for OpenCard components docs. V0.1 */
+
+BODY {
+  margin: 1em 1em 2em 1em;
+  font-family: times;
+  color: black;
+  background-color: white; 
+  background-position: top left;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}
+
+/*******************************************************************/
+/* Table of contents                                               */
+
+/* Example
+<TABLE WIDTH=60% ALIGN=center BORDER=0 CELLSPACING=0 CELLPADDING=2>
+<TR>
+<TH COLSPAN=2 CLASS="toctitle">Contents of this Article</TH>
+<TH ALIGN=right CLASS="tocpage">Page</TH>
+</TR>
+
+<TR>
+<TD CLASS="chapnumber">1.</TD>
+<TD CLASS="chaptitle"><A HREF="1.html">First Chapter</A></TD>
+<TD ALIGN=right CLASS="chappage"><A HREF="1.html">1</A></TD>
+</TR>
+
+<TR>
+<TD COLSPAN=2 CLASS="sectiontitle"><A HREF="1.html#sec1">Introduction<A></TD>
+<TD ALIGN=right CLASS="sectionpage"><A HREF="1.html#sec1">1</A></TD>
+</TR>
+<TR>
+<TD COLSPAN=2 CLASS="sectiontitle2"><A HREF="1.html#sec2">More...<A></TD>
+<TD ALIGN=right CLASS="sectionpage2"><A HREF="1.html#sec2">3</A></TD>
+</TR>
+
+<TR>
+<TD CLASS="chapnumber2">2.</TD>
+<TD CLASS="chaptitle2"><A HREF="2.html">Second Chapter</A></TD>
+<TD ALIGN=right CLASS="chappage2"><A HREF="2.html">4</A></TD>
+</TR>
+
+</TABLE>
+*/
+
+TH.toctitle, TH.tocpage {
+  background-color: #E0DD06;
+}
+TD.chapnumber, TD.chaptitle, TD.chappage, TD.sectiontitle2, TD.sectionpage2 {
+  background-color: #E0FFE0;
+}
+TD.chapnumber2, TD.chaptitle2, TD.chappage2, TD.sectiontitle, TD.sectionpage {
+  background-color: #FFFFE0;
+}
+TD.sectiontitle, TD.sectiontitle2 {
+  text-indent: 2.5cm;
+}
+
+/*******************************************************************/
+
+/* H1 {
+  margin-top: 1em;
+  margin-bottom: 1em;
+  text-align: center;
+  font-family: sans-serif;
+  font-weight: bold;
+  color: #0050B2;
+}
+
+/*  border: solid; 
+  border-color: #0050B2;
+  border-width: 2; */
+
+H2 {
+  text-align: bottom;
+  font-family: sans-serif;
+  font-weight: bold;
+/*  color: #0050B2;
+  font-size: xx-small;*/
+}
+
+H2.appendix {
+  border: none;
+  text-align: center;
+  font-family: sans-serif;
+  font-weight: bold;
+  color: #0050B2;
+}
+
+H3 {
+  text-align: left;
+  font-family: sans-serif;
+  font-weight: normal;
+  color: #0050B2; 
+}
+*/
+
+/*******************************************************************/
+
+P {
+/*  text-indent: 1.5em; */
+  text-align: justify;
+}
+
+P.noindent {
+  text-indent: 0em; 
+  text-align: justify;
+}
+
+P.negindent {
+  text-indent: -4%; 
+  text-align: justify;
+}
+
+P.banner {
+  align="right";
+  margin-top: 1em;
+}
+
+P.asciinote {    /* Hidden on screen, shown in ASCII (txt) version */
+  position : absolute ;
+  width : 0cm ;
+  height : 0cm ;
+  left : 1cm ;
+  top : 1cm ;
+  margin-top: 1em;
+  overflow : hidden ; 
+}
+
+/*******************************************************************/
+/* Warning section                                                 */
+
+TABLE.warning {
+  align:center;
+  color : black;
+}
+
+TD.red {
+  background: #ff6347;
+}
+
+TD.warning {
+  background: #eeeedd;
+  text-align: justify;
+  color : black;
+}
+
+P.warning {
+  text-align: justify;
+  text-indent: -0.6em; 
+  color : black;
+}
+
+/*******************************************************************/
+
+P.example {
+  text-indent: 0em; 
+  color : black;
+  border: solid;
+  border-color: #0050B2;
+  border-width: 2;
+}
+
+P.changed {
+  padding-left: 0.2em;
+  border-left: solid;
+  border-right: none;
+  border-top: none;
+  border-bottom: none;
+  border-left-width: 2;
+  border-color: #ff6347; /* tomato */
+}
+
+/*******************************************************************/
+
+UL {
+  list-style-type: disc;
+  list-style-position: inside;
+}
+
+OL {
+  list-style-position: inside;
+}
+
+OL.romanlo  {
+  display: list-item;
+  list-style-type: lower-roman;
+  list-style-position: inside;
+}
+
+UL.toc { list-style: disc }
+
+UL.disco {
+  display: list-item;
+}
+
+DT { 
+  margin-top: 0; /* opera 3.50 */
+  margin-bottom: 0;
+}
+
+DD {
+  margin-top: 0; /* opera 3.50 */
+  margin-bottom: 0;
+}
+
+/*TH, TD {
+  font-family: sans-serif;
+}
+*/
+
+A:link {color: #8b0000} /* red4.. */
+A:visited {color: #551a8b } /* purple4 */
+A:active {color: #ff3300}
+A {
+  /*font-family: times;*/
+  font-weight: bold;
+  /*text-decoration: none;*/
+}
+
+A.file {
+  color: #8b814c; /* light goldenrod4 */
+  font-family: times;
+  font-weight: bold;
+}
+
+A.references {
+  font-family: times;
+  font-weight: bold;
+  color: #006699;
+  background: #f0f0f0;
+  text-align:left;
+}
+
+EM.references {
+  font-style:italic;
+}
+
+/*STRONG {
+  color:#006699;
+}*/
+
+TT {
+  font-family: monospace;
+  font-weight: normal;
+}
+
+PRE { 
+  margin-left: 2em
+  color: blue;
+}
+
+PRE { font-family: monospace }        /* navigator 4 requires this */
+
+.stabilo {
+  background: #e7ff00; /* ~= yellow2 */
+  color: #000000;
+}
+
+SPAN.ocf {
+  color: #556b2f; /* dark olive green */
+}
+
+SPAN.under {
+  text-decoration: underline;
+}
+
+.hide { display: none }
+
+DIV.head { margin-bottom: 1em }
+DIV.head H1 { margin-top: 2em; clear: both }
+DIV.head TABLE { margin-left: 2em; margin-top: 2em }
+DIV.head IMG { color: white; border: none } /* remove border from top image */
+
+DIV.abstract {
+  text-align: justify;
+  text-align: left;
+  color: black; 
+}
+
+
+DIV.box {
+  white-space: pre;
+  font-weight: bold;
+  font-family: monospace, Helvetica;
+/*  color: #477979;*/
+  color: black;
+  border: thin solid silver; 
+  padding: 1.0%; 
+  width: 80.0%;
+  background-color: #F0F0E0;
+}
+
+PRE.example {
+  background:     #eeeedd;
+  color:          black;
+  width:          auto;
+  font-weight:    bold;
+  margin-left:    1em;
+  margin-right:   1em;
+  border:         solid 2px black;
+  white-space:    pre;
+  font-family:    Courier, fixed, serif;
+  text-align:     left;
+}
+
+.sample { 
+  white-space: pre;
+  font-family: Helvetica;
+  background-color:  #F0F0E0;
+  color: rgb(0, 0, 0);
+  padding: 1%;
+  width: 100%;
+  border-style: solid ;
+  border-width: 1px;
+}
+
+CITE {
+  font-family: times;
+  font-weight: bold;
+  font-style: normal;
+  text-decoration: none;
+}
+
+.pullquote {
+  width: 12.5em;
+  padding: .25em;
+/*  font-style:italic;*/
+  font-weight: bold;
+  font-family:sans-serif;
+  float:left;
+/*  color:#cc3333;*/
+  color:#006699;
+  background:#f0f0f0;
+  text-align:left;
+}
+
+P.pull {
+  margin-left: 1em;
+  margin-right: 3em;
+  border: solid; 
+  border-color: #0050B2;
+  border-width: 1;
+}
+
+P.copyright { font-size: smaller }
+
+@media screen {  /* hide from IE3 */
+A:hover { background: #FFA } 
+}
+
+/*@media aural {  
+  H1, H2, H3 { stress: 20; richness: 90 }
+  .hide { speak: none }
+  P.copyright { volume: x-soft; speech-rate: x-fast }
+  DT { pause-before: 20% }
+  PRE { speak-punctuation: code } 
+}
+
+*/

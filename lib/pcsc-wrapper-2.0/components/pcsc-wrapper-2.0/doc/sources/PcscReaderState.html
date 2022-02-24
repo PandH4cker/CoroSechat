@@ -1,0 +1,101 @@
+<HTML> <body bgcolor = "FFFFFF"> <PRE>
+<FONT COLOR="FF0000">/*
+  * Copyright © 1997 - 1999 IBM Corporation.
+  * 
+  * Redistribution and use in source (source code) and binary (object code)
+  * forms, with or without modification, are permitted provided that the
+  * following conditions are met:
+  * 1. Redistributed source code must retain the above copyright notice, this
+  * list of conditions and the disclaimer below.
+  * 2. Redistributed object code must reproduce the above copyright notice,
+  * this list of conditions and the disclaimer below in the documentation
+  * and/or other materials provided with the distribution.
+  * 3. The name of IBM may not be used to endorse or promote products derived
+  * from this software or in any other form without specific prior written
+  * permission from IBM.
+  * 4. Redistribution of any modified code must be labeled &quot;Code derived from
+  * the original OpenCard Framework&quot;.
+  * 
+  * THIS SOFTWARE IS PROVIDED BY IBM &quot;AS IS&quot; FREE OF CHARGE. IBM SHALL NOT BE
+  * LIABLE FOR INFRINGEMENTS OF THIRD PARTIES RIGHTS BASED ON THIS SOFTWARE.  ANY
+  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+  * DISCLAIMED.  IBM DOES NOT WARRANT THAT THE FUNCTIONS CONTAINED IN THIS
+  * SOFTWARE WILL MEET THE USER'S REQUIREMENTS OR THAT THE OPERATION OF IT WILL
+  * BE UNINTERRUPTED OR ERROR-FREE.  IN NO EVENT, UNLESS REQUIRED BY APPLICABLE
+  * LAW, SHALL IBM BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+  * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+  * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+  * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+  * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.  ALSO, IBM IS UNDER NO OBLIGATION
+  * TO MAINTAIN, CORRECT, UPDATE, CHANGE, MODIFY, OR OTHERWISE SUPPORT THIS
+  * SOFTWARE.
+  */</FONT>
+ 
+ <FONT COLOR="008000">package</FONT> com.ibm.opencard.terminal.pcsc10;
+ 
+ <FONT COLOR="FF0000">/** Defines a data structure getting status information from PC/SC.
+  *
+  * @author  Stephan Breideneich (sbreiden@de.ibm.com)
+  * @version $Id: PcscReaderState.java,v 2.0 2001/06/14 13:32:36 root Exp root $
+  */</FONT>
+ 
+ <FONT COLOR="008000">public</FONT> <FONT COLOR="008000">class</FONT> <FONT COLOR = "800080"><A NAME = "PcscReaderState::">PcscReaderState</A></FONT> {
+ 
+    <FONT COLOR="FF0000">/**
+     * &lt;tt&gt;Reader&lt;/tt&gt; is the friendly reader name.
+     */</FONT>
+    <FONT COLOR="008000">public</FONT> String     <FONT COLOR = "800080"><A NAME = "PcscReaderState::Reader">Reader</A></FONT>;
+ 
+    <FONT COLOR="FF0000">/**
+     * &lt;tt&gt;UserData&lt;/tt&gt; is arbitrary application-supplied data for the
+     * card reader. Its use will depend on the reader capabilities.
+     */</FONT>
+ 
+    <FONT COLOR="008000">public</FONT> byte[]     UserData;
+ 
+    <FONT COLOR="FF0000">/**
+     * &lt;tt&gt;CurrentState&lt;/tt&gt; is set by the application to the current
+     * reader state. This variable can take on values that are
+     * defined by the &lt;tt&gt;SCARD_&lt;/tt&gt; constants.
+     */</FONT>
+ 
+    <FONT COLOR="008000">public</FONT> <FONT COLOR="008000">int</FONT>         <FONT COLOR = "800080"><A NAME = "PcscReaderState::CurrentState">CurrentState</A></FONT>;
+ 
+    <FONT COLOR="FF0000">/**
+     * &lt;tt&gt;EventState&lt;/tt&gt; is set by the resource manager to the current
+     * reader state. This variable can take on values defined by
+     * the &lt;tt&gt;SCARD_&lt;/tt&gt; constants.
+     */</FONT>
+ 
+    <FONT COLOR="008000">public</FONT> <FONT COLOR="008000">int</FONT>         <FONT COLOR = "800080"><A NAME = "PcscReaderState::EventState">EventState</A></FONT>;
+ 
+    <FONT COLOR="FF0000">/**
+     * &lt;tt&gt;ATR&lt;/tt&gt; is set by the resource manager to the current ATR-String, 
+     * if one card is inserted.
+     */</FONT>
+    <FONT COLOR="008000">public</FONT> byte[]     ATR;
+ }
+ 
+ <FONT COLOR="FF0000">// $Log: PcscReaderState.java,v $</FONT>
+ <FONT COLOR="FF0000">// Revision 2.0  2001/06/14 13:32:36  root</FONT>
+ <FONT COLOR="FF0000">// Distributed V2 with long APDU support. Added support for &lt;space&gt; in names.</FONT>
+ <FONT COLOR="FF0000">//</FONT>
+ <FONT COLOR="FF0000">// Revision 1.99  2001/06/14 13:13:36  root</FONT>
+ <FONT COLOR="FF0000">// Alpha Version with long APDU support and other features. Distributed 20/12/00</FONT>
+ <FONT COLOR="FF0000">//</FONT>
+ <FONT COLOR="FF0000">// Revision 1.0  2001/06/14 09:12:45  root</FONT>
+ <FONT COLOR="FF0000">// Official Version Distributed in OCF 1.2</FONT>
+ <FONT COLOR="FF0000">//</FONT>
+ <FONT COLOR="FF0000">// Revision 1.3  1998/06/09 14:21:43  breid</FONT>
+ <FONT COLOR="FF0000">// ATR-field added</FONT>
+ <FONT COLOR="FF0000">//</FONT>
+ <FONT COLOR="FF0000">// Revision 1.2  1998/04/07 12:40:48  breid</FONT>
+ <FONT COLOR="FF0000">// *** empty log message ***</FONT>
+ <FONT COLOR="FF0000">//</FONT>
+ <FONT COLOR="FF0000">// Revision 1.1  1998/04/07 11:30:59  breid</FONT>
+ <FONT COLOR="FF0000">// initial version</FONT>
+ <FONT COLOR="FF0000">//</FONT>
+</PRE></BODY></HTML> 

@@ -1,0 +1,11 @@
+com.ibm.opencard
+com.ibm.opencard.access
+com.ibm.opencard.buffer
+com.ibm.opencard.dictionary
+com.ibm.opencard.factory
+com.ibm.opencard.handler
+com.ibm.opencard.isofs
+com.ibm.opencard.script
+com.ibm.opencard.service
+com.ibm.opencard.signature
+com.ibm.opencard.util
