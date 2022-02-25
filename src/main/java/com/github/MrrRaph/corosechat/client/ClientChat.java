@@ -16,6 +16,7 @@ import java.io.*;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Scanner;
 
 import static com.github.MrrRaph.corosechat.client.utils.bytes.ByteUtil.printBytes;
@@ -182,30 +183,21 @@ public class ClientChat extends Thread {
                 } else {
                     if (isConnected) {
                         try {
-                            byte[] paddedText = PKCS5.addPKCS5Padding(input.getBytes(), (short) 0xF0);
-                            DataInputStream dataInputStream = new DataInputStream(new ByteArrayInputStream(paddedText));
-                            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                            while (dataInputStream.available() > 0) {
-                                byte[] buffer = new byte[0xF0];
-                                dataInputStream.readFully(buffer, 0, buffer.length);
-                                int apduLength = 6 + buffer.length;
-                                byte[] apdu = new byte[apduLength];
-                                apdu[0] = CLA;
-                                apdu[1] = DES_ENCRYPT.getCode();
-                                apdu[2] = 0;
-                                apdu[3] = 0;
-                                apdu[4] = (byte) buffer.length;
-
-                                System.arraycopy(buffer, 0, apdu, 5, buffer.length);
-
-                                CommandAPDU cmd = new CommandAPDU(apdu);
-                                ResponseAPDU resp = sendAPDU(cmd, this.cardService);
-                                ResponseCode responseCode = ResponseAPDUtils.byteArrayToResponseCode(resp.getBytes());
-                                if (responseCode == ResponseCode.OK)
-                                    outputStream.write(resp.data());
-                                else ResponseAPDUtils.printError(responseCode);
-                            }
-                            this.out.println(new String(Base64.encodeBase64(outputStream.toByteArray())));
+                            if (input.startsWith("/msg")) {
+                                String[] splittedInput = input.split(" ");
+                                String message = cipheredInput(String.join(
+                                        " ",
+                                        Arrays.copyOfRange(splittedInput, 2, splittedInput.length)
+                                ));
+                                this.out.println(
+                                        String.join(" ", new String[]{
+                                                splittedInput[0],
+                                                splittedInput[1],
+                                                message
+                                        })
+                                );
+                            } else if (input.startsWith("/list")) this.out.println(input);
+                            else this.out.println(cipheredInput(input));
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -213,6 +205,33 @@ public class ClientChat extends Thread {
                 }
             } else LOOP = false;
         }
+    }
+
+    private String cipheredInput(String input) throws IOException {
+        byte[] paddedText = PKCS5.addPKCS5Padding(input.getBytes(), (short) 0xF0);
+        DataInputStream dataInputStream = new DataInputStream(new ByteArrayInputStream(paddedText));
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        while (dataInputStream.available() > 0) {
+            byte[] buffer = new byte[0xF0];
+            dataInputStream.readFully(buffer, 0, buffer.length);
+            int apduLength = 6 + buffer.length;
+            byte[] apdu = new byte[apduLength];
+            apdu[0] = CLA;
+            apdu[1] = DES_ENCRYPT.getCode();
+            apdu[2] = 0;
+            apdu[3] = 0;
+            apdu[4] = (byte) buffer.length;
+
+            System.arraycopy(buffer, 0, apdu, 5, buffer.length);
+
+            CommandAPDU cmd = new CommandAPDU(apdu);
+            ResponseAPDU resp = sendAPDU(cmd, this.cardService);
+            ResponseCode responseCode = ResponseAPDUtils.byteArrayToResponseCode(resp.getBytes());
+            if (responseCode == ResponseCode.OK)
+                outputStream.write(resp.data());
+            else ResponseAPDUtils.printError(responseCode);
+        }
+        return new String(Base64.encodeBase64(outputStream.toByteArray()));
     }
 
     private void initStreams(String[] args) {
