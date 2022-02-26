@@ -1,15 +1,41 @@
 package com.github.MrrRaph.corosechat.client.utils.card;
 
+import com.github.MrrRaph.corosechat.client.communications.card.codes.CommandCode;
+import opencard.core.service.CardRequest;
+import opencard.core.service.CardServiceException;
 import opencard.core.service.SmartCard;
+import opencard.core.terminal.CardTerminalException;
 import opencard.core.terminal.CommandAPDU;
 import opencard.core.terminal.ResponseAPDU;
 import opencard.core.util.HexString;
+import opencard.core.util.OpenCardPropertyLoadingException;
 import opencard.opt.util.PassThruCardService;
 
 public final class CardUtils {
     public static final byte CLA            = (byte) 0x90;
     public static final byte GET_MODULUS    = (byte) 0x00;
     public static final byte GET_EXPONENT   = (byte) 0x01;
+
+    public static PassThruCardService getCardService()
+            throws
+            OpenCardPropertyLoadingException,
+            CardServiceException,
+            CardTerminalException,
+            ClassNotFoundException {
+        SmartCard.start();
+        System.out.print("Smartcard inserted?... ");
+
+        CardRequest cr = new CardRequest(CardRequest.ANYCARD, null, null);
+
+        SmartCard sm = SmartCard.waitForCard(cr);
+
+        if (sm != null)
+            System.out.println("got a SmartCard object!\n");
+        else
+            System.out.println("did not get a SmartCard object!\n");
+
+        return initNewCard(sm);
+    }
 
     private static boolean selectApplet(PassThruCardService servClient) {
         boolean cardOk = false;
@@ -19,9 +45,8 @@ public final class CardUtils {
                     (byte)0xA0, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x62,
                     (byte)0x03, (byte)0x01, (byte)0x0C, (byte)0x06, (byte)0x01
             });
-            ResponseAPDU resp = sendAPDU(cmd, servClient);
-            if(APDUtils.apdu2string(resp).equals("90 00"))
-                cardOk = true;
+            ResponseAPDU resp = sendAPDU(cmd, false, servClient);
+            if(APDUtils.apdu2string(resp).equals("90 00")) cardOk = true;
         } catch(Exception e) {
             System.out.println("Exception caught in selectApplet: " + e.getMessage());
             System.exit(-1);
@@ -72,5 +97,10 @@ public final class CardUtils {
             System.exit(-1);
         }
         return result;
+    }
+
+    public static ResponseAPDU sendCommand(CommandCode command, byte P1, byte P2, byte LC, PassThruCardService cardService) {
+        CommandAPDU cmd = new CommandAPDU(new byte[]{CLA, command.getCode(), P1, P2, LC});
+        return sendAPDU(cmd,  false, cardService);
     }
 }

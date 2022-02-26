@@ -12,6 +12,7 @@ import com.github.MrrRaph.corosechat.server.utils.Writifier;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.jetbrains.annotations.NotNull;
 
 import javax.crypto.*;
 import java.io.*;
@@ -28,32 +29,42 @@ import java.util.*;
 import java.util.stream.Stream;
 
 import static com.github.MrrRaph.corosechat.server.ServerChat.*;
+import static com.github.MrrRaph.corosechat.server.communications.ClientCommand.*;
 
 public class ServiceChat implements Runnable {
-    private static final Logger logger = LoggerFactory.getLogger(ServiceChat.class.getSimpleName());
+    private static final Logger logger      = LoggerFactory.getLogger(ServiceChat.class.getSimpleName());
+    private static final int CHALLENGE_SIZE = 128;
+    private static final short FTM_ENDER    = 0xFF;
+    private static final String ADMIN_TAG   = "<ADMIN>";
+    private static final Map<String, Client> users = new HashMap<>();
+    private static final Set<User> userDB = new HashSet<>();
 
     private String pseudo;
     private Socket socket;
     private final Scanner in;
     private final PrintWriter out;
     private final boolean isAdmin;
-
-    private static final Map<String, Client> users = new HashMap<>();
-
-    private static final Set<User> userDB = new HashSet<>();
+    private Cipher cRSA_NO_PAD;
 
     public ServiceChat(final Socket socket) throws IOException {
         this.socket = socket;
         this.in = new Scanner(this.socket.getInputStream());
         this.out = new PrintWriter(this.socket.getOutputStream(), true);
         this.isAdmin = false;
+
+        Security.addProvider(new BouncyCastleProvider());
+        try {
+            this.cRSA_NO_PAD = Cipher.getInstance("RSA/NONE/NoPadding", BouncyCastleProvider.PROVIDER_NAME);
+        } catch (NoSuchAlgorithmException | NoSuchProviderException | NoSuchPaddingException e) {
+            logger.log(e.getMessage(), Level.ERROR);
+        }
     }
 
     public ServiceChat() {
         this.in = new Scanner(System.in);
         this.out = new PrintWriter(System.out, true);
         this.isAdmin = true;
-        this.pseudo = "<ADMIN>";
+        this.pseudo = ADMIN_TAG;
     }
 
     private User getUser(String username) {
@@ -70,90 +81,43 @@ public class ServiceChat implements Runnable {
     public void run() {
         try {
             if (users.size() + 1 > MAX_USERS) {
-                this.socket.close();
+                closeSocket(this.out, this.socket);
                 return;
             }
 
             if (!this.isAdmin) {
                 logger.log("A new user has initiated a connection on IP " + this.socket.getInetAddress().getHostAddress(), Level.INFO);
 
-                Writifier.systemWriter(this.out, "username: ");
-                byte[] challengeBytes = new byte[128];
                 try {
-                    String username = null;
-                    do {
-                        if (this.in.hasNextLine())
-                            username = StringUtils.removeNonPrintable(this.in.nextLine().trim());
-                        if (Objects.requireNonNull(username).isEmpty())
-                            Writifier.systemWriter(this.out, "username: ");
-                    } while(username.trim().isEmpty());
-
+                    String username = askUsername();
                     User user = getUser(username);
 
                     if (user != null) {
-                        Random r = new Random(new Date().getTime());
-                        r.nextBytes(challengeBytes);
+                        byte[] challengeBytes = generateChallenge(CHALLENGE_SIZE);
 
-                        System.out.println("Challenge Bytes plaintext: " + com.github.MrrRaph.corosechat.client.utils.bytes.ByteUtil.printBytes(challengeBytes));
-
-                        Security.addProvider(new BouncyCastleProvider());
-                        Cipher cRSA_NO_PAD = Cipher.getInstance("RSA/NONE/NoPadding", "BC");
-                        cRSA_NO_PAD.init(Cipher.ENCRYPT_MODE, user.getPublicKey());
-
-                        challengeBytes[0] &= 0x3F;
+                        this.cRSA_NO_PAD.init(Cipher.ENCRYPT_MODE, user.getPublicKey());
                         byte[] ciphered = cRSA_NO_PAD.doFinal(challengeBytes);
 
-                        Writifier.systemWriter(this.out, "Challenge:" + new String(Base64.encodeBase64(ciphered)));
-
-                        String uncipheredChallenge = "";
-                        do {
-                            if (this.in.hasNextLine()) uncipheredChallenge = this.in.nextLine();
-                        } while(uncipheredChallenge.isEmpty());
-
-                        byte[] unciphered =  Base64.decodeBase64(uncipheredChallenge.getBytes());
-                        if (Arrays.equals(unciphered, challengeBytes)) {
-                            if (users.containsKey(username)) {
-                                Writifier.systemWriter(this.out, "Error: An user with the same pseudo is already connected.");
-                                logger.log("Failing attempt for connecting to " + username + ": User already connected.", Level.WARNING);
-                                this.socket.close();
-                                return;
-                            }
-
-                            Writifier.systemWriter(this.out, "Welcome ! You are now authenticated.");
-                            this.pseudo = user.getUsername();
-                        } else {
-                            Writifier.systemWriter(this.out, "Challenge verification failed.");
-                            Writifier.systemWriter(this.out, "Socket closed.");
-                            return;
-                        }
+                        if (!isAuthenticated(username, user, challengeBytes, ciphered)) return;
                     } else {
-                        Writifier.systemWriter(this.out, "Public Key:");
+                        Writifier.systemWriter(this.out, PUBLIC_KEY);
                         String[] splittedResponse = new String[0];
                         do {
                             if (this.in.hasNextLine())
                                 splittedResponse = this.in.nextLine().split(" ");
                         } while (splittedResponse.length == 0);
 
-                        String mod_s = new String(Hex.encodeHex(Base64.decodeBase64(splittedResponse[0].getBytes())));
-                        String pub_s = new String(Hex.encodeHex(Base64.decodeBase64(splittedResponse[1].getBytes())));
-
-                        BigInteger modulus = new BigInteger(mod_s, 16);
-                        BigInteger pubExponent = new BigInteger(pub_s, 16);
-
-                        RSAPublicKeySpec publicSpec = new RSAPublicKeySpec(modulus, pubExponent);
-
-                        KeyFactory factory = KeyFactory.getInstance("RSA");
-                        PublicKey publicKey = factory.generatePublic(publicSpec);
+                        PublicKey publicKey = getPublicKey(splittedResponse[0].getBytes(), splittedResponse[1].getBytes());
                         userDB.add(new User(username, publicKey, UserGroup.REGULAR_USER));
-                        Writifier.systemWriter(this.out,"New user created!");
+                        Writifier.systemWriter(this.out,"A new user has been created! Connect back again to login.");
+                        Writifier.systemWriter(this.out, SOCKET_CLOSED);
                         logger.log("A new user has been created with username " + username, Level.INFO);
-                        this.socket.close();
+                        closeSocket(this.out, this.socket);
                         return;
                     }
-                } catch (NoSuchAlgorithmException  | NoSuchProviderException |
-                         NoSuchPaddingException    | InvalidKeyException     |
+                } catch (NoSuchAlgorithmException  | InvalidKeyException |
                          IllegalBlockSizeException | BadPaddingException e) {
-                    e.printStackTrace();
+                    logger.log(e.getMessage(), Level.ERROR);
                 }
             }
 
@@ -208,7 +172,7 @@ public class ServiceChat implements Runnable {
                                     if (users.containsKey(splittedInput[1])) {
                                         Writifier.systemWriter(this.out, "Sending File: " + splittedInput[2]);
 
-                                        Writifier.systemWriter(users.get(splittedInput[1]).getWriter(), "/enable ftm");
+                                        Writifier.systemWriter(users.get(splittedInput[1]).getWriter(), ENABLE_FILE_TRANSFER_MODE);
                                         this.out.println(splittedInput[2]);
 
                                         BufferedInputStream bufferedInputStream = new BufferedInputStream(this.socket.getInputStream());
@@ -219,7 +183,7 @@ public class ServiceChat implements Runnable {
                                                     .getWriter()
                                                     .println(b);
                                         }
-                                        users.get(splittedInput[1]).getWriter().println(0xFF);
+                                        users.get(splittedInput[1]).getWriter().println(FTM_ENDER);
                                     } else Writifier.systemWriter(this.out, "User " + splittedInput[2] + " is not connected.");
                                 }
                             }
@@ -237,16 +201,7 @@ public class ServiceChat implements Runnable {
                                     String[] splittedInput = input.split(" ");
                                     if (splittedInput.length < 3) Writifier.systemWriter(this.out, "Usage: /addAccount username publicKeyModulus publicKeyExponent");
                                     else {
-                                        String mod_s = new String(Hex.encodeHex(Base64.decodeBase64(splittedInput[2].getBytes())));
-                                        String pub_s = new String(Hex.encodeHex(Base64.decodeBase64(splittedInput[3].getBytes())));
-
-                                        BigInteger modulus = new BigInteger(mod_s, 16);
-                                        BigInteger pubExponent = new BigInteger(pub_s, 16);
-
-                                        RSAPublicKeySpec publicSpec = new RSAPublicKeySpec(modulus, pubExponent);
-
-                                        KeyFactory factory = KeyFactory.getInstance("RSA");
-                                        PublicKey publicKey = factory.generatePublic(publicSpec);
+                                        PublicKey publicKey = getPublicKey(splittedInput[2].getBytes(), splittedInput[3].getBytes());
                                         addAccount(splittedInput[1], publicKey);
                                     }
                                 }
@@ -267,6 +222,29 @@ public class ServiceChat implements Runnable {
                             }
                             case LIST -> listUsers();
                             case PRIVATE_MESSAGE -> privateMessage(input, this.isAdmin);
+                            case HELP -> {
+                                String help = """
+                                        ## Regular User Commands:
+                                        <SYSTEM> /logout|/exit\t\t\t\t-- Disconnect / Quit
+                                        <SYSTEM> /list\t\t\t\t\t-- List current connected users
+                                        <SYSTEM> /msg username message\t\t\t-- Send a Private Message to username
+                                        <SYSTEM> /sendfile username filename\t\t-- Send a File to username
+                                        <SYSTEM> /help\t\t\t\t\t-- Show this help message
+                                        """;
+
+                                if (this.isAdmin) help += """
+                                        ## Admin Commands:
+                                        /kill username\t\t-- Kill a connected user
+                                        /killall\t\t-- Kill all connected users
+                                        /halt\t\t-- Stop the server
+                                        /deleteAccount username\t\t-- Delete an existing account
+                                        /addAccount username password\t\t-- Add an account
+                                        /loadBDD\t\t-- Load the Database
+                                        /saveBDD\t\t-- Save the Database
+                                        """;
+
+                                Writifier.systemWriter(this.out, help);
+                            }
                             default -> broadcastMessage(input, this.isAdmin);
                         }
                         if (!this.isAdmin) logger.log("[" + this.pseudo + "] " + input, Level.INFO);
@@ -279,6 +257,72 @@ public class ServiceChat implements Runnable {
         } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
             e.printStackTrace();
         }
+    }
+
+    private PublicKey getPublicKey(byte[] modulusBytes, byte[] publicExponent) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        String mod_s = new String(Hex.encodeHex(Base64.decodeBase64(modulusBytes)));
+        String pub_s = new String(Hex.encodeHex(Base64.decodeBase64(publicExponent)));
+
+        BigInteger modulus = new BigInteger(mod_s, 16);
+        BigInteger pubExponent = new BigInteger(pub_s, 16);
+
+        RSAPublicKeySpec publicSpec = new RSAPublicKeySpec(modulus, pubExponent);
+
+        KeyFactory factory = KeyFactory.getInstance("RSA");
+        return factory.generatePublic(publicSpec);
+    }
+
+    private boolean isAuthenticated(String username, User user, byte[] challengeBytes, byte[] ciphered) throws IOException {
+        Writifier.systemWriter(this.out, CHALLENGE + " " + new String(Base64.encodeBase64(ciphered)));
+
+        String uncipheredChallenge = "";
+        do {
+            if (this.in.hasNextLine()) uncipheredChallenge = this.in.nextLine();
+        } while(uncipheredChallenge.isEmpty());
+
+        byte[] unciphered =  Base64.decodeBase64(uncipheredChallenge.getBytes());
+        if (Arrays.equals(unciphered, challengeBytes)) {
+            if (users.containsKey(username)) {
+                Writifier.systemWriter(this.out, "Error: An user with the same pseudo is already connected.");
+                logger.log("Failing attempt for connecting to " + username + ": User already connected.", Level.WARNING);
+                closeSocket(this.out, this.socket);
+                return false;
+            }
+
+            Writifier.systemWriter(this.out, "Welcome ! You are now authenticated.");
+            Writifier.systemWriter(this.out, AUTHENTICATED);
+            this.pseudo = user.getUsername();
+        } else {
+            Writifier.systemWriter(this.out, "Challenge verification failed.");
+            closeSocket(this.out, this.socket);
+            return false;
+        }
+        return true;
+    }
+
+    private void closeSocket(PrintWriter out, Socket socket) throws IOException {
+        Writifier.systemWriter(out, "Socket closed.");
+        socket.close();
+    }
+
+    @NotNull
+    private byte[] generateChallenge(int challengeSize) {
+        byte[] challengeBytes = new byte[challengeSize];
+        Random r = new Random(new Date().getTime());
+        r.nextBytes(challengeBytes);
+        challengeBytes[0] &= 0x3F;
+        return challengeBytes;
+    }
+
+    @NotNull
+    private String askUsername() {
+        String username = null;
+        do {
+            Writifier.systemWriter(this.out, "username: ");
+            if (this.in.hasNextLine())
+                username = StringUtils.removeNonPrintable(this.in.nextLine().trim());
+        } while(Objects.requireNonNull(username).trim().isEmpty());
+        return username;
     }
 
     private void saveDatabase() throws IOException {
@@ -320,8 +364,7 @@ public class ServiceChat implements Runnable {
         Iterator<String> iter = users.keySet().iterator();
         while (iter.hasNext()) {
             String username = iter.next();
-            Writifier.systemWriter(users.get(username).getWriter(), "Socket closed.");
-            users.get(username).getSocket().close();
+            closeSocket(users.get(username).getWriter(), users.get(username).getSocket());
             iter.remove();
 
             for (Client client : users.values())
@@ -332,8 +375,7 @@ public class ServiceChat implements Runnable {
 
     private synchronized void killUser(String username) throws IOException {
         if (users.containsKey(username)) {
-            Writifier.systemWriter(users.get(username).getWriter(), "Socket closed.");
-            users.get(username).getSocket().close();
+            closeSocket(users.get(username).getWriter(), users.get(username).getSocket());
             users.remove(username);
 
             for (Client client : users.values())

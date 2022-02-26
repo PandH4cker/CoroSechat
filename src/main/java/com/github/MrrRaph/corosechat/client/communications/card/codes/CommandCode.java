@@ -1,4 +1,4 @@
-package com.github.MrrRaph.corosechat.client.card.codes;
+package com.github.MrrRaph.corosechat.client.communications.card.codes;
 
 public enum CommandCode {
     GENERATE_RSA_KEYPAIR((byte) 0xF6, "Generate RSA Key Pair"),

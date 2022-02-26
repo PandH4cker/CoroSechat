@@ -13,6 +13,7 @@ public enum ServerCommand {
     LOAD_DATABASE("/loadBDD"),
     SAVE_DATABASE("/saveBDD"),
     SEND_FILE("/sendFile"),
+    HELP("/help"),
     UNKNOWN("");
 
     private String command;
@@ -27,8 +28,7 @@ public enum ServerCommand {
     }
 
     public static ServerCommand fromString(final String s) {
-        for (ServerCommand cmd : ServerCommand.values()) {
-            if (s.equalsIgnoreCase(cmd.toString())) return cmd;
-        } return UNKNOWN;
+        for (ServerCommand cmd : ServerCommand.values()) if (s.equalsIgnoreCase(cmd.toString())) return cmd;
+        return UNKNOWN;
     }
 }
