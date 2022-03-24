@@ -30,6 +30,7 @@ public class ClientChat extends Thread {
     private final static String DIR_PATH    = "download/";
     private final static short DMS          = 0xF0;
     public static final String SERVER_TAG   = "<SYSTEM>";
+    public static final String ADMIN_TAG    = "<ADMIN>";
     private static final short FTM_ENDER    = 0xFF;
 
     private Socket socket;
@@ -275,7 +276,7 @@ public class ClientChat extends Thread {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                }
+                } else if (serverOutput.startsWith(ADMIN_TAG)) System.out.println(serverOutput);
             }
         }
     }
