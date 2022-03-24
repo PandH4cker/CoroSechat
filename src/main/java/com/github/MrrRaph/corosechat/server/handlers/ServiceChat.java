@@ -334,8 +334,8 @@ public class ServiceChat implements Runnable {
         for (User u : userDB)
             Files.write(p, (
                     u.getUsername() + ":" +
-                    ((RSAPublicKey) u.getPublicKey()).getModulus() + ":" +
-                    ((RSAPublicKey) u.getPublicKey()).getPublicExponent() + ":" +
+                    new String(Base64.encodeBase64(((RSAPublicKey) u.getPublicKey()).getModulus().toByteArray())) + ":" +
+                    new String(Base64.encodeBase64(((RSAPublicKey) u.getPublicKey()).getPublicExponent().toByteArray())) + ":" +
                     u.getGroup() + "\n"
             ).getBytes(), StandardOpenOption.APPEND, StandardOpenOption.CREATE);
     }
@@ -346,7 +346,15 @@ public class ServiceChat implements Runnable {
             try (Stream<String> stream = Files.lines(p)) {
                 stream.forEach(line -> {
                     String[] splittedLine = line.split(":");
-                    userDB.add(new User(splittedLine[0], null, UserGroup.REGULAR_USER)); // TODO: Change the public key
+                    try {
+                        userDB.add(new User(
+                                splittedLine[0],
+                                getPublicKey(splittedLine[1].getBytes(), splittedLine[2].getBytes()),
+                                UserGroup.REGULAR_USER
+                        ));
+                    } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+                        e.printStackTrace();
+                    }
                     logger.log(splittedLine[0] + " account has been added from database.", Level.INFO);
                 });
             }
