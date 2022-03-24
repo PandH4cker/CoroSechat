@@ -23,6 +23,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.security.*;
+import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPublicKeySpec;
 import java.util.*;
@@ -331,7 +332,12 @@ public class ServiceChat implements Runnable {
             Files.delete(p);
 
         for (User u : userDB)
-            Files.write(p, (u.getUsername() + ":" + u.getPublicKey() + ":" + u.getGroup() + "\n").getBytes(), StandardOpenOption.APPEND, StandardOpenOption.CREATE);
+            Files.write(p, (
+                    u.getUsername() + ":" +
+                    ((RSAPublicKey) u.getPublicKey()).getModulus() + ":" +
+                    ((RSAPublicKey) u.getPublicKey()).getPublicExponent() + ":" +
+                    u.getGroup() + "\n"
+            ).getBytes(), StandardOpenOption.APPEND, StandardOpenOption.CREATE);
     }
 
     private void loadDatabase() throws IOException {
