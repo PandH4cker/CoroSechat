@@ -132,126 +132,125 @@ public class ServiceChat implements Runnable {
 
             if (!this.isAdmin) Writifier.systemWriter(this.out, "### Welcome to CoroSeChat ###");
 
-            while (true) {
-                if (this.in.hasNextLine()) {
-                    String input = StringUtils.removeNonPrintable(this.in.nextLine());
-                    if (!input.trim().isEmpty()) {
-                        ServerCommand command = ServerCommand.fromString(input.split(" ")[0]);
-                        switch (command) {
-                            case LOGOUT, EXIT -> {
-                                if (!this.isAdmin) {
-                                    logout();
-                                    logger.log(this.pseudo + " has disconnected [" + this.socket.getInetAddress().getHostAddress() + "]", Level.INFO);
-                                    return;
-                                } else Writifier.systemWriter(this.out, "You cannot disconnect from admin account !");
-                            }
-
-                            case KILL -> {
-                               if (isAdmin) {
-                                   String[] splittedInput = input.split(" ");
-                                   if (splittedInput.length < 2) Writifier.systemWriter(this.out, "Usage: /kill username");
-                                   else killUser(splittedInput[1]);
-                               }
-                            }
-
-                            case KILLALL -> {
-                                if (isAdmin) killall();
-                            }
-
-                            case HALT -> {
-                                if (isAdmin) {
-                                    for (Client client : users.values()) Writifier.systemWriter(client.getWriter(), "Socket closed.");
-                                    System.exit(0);
-                                }
-                            }
-
-                            case SEND_FILE -> {
-                                String[] splittedInput = input.split(" ");
-                                if (splittedInput.length < 3) Writifier.systemWriter(this.out, "Usage: /sendFile username filename");
-                                else {
-                                    if (users.containsKey(splittedInput[1])) {
-                                        Writifier.systemWriter(this.out, "Sending File: " + splittedInput[2]);
-
-                                        Writifier.systemWriter(users.get(splittedInput[1]).getWriter(), ENABLE_FILE_TRANSFER_MODE);
-                                        this.out.println(splittedInput[2]);
-
-                                        BufferedInputStream bufferedInputStream = new BufferedInputStream(this.socket.getInputStream());
-                                        for (long i = 0; i < Long.parseLong(splittedInput[3]); ++i) {
-                                            int b = bufferedInputStream.read();
-                                            System.out.print((char) b);
-                                            users.get(splittedInput[1])
-                                                    .getWriter()
-                                                    .println(b);
-                                        }
-                                        users.get(splittedInput[1]).getWriter().println(FTM_ENDER);
-                                    } else Writifier.systemWriter(this.out, "User " + splittedInput[2] + " is not connected.");
-                                }
-                            }
-
-                            case DELETE_ACCOUNT -> {
-                                if (isAdmin) {
-                                    String[] splittedInput = input.split(" ");
-                                    if (splittedInput.length < 2) Writifier.systemWriter(this.out, "Usage: /deleteAccount username");
-                                    else deleteAccount(splittedInput[1]);
-                                }
-                            }
-
-                            case ADD_ACCOUNT -> {
-                                if (isAdmin) {
-                                    String[] splittedInput = input.split(" ");
-                                    if (splittedInput.length < 3) Writifier.systemWriter(this.out, "Usage: /addAccount username publicKeyModulus publicKeyExponent");
-                                    else {
-                                        PublicKey publicKey = getPublicKey(splittedInput[2].getBytes(), splittedInput[3].getBytes());
-                                        addAccount(splittedInput[1], publicKey);
-                                    }
-                                }
-                            }
-
-                            case LOAD_DATABASE -> {
-                                if (isAdmin) {
-                                    logger.log("Loading database..", Level.INFO);
-                                    loadDatabase();
-                                }
-                            }
-
-                            case SAVE_DATABASE -> {
-                                if (isAdmin) {
-                                    logger.log("Saving database..", Level.INFO);
-                                    saveDatabase();
-                                }
-                            }
-                            case LIST -> listUsers();
-                            case PRIVATE_MESSAGE -> privateMessage(input, this.isAdmin);
-                            case HELP -> {
-                                String help = """
-                                        ## Regular User Commands:
-                                        <SYSTEM> /logout|/exit\t\t\t\t-- Disconnect / Quit
-                                        <SYSTEM> /list\t\t\t\t\t-- List current connected users
-                                        <SYSTEM> /msg username message\t\t\t-- Send a Private Message to username
-                                        <SYSTEM> /sendfile username filename\t\t-- Send a File to username
-                                        <SYSTEM> /help\t\t\t\t\t-- Show this help message
-                                        """;
-
-                                if (this.isAdmin) help += """
-                                        ## Admin Commands:
-                                        /kill username\t\t-- Kill a connected user
-                                        /killall\t\t-- Kill all connected users
-                                        /halt\t\t-- Stop the server
-                                        /deleteAccount username\t\t-- Delete an existing account
-                                        /addAccount username password\t\t-- Add an account
-                                        /loadBDD\t\t-- Load the Database
-                                        /saveBDD\t\t-- Save the Database
-                                        """;
-
-                                Writifier.systemWriter(this.out, help);
-                            }
-                            default -> broadcastMessage(input, this.isAdmin);
+            while (this.in.hasNextLine()) {
+                String input = StringUtils.removeNonPrintable(this.in.nextLine());
+                if (!input.trim().isEmpty()) {
+                    ServerCommand command = ServerCommand.fromString(input.split(" ")[0]);
+                    switch (command) {
+                        case LOGOUT, EXIT -> {
+                            if (!this.isAdmin) {
+                                logout();
+                                logger.log(this.pseudo + " has disconnected [" + this.socket.getInetAddress().getHostAddress() + "]", Level.INFO);
+                                return;
+                            } else Writifier.systemWriter(this.out, "You cannot disconnect from admin account !");
                         }
-                        if (!this.isAdmin) logger.log("[" + this.pseudo + "] " + input, Level.INFO);
-                        else logger.log(this.pseudo + " " + input, Level.INFO);
+
+                        case KILL -> {
+                           if (isAdmin) {
+                               String[] splittedInput = input.split(" ");
+                               if (splittedInput.length < 2) Writifier.systemWriter(this.out, "Usage: /kill username");
+                               else killUser(splittedInput[1]);
+                           }
+                        }
+
+                        case KILLALL -> {
+                            if (isAdmin) killall();
+                        }
+
+                        case HALT -> {
+                            if (isAdmin) {
+                                for (Client client : users.values()) Writifier.systemWriter(client.getWriter(), "Socket closed.");
+                                System.exit(0);
+                            }
+                        }
+
+                        case SEND_FILE -> {
+                            String[] splittedInput = input.split(" ");
+                            if (splittedInput.length < 3) Writifier.systemWriter(this.out, "Usage: /sendFile username filename");
+                            else {
+                                if (users.containsKey(splittedInput[1])) {
+                                    Writifier.systemWriter(this.out, "Sending File: " + splittedInput[2]);
+
+                                    Writifier.systemWriter(users.get(splittedInput[1]).getWriter(), ENABLE_FILE_TRANSFER_MODE);
+                                    this.out.println(splittedInput[2]);
+
+                                    BufferedInputStream bufferedInputStream = new BufferedInputStream(this.socket.getInputStream());
+                                    for (long i = 0; i < Long.parseLong(splittedInput[3]); ++i) {
+                                        int b = bufferedInputStream.read();
+                                        System.out.print((char) b);
+                                        users.get(splittedInput[1])
+                                                .getWriter()
+                                                .println(b);
+                                    }
+                                    users.get(splittedInput[1]).getWriter().println(FTM_ENDER);
+                                } else Writifier.systemWriter(this.out, "User " + splittedInput[2] + " is not connected.");
+                            }
+                        }
+
+                        case DELETE_ACCOUNT -> {
+                            if (isAdmin) {
+                                String[] splittedInput = input.split(" ");
+                                if (splittedInput.length < 2) Writifier.systemWriter(this.out, "Usage: /deleteAccount username");
+                                else deleteAccount(splittedInput[1]);
+                            }
+                        }
+
+                        case ADD_ACCOUNT -> {
+                            if (isAdmin) {
+                                String[] splittedInput = input.split(" ");
+                                if (splittedInput.length < 3) Writifier.systemWriter(this.out, "Usage: /addAccount username publicKeyModulus publicKeyExponent");
+                                else {
+                                    PublicKey publicKey = getPublicKey(splittedInput[2].getBytes(), splittedInput[3].getBytes());
+                                    addAccount(splittedInput[1], publicKey);
+                                }
+                            }
+                        }
+
+                        case LOAD_DATABASE -> {
+                            if (isAdmin) {
+                                logger.log("Loading database..", Level.INFO);
+                                loadDatabase();
+                            }
+                        }
+
+                        case SAVE_DATABASE -> {
+                            if (isAdmin) {
+                                logger.log("Saving database..", Level.INFO);
+                                saveDatabase();
+                            }
+                        }
+                        case LIST -> listUsers();
+                        case PRIVATE_MESSAGE -> privateMessage(input, this.isAdmin);
+                        case HELP -> {
+                            String help = """
+                                    ## Regular User Commands:
+                                    <SYSTEM> /logout|/exit\t\t\t\t-- Disconnect / Quit
+                                    <SYSTEM> /list\t\t\t\t\t-- List current connected users
+                                    <SYSTEM> /msg username message\t\t\t-- Send a Private Message to username
+                                    <SYSTEM> /sendfile username filename\t\t-- Send a File to username
+                                    <SYSTEM> /help\t\t\t\t\t-- Show this help message
+                                    """;
+
+                            if (this.isAdmin) help += """
+                                    ## Admin Commands:
+                                    /kill username\t\t-- Kill a connected user
+                                    /killall\t\t-- Kill all connected users
+                                    /halt\t\t-- Stop the server
+                                    /deleteAccount username\t\t-- Delete an existing account
+                                    /addAccount username password\t\t-- Add an account
+                                    /loadBDD\t\t-- Load the Database
+                                    /saveBDD\t\t-- Save the Database
+                                    """;
+
+                            Writifier.systemWriter(this.out, help);
+                        }
+                        default -> broadcastMessage(input, this.isAdmin);
                     }
+                    if (!this.isAdmin) logger.log("[" + this.pseudo + "] " + input, Level.INFO);
+                    else logger.log(this.pseudo + " " + input, Level.INFO);
                 }
             }
+            logout();
         } catch (IOException | InterruptedException e) {
             logger.log(e.getMessage(), Level.ERROR);
         } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
