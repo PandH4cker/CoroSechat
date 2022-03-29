@@ -178,7 +178,7 @@ public class ServiceChat implements Runnable {
                                     BufferedInputStream bufferedInputStream = new BufferedInputStream(this.socket.getInputStream());
                                     for (long i = 0; i < Long.parseLong(splittedInput[3]); ++i) {
                                         int b = bufferedInputStream.read();
-                                        System.out.print((char) b);
+                                        //System.out.print((char) b);
                                         users.get(splittedInput[1])
                                                 .getWriter()
                                                 .println(b);
