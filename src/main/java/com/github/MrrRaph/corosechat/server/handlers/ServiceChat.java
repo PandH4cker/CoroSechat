@@ -160,7 +160,7 @@ public class ServiceChat implements Runnable {
 
                         case HALT -> {
                             if (isAdmin) {
-                                for (Client client : users.values()) Writifier.systemWriter(client.getWriter(), "Socket closed.");
+                                for (Client client : users.values()) Writifier.systemWriter(client.getWriter(), SOCKET_CLOSED);
                                 System.exit(0);
                             }
                         }
@@ -301,7 +301,7 @@ public class ServiceChat implements Runnable {
     }
 
     private void closeSocket(PrintWriter out, Socket socket) throws IOException {
-        Writifier.systemWriter(out, "Socket closed.");
+        Writifier.systemWriter(out, SOCKET_CLOSED);
         socket.close();
     }
 
