@@ -181,7 +181,7 @@ public class ClientChat extends Thread {
                         case SOCKET_CLOSED -> logout();
                         case ENABLE_FILE_TRANSFER_MODE -> {
                             System.out.println("[+] File Transfer Mode enabled.");
-                            String filename = this.in.nextLine().trim();
+                            String filename = Paths.get(this.in.nextLine().trim()).getFileName().toString();
                             if (Files.exists(Paths.get(DIR_PATH + filename))) {
                                 try {
                                     Files.delete(Paths.get(DIR_PATH + filename));
